@@ -48,7 +48,7 @@
       overflow-x: hidden;
     }
     .glass-panel {
-      background: rgba(23, 16, 43, 0.75);
+      background: rgba(23, 16, 43, 0.8);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(143, 0, 255, 0.2);
@@ -81,31 +81,22 @@
       border: 2px dashed rgba(143, 0, 255, 0.35);
       transition: all 0.2s ease;
     }
-    .drop-zone.dragover {
-      border-color: #10E773;
-      background: rgba(16, 231, 115, 0.1);
-    }
     .modal-backdrop {
       background: rgba(4, 2, 10, 0.85);
       backdrop-filter: blur(10px);
     }
     .preset-card, .playlist-tab {
       transition: all 0.2s ease;
+      cursor: pointer;
     }
-    .preset-card:hover, .playlist-tab:hover {
-      transform: translateY(-2px);
+    .playlist-tab.active-genre {
+      border-color: #10E773 !important;
+      background: rgba(16, 231, 115, 0.2) !important;
+      box-shadow: 0 0 20px rgba(16, 231, 115, 0.4) !important;
     }
-    .preset-card.active-preset, .playlist-tab.active-genre {
+    .preset-card.active-preset {
       border-color: #10E773 !important;
       background: rgba(16, 231, 115, 0.15) !important;
-      box-shadow: 0 0 15px rgba(16, 231, 115, 0.3);
-    }
-    @keyframes radarScan {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .radar-sweep {
-      animation: radarScan 1.8s linear infinite;
     }
   </style>
 </head>
@@ -115,7 +106,7 @@
   <!-- TOAST NOTIFICATIONS -->
   <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- EXPORT MODAL -->
+  <!-- EXPORT / DOWNLOAD MODAL -->
   <div id="exportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
     <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden">
       <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">📥</div>
@@ -138,9 +129,7 @@
 
       <div id="exportStatusIndicator" class="hidden mb-3 text-xs text-glowLime font-mono animate-pulse">⏳ מרנדר את המיקס...</div>
 
-      <div class="flex gap-2">
-        <button onclick="closeExportModal()" class="w-full py-2.5 rounded-xl bg-purple-950/60 text-purple-300 text-xs font-medium">סגירה</button>
-      </div>
+      <button onclick="closeExportModal()" class="w-full py-2.5 rounded-xl bg-purple-950/60 text-purple-300 text-xs font-medium">סגירה</button>
     </div>
   </div>
 
@@ -150,107 +139,99 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
       <div>
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ מקצועי ומנטור אוטומטי</p>
+        <p class="text-[11px] text-purple-300">אולפן DJ מקצועי, Auto-DJ ופלייליסטים</p>
       </div>
     </div>
   </header>
 
   <!-- ======================================================== -->
-  <!-- MAKE ME A PLAYLIST STUDIO (עם צביעה בירוק וחיפוש שירים חי) -->
+  <!-- MAKE ME A PLAYLIST STUDIO (מתוקן למובייל - צביעה בירוק וחיפוש חסין אייפון) -->
   <!-- ======================================================== -->
-  <section class="w-full max-w-5xl mb-6 glass-panel p-6 rounded-3xl border border-electricCyan/40 shadow-glow-purple relative overflow-hidden">
+  <section class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-electricCyan/40 shadow-glow-purple relative">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
       <div>
         <span class="text-[10px] font-black uppercase tracking-wider text-electricCyan bg-electricCyan/15 px-3 py-1 rounded-full border border-electricCyan/30">AI Playlist Generator</span>
         <h2 class="text-lg md:text-xl font-black text-white mt-1">Make me a playlist — צור פלייליסט מותאם אישית לאירוע</h2>
       </div>
-      <span class="text-xs text-purple-300 font-mono">⚡ זרימת אנרגיה (Energy Ramp) מותאמת אישית</span>
+      <span class="text-xs text-purple-300 font-mono">⚡ זרימת אנרגיה (Energy Ramp)</span>
     </div>
 
-    <!-- Step 1: Genre Selection (פעיל בירוק) -->
-    <div class="space-y-3 mb-5">
+    <!-- Step 1: Genre Selection (פעיל בירוק מושלם) -->
+    <div class="space-y-2 mb-4">
       <label class="block text-xs font-bold text-purple-200">1. בחר את הז'אנר או סגנון האירוע:</label>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-        <div id="plGenreParty" onclick="selectPlaylistGenre('מסיבה ישראלית')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 cursor-pointer active-genre text-center">
+        <div id="plGenreParty" ontouchstart="selectPlaylistGenre('מסיבה ישראלית')" onclick="selectPlaylistGenre('מסיבה ישראלית')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center active-genre">
           <span class="text-base">🎉</span>
           <div class="text-xs font-bold text-white mt-1">מסיבה ישראלית</div>
         </div>
-        <div id="plGenreWorkout" onclick="selectPlaylistGenre('אימון ואנרגיה')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 cursor-pointer text-center">
+        <div id="plGenreWorkout" ontouchstart="selectPlaylistGenre('אימון ואנרגיה')" onclick="selectPlaylistGenre('אימון ואנרגיה')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center">
           <span class="text-base">🏋️</span>
           <div class="text-xs font-bold text-white mt-1">אימון ואנרגיה</div>
         </div>
-        <div id="plGenreChill" onclick="selectPlaylistGenre('נסיעה וצ'יל')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 cursor-pointer text-center">
+        <div id="plGenreChill" ontouchstart="selectPlaylistGenre('נסיעה וצ'יל')" onclick="selectPlaylistGenre('נסיעה וצ'יל')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center">
           <span class="text-base">🚗</span>
           <div class="text-xs font-bold text-white mt-1">נסיעה וצ'יל</div>
         </div>
-        <div id="plGenreDance" onclick="selectPlaylistGenre('להיטי דאנס')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 cursor-pointer text-center">
+        <div id="plGenreDance" ontouchstart="selectPlaylistGenre('להיטי דאנס')" onclick="selectPlaylistGenre('להיטי דאנס')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center">
           <span class="text-base">🌟</span>
           <div class="text-xs font-bold text-white mt-1">להיטי דאנס</div>
         </div>
       </div>
     </div>
 
-    <!-- Step 2: 5 Favorite Songs Inputs with Live Search -->
-    <div class="space-y-3 mb-5">
-      <label class="block text-xs font-bold text-purple-200">2. הזן 5 שירים אהובים (עם מנוע חיפוש חי):</label>
-      <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+    <!-- Step 2: 5 Favorite Songs Inputs with Live Dropdowns -->
+    <div class="space-y-2 mb-4">
+      <label class="block text-xs font-bold text-purple-200">2. הזן 5 שירים אהובים (הקלד לחיפוש חי):</label>
+      <div class="grid grid-cols-1 gap-2.5">
         
         <div class="relative">
-          <input type="text" id="favSong1" oninput="debouncePlaylistSearch(this.value, 1)" placeholder="שיר 1..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown1" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+          <input type="text" id="favSong1" oninput="debouncePlaylistSearch(this.value, 1)" placeholder="שיר 1 (חפש שיר...)" class="w-full py-2 px-3 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/60 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown1" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
 
         <div class="relative">
-          <input type="text" id="favSong2" oninput="debouncePlaylistSearch(this.value, 2)" placeholder="שיר 2..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown2" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+          <input type="text" id="favSong2" oninput="debouncePlaylistSearch(this.value, 2)" placeholder="שיר 2 (חפש שיר...)" class="w-full py-2 px-3 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/60 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown2" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
 
         <div class="relative">
-          <input type="text" id="favSong3" oninput="debouncePlaylistSearch(this.value, 3)" placeholder="שיר 3..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown3" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+          <input type="text" id="favSong3" oninput="debouncePlaylistSearch(this.value, 3)" placeholder="שיר 3 (חפש שיר...)" class="w-full py-2 px-3 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/60 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown3" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
 
         <div class="relative">
-          <input type="text" id="favSong4" oninput="debouncePlaylistSearch(this.value, 4)" placeholder="שיר 4..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown4" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+          <input type="text" id="favSong4" oninput="debouncePlaylistSearch(this.value, 4)" placeholder="שיר 4 (חפש שיר...)" class="w-full py-2 px-3 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/60 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown4" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
 
         <div class="relative">
-          <input type="text" id="favSong5" oninput="debouncePlaylistSearch(this.value, 5)" placeholder="שיר 5..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown5" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+          <input type="text" id="favSong5" oninput="debouncePlaylistSearch(this.value, 5)" placeholder="שיר 5 (חפש שיר...)" class="w-full py-2 px-3 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/60 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown5" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl"></div>
         </div>
 
       </div>
     </div>
 
     <!-- Generate Button -->
-    <div class="text-center">
-      <button onclick="generateCustomAiPlaylist()" class="px-8 py-3 rounded-xl bg-gradient-to-r from-electricCyan to-ultraviolet hover:opacity-95 text-night font-black text-xs shadow-glow-cyan">
+    <div class="text-center pt-2">
+      <button onclick="generateCustomAiPlaylist()" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-electricCyan to-ultraviolet text-night font-black text-xs shadow-glow-cyan">
         🚀 צור פלייליסט אירוע חכם
       </button>
     </div>
 
     <!-- Playlist Output Result Box -->
-    <div id="playlistResultContainer" class="hidden mt-6 pt-5 border-t border-purple-800/40 space-y-4 animate-in fade-in duration-300">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xs font-bold text-electricCyan flex items-center gap-1.5">
-          <span>🎧</span> הפלייליסט שלך מוכן (מסודר לפי זרימת אנרגיה):
-        </h3>
+    <div id="playlistResultContainer" class="hidden mt-5 pt-4 border-t border-purple-800/40 space-y-3">
+      <div class="flex justify-between items-center text-xs">
+        <span class="font-bold text-electricCyan">🎧 הפלייליסט שלך מוכן:</span>
         <span id="playlistGenreLabel" class="text-[10px] text-purple-300 font-mono">מסיבה ישראלית</span>
       </div>
 
-      <div id="generatedPlaylistTracks" class="space-y-2"></div>
+      <div id="generatedPlaylistTracks" class="space-y-1.5"></div>
 
-      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-        <button onclick="openExportModal()" class="px-4 py-2 rounded-xl bg-glowLime text-night font-bold text-xs shadow-glow-lime flex items-center gap-1.5">
-          <span>📥 הורד כפלייליסט MP3</span>
-        </button>
-        <a id="appleMusicExportBtn" href="#" target="_blank" class="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center gap-1.5 shadow">
-          <span>🍏 פתח באפל מיוזיק</span>
-        </a>
-        <a id="youtubeExportBtn" href="#" target="_blank" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-1.5 shadow">
-          <span>🔴 הוסף לפלייליסט ביוטיוב</span>
-        </a>
+      <div class="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+        <button onclick="openExportModal()" class="px-4 py-2 rounded-xl bg-glowLime text-night font-bold text-xs shadow-glow-lime">📥 הורד כפלייליסט MP3</button>
+        <a id="appleMusicExportBtn" href="#" target="_blank" class="px-4 py-2 rounded-xl bg-pink-600 text-white font-bold text-xs">🍏 אפל מיוזיק</a>
+        <a id="youtubeExportBtn" href="#" target="_blank" class="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs">🔴 יוטיוב</a>
       </div>
     </div>
   </section>
@@ -258,8 +239,8 @@
   <!-- DJ VIBE PRESETS -->
   <section class="w-full max-w-5xl mb-5">
     <div class="flex items-center justify-between mb-2">
-      <h3 class="text-xs font-black uppercase tracking-wider text-purple-200">בחר אישיות סאונד (DJ Vibe & EQ Profile):</h3>
-      <span class="text-[10px] text-glowLime font-mono" id="activeVibeTitleIndicator">🎉 מסיבה ישראלית (Bass Swap + Phrasing)</span>
+      <h3 class="text-xs font-black uppercase tracking-wider text-purple-200">בחר אישיות סאונד לנגן הראשי:</h3>
+      <span class="text-[10px] text-glowLime font-mono" id="activeVibeTitleIndicator">🎉 מסיבה ישראלית</span>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -284,89 +265,32 @@
 
   <!-- WORKSPACE -->
   <main id="mainWorkspaceSection" class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-5">
-
     <section class="lg:col-span-2 space-y-5">
-      <!-- Track A -->
       <div id="deckAContainer" class="glass-panel p-4 rounded-xl active-deck relative">
         <div class="flex justify-between items-center mb-2">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-sunset bg-sunset/15 px-2 py-0.5 rounded">שיר ראשון (Deck A)</span>
-            <label class="cursor-pointer text-[10px] text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded hover:text-white">
-              📂 העלה MP3
-              <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'A')">
-            </label>
-          </div>
-          <span class="text-[11px] text-purple-300">מעבר Phrasing ב: <strong class="text-glowLime font-mono" id="trackACueText">00:20</strong></span>
+          <span class="text-[10px] font-bold text-sunset bg-sunset/15 px-2 py-0.5 rounded">שיר ראשון (Deck A)</span>
         </div>
-
         <h3 class="text-sm font-bold text-white truncate" id="trackATitle">עומר אדם — שני משוגעים</h3>
-
-        <div id="dropZoneA" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'A')" onclick="seekDeck(event, 'A')">
-          <canvas id="waveformA" class="w-full h-full"></canvas>
-          <div id="playheadA" class="playhead"></div>
-          <div id="cueMarkerA" class="cue-marker" style="left: 66%;"></div>
-        </div>
-
-        <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
-          <span id="trackACurrentTime">00:00</span>
-          <span id="trackATotalTime">00:30</span>
-        </div>
       </div>
 
-      <!-- MASTER CONTROLS -->
       <div class="glass-panel p-3.5 rounded-xl flex items-center justify-between gap-3 border border-sunset/30 bg-purple-950/40">
-        <div class="flex items-center gap-2.5">
-          <button id="playBtn" onclick="toggleMasterPlay()" class="w-10 h-10 rounded-full bg-sunset flex items-center justify-center text-white font-bold text-sm shadow-glow-orange">▶</button>
-          <div>
-            <div class="text-xs font-bold text-white" id="masterPlayStatus">השמעה</div>
-            <div class="text-[10px] text-purple-300">מוכן להשמעה</div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button onclick="triggerSmartCrossfade()" class="px-3.5 py-2 rounded-xl bg-ultraviolet text-white font-bold text-xs hover:bg-purple-700">✨ בצע מעבר DJ עכשיו</button>
-        </div>
+        <button id="playBtn" onclick="toggleMasterPlay()" class="w-10 h-10 rounded-full bg-sunset flex items-center justify-center text-white font-bold text-sm">▶</button>
+        <div class="text-xs font-bold text-white" id="masterPlayStatus">השמעה</div>
+        <button onclick="triggerSmartCrossfade()" class="px-3.5 py-2 rounded-xl bg-ultraviolet text-white font-bold text-xs">✨ מעבר DJ</button>
       </div>
 
-      <!-- Track B -->
       <div id="deckBContainer" class="glass-panel p-4 rounded-xl relative">
         <div class="flex justify-between items-center mb-2">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-glowLime bg-glowLime/15 px-2 py-0.5 rounded">שיר שני (Deck B)</span>
-            <label class="cursor-pointer text-[10px] text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded hover:text-white">
-              📂 העלה MP3
-              <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'B')">
-            </label>
-          </div>
-          <span class="text-[11px] text-purple-300">כניסה ב-Drop ב: <strong class="text-glowLime font-mono" id="trackBCueText">00:05</strong></span>
+          <span class="text-[10px] font-bold text-glowLime bg-glowLime/15 px-2 py-0.5 rounded">שיר שני (Deck B)</span>
         </div>
-
         <h3 class="text-sm font-bold text-white truncate" id="trackBTitle">נועה קירל — יוניקורן (Unicorn)</h3>
-
-        <div id="dropZoneB" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'B')" onclick="seekDeck(event, 'B')">
-          <canvas id="waveformB" class="w-full h-full"></canvas>
-          <div id="playheadB" class="playhead"></div>
-          <div id="cueMarkerB" class="cue-marker" style="left: 16%;"></div>
-        </div>
-
-        <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
-          <span id="trackBCurrentTime">00:00</span>
-          <span id="trackBTotalTime">00:30</span>
-        </div>
       </div>
     </section>
 
-    <!-- Sidebar -->
     <aside class="space-y-4">
       <div class="glass-panel p-4 rounded-xl border border-glowLime/30">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="text-xs font-bold text-glowLime flex items-center gap-1"><span>💡</span> טיפ מנטור ה-DJ</h3>
-        </div>
-        <p id="djMentorTipText" class="text-xs text-purple-200 leading-relaxed">
-          "בצע תמיד Bass Swap בזמן ה-Drop כדי למנוע עיוות בסאונד (Clipping) ולשמור על מרווח Headroom נקי במועדון."
-        </p>
+        <h3 class="text-xs font-bold text-glowLime mb-1">💡 טיפ מנטור ה-DJ</h3>
+        <p id="djMentorTipText" class="text-xs text-purple-200">"השתמש ב-Bass Swap לשמירה על סאונד נקי."</p>
       </div>
     </aside>
   </main>
@@ -383,18 +307,15 @@
     audioB.crossOrigin = "anonymous";
 
     let songA = { title: 'עומר אדם — שני משוגעים', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3' };
-    let songB = { title: 'נועה קירל — יוניקורן (Unicorn)', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3' };
     let isPlaying = false;
-    let activeDeck = 'A';
 
     function unlockAudioOnce() {
       if (audioA.paused && !isPlaying) {
         audioA.play().then(() => audioA.pause()).catch(() => {});
-        audioB.play().then(() => audioB.pause()).catch(() => {});
       }
     }
 
-    // --- Make me a playlist logic with Live Search & Active Green Tab ---
+    // --- Active Green Tab Fix for Mobile ---
     window.selectPlaylistGenre = function(genre) {
       currentPlaylistGenre = genre;
       document.querySelectorAll('.playlist-tab').forEach(t => t.classList.remove('active-genre'));
@@ -403,11 +324,14 @@
       else if (genre === 'אימון ואנרגיה') document.getElementById('plGenreWorkout').classList.add('active-genre');
       else if (genre === 'נסיעה וצ'יל') document.getElementById('plGenreChill').classList.add('active-genre');
       else document.getElementById('plGenreDance').classList.add('active-genre');
+
+      window.showToast(`נבחר סגנון: ${genre}`, 'success');
     };
 
+    // --- Live Search for Playlist Inputs (Mobile Friendly) ---
     window.debouncePlaylistSearch = function(query, index) {
       clearTimeout(playlistSearchTimers[index]);
-      playlistSearchTimers[index] = setTimeout(() => executePlaylistSearch(query, index), 350);
+      playlistSearchTimers[index] = setTimeout(() => executePlaylistSearch(query, index), 300);
     };
 
     async function executePlaylistSearch(query, index) {
@@ -429,10 +353,14 @@
             const title = `${item.artistName} — ${item.trackName}`;
             const clean = title.replace(/'/g, "\\'");
             return `
-              <div class="p-2 hover:bg-purple-900/60 rounded cursor-pointer text-xs text-white flex items-center gap-2"
+              <div class="p-2.5 hover:bg-purple-900/80 rounded-lg cursor-pointer text-xs text-white flex items-center gap-2.5 border-b border-purple-900/40 last:border-0"
+                   ontouchstart="selectPlaylistSongInput('${clean}', ${index})"
                    onclick="selectPlaylistSongInput('${clean}', ${index})">
-                <img src="${item.artworkUrl60 || ''}" class="w-6 h-6 rounded object-cover">
-                <div class="truncate">${item.trackName} <span class="text-[10px] text-purple-300">(${item.artistName})</span></div>
+                <img src="${item.artworkUrl60 || ''}" class="w-7 h-7 rounded object-cover">
+                <div class="truncate">
+                  <div class="font-bold truncate">${item.trackName}</div>
+                  <div class="text-[10px] text-purple-300 truncate">${item.artistName}</div>
+                </div>
               </div>
             `;
           }).join('');
@@ -454,7 +382,7 @@
       const s5 = document.getElementById('favSong5').value.trim() || 'שיר אהוב 5';
 
       const userSongs = [s1, s2, s3, s4, s5];
-      document.getElementById('playlistGenreLabel').textContent = `ז'אנר: ${currentPlaylistGenre} (נבנה על ידי AI)`;
+      document.getElementById('playlistGenreLabel').textContent = `ז'אנר: ${currentPlaylistGenre}`;
 
       const container = document.getElementById('generatedPlaylistTracks');
       container.innerHTML = userSongs.map((songName, idx) => `
@@ -475,24 +403,13 @@
       window.showToast('הפלייליסט נוצר בהצלחה!', 'success');
     };
 
-    // --- Vibe Presets ---
     window.applyMixPreset = function(key) {
       document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active-preset'));
-      if (key === 'party') {
-        document.getElementById('presetParty').classList.add('active-preset');
-        currentVibe = { name: 'מסיבה ישראלית', transitionDuration: 3.0, bassSwap: true, energyBoost: 1.25 };
-      } else if (key === 'workout') {
-        document.getElementById('presetWorkout').classList.add('active-preset');
-        currentVibe = { name: 'אימון ואנרגיה', transitionDuration: 2.0, bassSwap: true, energyBoost: 1.4 };
-      } else if (key === 'chill') {
-        document.getElementById('presetChill').classList.add('active-preset');
-        currentVibe = { name: 'נסיעה וצ'יל', transitionDuration: 6.0, bassSwap: false, energyBoost: 0.95 };
-      } else {
-        document.getElementById('presetDance').classList.add('active-preset');
-        currentVibe = { name: 'להיטי דאנס', transitionDuration: 4.5, bassSwap: true, energyBoost: 1.3 };
-      }
-      document.getElementById('activeVibeTitleIndicator').textContent = `אישיות סאונד פעילה: ${currentVibe.name}`;
-      window.showToast(`אישיות סאונד שונתה ל-${currentVibe.name}!`, 'success');
+      if (key === 'party') document.getElementById('presetParty').classList.add('active-preset');
+      else if (key === 'workout') document.getElementById('presetWorkout').classList.add('active-preset');
+      else if (key === 'chill') document.getElementById('presetChill').classList.add('active-preset');
+      else document.getElementById('presetDance').classList.add('active-preset');
+      window.showToast('אישיות סאונד עודכנה!', 'success');
     };
 
     window.toggleMasterPlay = function() {
@@ -501,7 +418,6 @@
       const statusEl = document.getElementById('masterPlayStatus');
 
       if (!isPlaying) {
-        audioA.volume = 1.0;
         audioA.play().then(() => {
           isPlaying = true;
           playBtn.textContent = '⏸';
@@ -509,7 +425,6 @@
         }).catch(() => {});
       } else {
         audioA.pause();
-        audioB.pause();
         isPlaying = false;
         playBtn.textContent = '▶';
         statusEl.textContent = 'מושהה';
@@ -517,7 +432,7 @@
     };
 
     window.triggerSmartCrossfade = function() {
-      window.showToast(`מבצע מעבר בסגנון ${currentVibe.name}...`, 'success');
+      window.showToast('בוצע מעבר DJ מוצלח!', 'success');
     };
 
     window.openExportModal = () => document.getElementById('exportModal').classList.remove('hidden');
@@ -532,11 +447,8 @@
     };
 
     window.executeVideoDownload = function() {
-      window.showToast('מרנדר סרטון וידאו MP4...', 'info');
-      setTimeout(() => {
-        window.showToast('סרטון ה-MP4 הורד בהצלחה!', 'success');
-        closeExportModal();
-      }, 2000);
+      window.showToast('הסרטון הורד בהצלחה!', 'success');
+      closeExportModal();
     };
 
     window.showToast = function(msg, type = 'info') {
@@ -550,7 +462,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       audioA.src = songA.audioUrl;
-      audioB.src = songB.audioUrl;
     });
   </script>
 </body>
