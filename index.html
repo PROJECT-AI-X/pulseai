@@ -54,7 +54,7 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(143, 0, 255, 0.2);
-      overflow: visible !important; /* מונע חיתוך של תפריטים נפתחים */
+      overflow: visible !important;
     }
     .active-deck {
       border: 1px solid rgba(255, 94, 54, 0.6) !important;
@@ -118,7 +118,7 @@
       color: #10E773;
       box-shadow: 0 0 18px rgba(16,231,115,.12);
     }
-    .metric-card { background: rgba(5,3,12,.55); border: 1px solid rgba(143,0,255,.22); }
+    .metric-card { background: rgba(5,3,12,.75); border: 1px solid rgba(143,0,255,.3); border-radius: 12px; }
     .metric-value { font-variant-numeric: tabular-nums; }
     .energy-track { background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
     .energy-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#8F00FF,#00F0FF,#10E773); transition: width .5s ease; }
@@ -190,19 +190,19 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 rounded-2xl border border-glowLime/30 relative">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
       <div>
-        <h2 class="text-base font-black text-white">⚡ Quick Mix</h2>
-        <p class="text-[10px] text-purple-300">בחר שני שירים, סגנון — וה־AI יטפל בשאר.</p>
+        <h2 class="text-base font-black text-white">⚡ Quick Mix[cite: 2]</h2>
+        <p class="text-[10px] text-purple-300">בחר שני שירים, סגנון — וה־AI יטפל בשאר[cite: 2].</p>
       </div>
       <button onclick="activatePlaylistFromQuick()" class="px-3 py-2 rounded-xl bg-glowLime/10 border border-glowLime/40 text-glowLime text-[10px] font-black">🎧 Make Me a Playlist</button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 relative">
       <div class="relative">
-        <label class="text-[9px] text-sunset font-bold">DECK A · שיר ראשון</label>
+        <label class="text-[9px] text-sunset font-bold">DECK A · שיר ראשון[cite: 2]</label>
         <input id="quickSearchA" type="text" oninput="debounceQuickSearch(this.value,'A')" placeholder="חפש שיר..." autocomplete="off" aria-label="חיפוש שיר ראשון" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-sunset">
         <div id="quickDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
       <div class="relative">
-        <label class="text-[9px] text-glowLime font-bold">DECK B · שיר שני</label>
+        <label class="text-[9px] text-glowLime font-bold">DECK B · שיר שני[cite: 2]</label>
         <input id="quickSearchB" type="text" oninput="debounceQuickSearch(this.value,'B')" placeholder="חפש שיר..." autocomplete="off" aria-label="חיפוש שיר שני" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-glowLime">
         <div id="quickDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
@@ -244,7 +244,7 @@
       <div id="presetPlaylist" onclick="applyMixPreset('playlist')" class="preset-card glass-panel p-3 rounded-xl border border-glowLime/40 hover:border-glowLime cursor-pointer text-center bg-glowLime/5">
         <span class="text-base">🎧</span>
         <div class="text-xs font-bold text-glowLime mt-1">Make me a Playlist</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">5 שירים לבחירה חופשית</div>
+        <div class="text-[10px] text-purple-300 mt-0.5">5 שירים לבחירה חופשית[cite: 1]</div>
       </div>
     </div>
 
@@ -253,7 +253,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
         <div>
           <div class="text-sm font-black text-glowLime">🎧 Make me a Playlist</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">בחר שירים לכל שדה וצור מיקס רציף מרובה-שירים.</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">בחר שירים לכל שדה וצור מיקס רציף מרובה-שירים[cite: 1].</div>
         </div>
       </div>
 
@@ -329,15 +329,10 @@
       <div id="instantSuggestionsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
     </div>
 
+    <!-- כפתור יחיד: DJ AI -->
     <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
       <button id="generateDualMixBtn" onclick="runAiDualMixingProcess()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-bold text-xs shadow-glow-orange">
-        ✨ הפעל ניתוח DJ אופטימלי
-      </button>
-      <button onclick="shareMixToWhatsApp()" class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow">
-        <span>💬 שתף בוואטסאפ</span>
-      </button>
-      <button onclick="executeRealMergedAudioDownload()" class="px-4 py-2.5 rounded-xl bg-purple-900/60 border border-purple-700 text-glowLime font-bold text-xs flex items-center gap-1.5">
-        <span>📥 הורד מיקס MP3</span>
+        ✨ DJ AI
       </button>
     </div>
 
@@ -368,14 +363,13 @@
         </div>
 
         <h3 class="text-sm font-bold text-white truncate" id="trackATitle">עומר אדם — שני משוגעים</h3>
-        <div class="grid grid-cols-3 gap-1.5 mt-2" aria-label="נתוני DJ לשיר ראשון">
-          <div class="metric-card rounded-lg p-2 text-center"><div class="text-[8px] text-purple-400">BPM</div><div id="trackABpm" class="metric-value text-xs font-black text-white">124</div></div>
-          <div class="metric-card rounded-lg p-2 text-center"><div class="text-[8px] text-purple-400">KEY</div><div id="trackAKey" class="metric-value text-xs font-black text-electricCyan">6A</div></div>
-          <div class="metric-card rounded-lg p-2 text-center"><div class="text-[8px] text-purple-400">ENERGY</div><div id="trackAEnergy" class="metric-value text-xs font-black text-glowLime">82%</div></div>
+        <div class="grid grid-cols-3 gap-2 mt-2.5">
+          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">ENERGY</div><div id="trackAEnergy" class="metric-value text-xs font-black text-glowLime">82%</div></div>
+          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">KEY</div><div id="trackAKey" class="metric-value text-xs font-black text-electricCyan">6A</div></div>
+          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">BPM</div><div id="trackABpm" class="metric-value text-xs font-black text-white">124</div></div>
         </div>
-        <div id="structureInfoA" class="mt-1 text-[9px] text-purple-400 font-mono truncate">Beatgrid 124 BPM · Intro — · Drop — · Outro —</div>
 
-        <div id="dropZoneA" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2"
+        <div id="dropZoneA" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2.5"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'A')" onclick="seekDeck(event, 'A')">
           <canvas id="waveformA" class="w-full h-full"></canvas>
           <div id="playheadA" class="playhead"></div>
@@ -417,14 +411,13 @@
         </div>
 
         <h3 class="text-sm font-bold text-white truncate" id="trackBTitle">נועה קירל — יוניקורן (Unicorn)</h3>
-        <div class="grid grid-cols-3 gap-1.5 mt-2" aria-label="נתוני DJ לשיר שני">
-          <div class="metric-card rounded-lg p-2 text-center"><div class="text-[8px] text-purple-400">BPM</div><div id="trackBBpm" class="metric-value text-xs font-black text-white">126</div></div>
-          <div class="metric-card rounded-lg p-2 text-center"><div class="text-[8px] text-purple-400">KEY</div><div id="trackBKey" class="metric-value text-xs font-black text-electricCyan">7A</div></div>
-          <div class="metric-card rounded-lg p-2 text-center"><div class="text-[8px] text-purple-400">ENERGY</div><div id="trackBEnergy" class="metric-value text-xs font-black text-glowLime">88%</div></div>
+        <div class="grid grid-cols-3 gap-2 mt-2.5">
+          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">ENERGY</div><div id="trackBEnergy" class="metric-value text-xs font-black text-glowLime">88%</div></div>
+          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">KEY</div><div id="trackBKey" class="metric-value text-xs font-black text-electricCyan">7A</div></div>
+          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">BPM</div><div id="trackBBpm" class="metric-value text-xs font-black text-white">126</div></div>
         </div>
-        <div id="structureInfoB" class="mt-1 text-[9px] text-purple-400 font-mono truncate">Beatgrid 124 BPM · Intro — · Drop — · Outro —</div>
 
-        <div id="dropZoneB" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2"
+        <div id="dropZoneB" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2.5"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'B')" onclick="seekDeck(event, 'B')">
           <canvas id="waveformB" class="w-full h-full"></canvas>
           <div id="playheadB" class="playhead"></div>
@@ -955,11 +948,6 @@
       if (marker && audio?.duration) {
         const t = side === 'A' ? (a.outroStart || audio.duration * .82) : (a.drops?.[0]?.time || a.introEnd || 5);
         marker.style.left = `${Math.max(0, Math.min(100, (t / audio.duration) * 100))}%`;
-      }
-      const info = document.getElementById(`structureInfo${cap}`);
-      if (info) {
-        const drop = a.drops?.[0] ? formatTime(a.drops[0].time) : '—';
-        info.textContent = `Beatgrid ${a.bpm} BPM · Intro ${formatTime(a.introEnd)} · Drop ${drop} · Outro ${formatTime(a.outroStart)}`;
       }
       updateCopilot();
     }
