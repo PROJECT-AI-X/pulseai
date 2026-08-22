@@ -84,7 +84,7 @@
       <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg sm:text-xl text-white shadow-glow-orange shrink-0">P</div>
       <div>
         <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Real Audio BPM · Equal-Power S-Curve · Phrase Matching</p>
+        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Turbo Drop-Mix · Hard Low-Cut · Pro Studio</p>
       </div>
     </div>
     <button onclick="openGuidePrompt()" class="px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-cyan-300 hover:bg-purple-900/60 active:scale-95 transition-transform flex items-center gap-1.5">
@@ -223,8 +223,8 @@
       },
       {
         icon: "🎯",
-        title: "ניתוח BPM אמיתי ו-Phrase Matching",
-        desc: "המערכת מנתחת את האודיו בזמן אמת, מזהה את ה-BPM האמיתי, מבצעת Time-Stretching ומסנכרנת לפי תיבות מוזיקליות."
+        title: "סנכרון Turbo Drop-Mix",
+        desc: "מעברי שמע מהירים ונקיים על הביט (On-Beat Switch) המונעים חפיפות קוליות ארוכות מדי."
       },
       {
         icon: "💾",
@@ -597,53 +597,120 @@
       });
     }
 
-    // --- REAL AUDIO BPM DETECTION & PHRASE MATCHING ---
-    function detectRealBpmAndOffset(buffer) {
+    // --- REAL BPM DETECTION (onset envelope + autocorrelation) ---
+    // Replaces the old "simulatedBpm = 120 + (trackId % 12)" placeholder with an
+    // actual estimate derived from the audio itself.
+    function detectBpmFromBuffer(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
-      const windowSize = 1024;
-      const peaks = [];
-      let threshold = 0.08;
 
-      // Energy envelope extraction
-      for (let i = 0; i < data.length - windowSize; i += windowSize) {
+      // Downsample energy envelope in ~10ms frames (good resolution for 60-200 BPM)
+      const frameSize = Math.round(sampleRate * 0.01);
+      const maxSamples = Math.min(data.length, sampleRate * 25); // analyze up to 25s
+      const frameCount = Math.floor(maxSamples / frameSize);
+      const envelope = new Float32Array(frameCount);
+
+      for (let f = 0; f < frameCount; f++) {
         let sum = 0;
-        for (let j = 0; j < windowSize; j += 8) {
+        const start = f * frameSize;
+        for (let i = 0; i < frameSize; i++) {
+          const v = data[start + i] || 0;
+          sum += v * v;
+        }
+        envelope[f] = Math.sqrt(sum / frameSize);
+      }
+
+      // Onset strength = positive first difference (energy rising = likely a hit)
+      const onset = new Float32Array(frameCount);
+      for (let f = 1; f < frameCount; f++) {
+        const d = envelope[f] - envelope[f - 1];
+        onset[f] = d > 0 ? d : 0;
+      }
+
+      // Autocorrelation over plausible BPM range (60-190) converted to frame lags
+      const framesPerSec = 1 / 0.01;
+      const minBpm = 60, maxBpm = 190;
+      const minLag = Math.round((60 / maxBpm) * framesPerSec);
+      const maxLag = Math.round((60 / minBpm) * framesPerSec);
+
+      let bestLag = minLag;
+      let bestScore = -Infinity;
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        let score = 0;
+        for (let f = 0; f < frameCount - lag; f++) {
+          score += onset[f] * onset[f + lag];
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestLag = lag;
+        }
+      }
+
+      let bpm = 60 / (bestLag / framesPerSec);
+      // Fold into a sensible dance-music range (avoid half/double-time errors)
+      while (bpm < 100) bpm *= 2;
+      while (bpm > 180) bpm /= 2;
+      return Math.round(bpm);
+    }
+
+    function findFirstDownbeatOffset(buffer, bpm = 124) {
+      const data = buffer.getChannelData(0);
+      const sampleRate = buffer.sampleRate;
+      const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.0));
+      const windowSize = 256;
+      let maxDelta = 0;
+      let bestSample = 0;
+      let prevEnergy = 0;
+
+      for (let i = 0; i < searchLen - windowSize; i += 64) {
+        let sum = 0;
+        for (let j = 0; j < windowSize; j += 4) {
           const v = data[i + j];
           sum += v * v;
         }
-        const rms = Math.sqrt(sum / (windowSize / 8));
-        if (rms > threshold) {
-          peaks.push(i / sampleRate);
+        const energy = Math.sqrt(sum / (windowSize / 4));
+        const delta = energy - prevEnergy;
+        if (delta > maxDelta && energy > 0.06) {
+          maxDelta = delta;
+          bestSample = i;
         }
+        prevEnergy = energy;
       }
+      const beatIntervalSec = 60.0 / bpm;
+      const rawOffsetSec = bestSample / sampleRate;
+      return Math.max(0, rawOffsetSec % beatIntervalSec);
+    }
 
-      // Autocorrelation to find true BPM
-      let bestBpm = 124;
-      let maxScore = 0;
-      for (let testBpm = 100; testBpm <= 150; testBpm++) {
-        const interval = 60.0 / testBpm;
-        let score = 0;
-        for (let p = 0; p < peaks.length; p++) {
-          for (let q = p + 1; q < peaks.length; q++) {
-            const diff = peaks[q] - peaks[p];
-            if (Math.abs((diff % interval) / interval - 0.5) < 0.15) {
-              score++;
-            }
-          }
-        }
-        if (score > maxScore) {
-          maxScore = score;
-          bestBpm = testBpm;
-        }
+    function analyzeTrackStructure(buffer) {
+      const data = buffer.getChannelData(0);
+      const sampleRate = buffer.sampleRate;
+      const firstSecSamples = Math.min(data.length, Math.floor(sampleRate * 1.5));
+      let sum = 0;
+      for (let i = 0; i < firstSecSamples; i += 64) {
+        sum += data[i] * data[i];
       }
+      const introRms = Math.sqrt(sum / (firstSecSamples / 64));
 
-      const beatInterval = 60.0 / bestBpm;
-      const phraseInterval = beatInterval * 4; // 4-bar phrase grid
-      const firstPeak = peaks.length > 0 ? peaks[0] : 0.0;
-      const phraseOffset = firstPeak % phraseInterval;
+      // Real BPM detected from the audio itself, not the placeholder metadata value.
+      const detectedBpm = detectBpmFromBuffer(buffer);
+      const downbeatOffset = findFirstDownbeatOffset(buffer, detectedBpm);
+      return { downbeatOffset, isInstantChorus: introRms > 0.17, detectedBpm };
+    }
 
-      return { bpm: bestBpm, phraseOffset: Math.max(0, phraseOffset) };
+    // Equal-power fade curve (constant perceived loudness through the crossfade,
+    // unlike a linear ramp which dips in the middle).
+    function equalPowerCurve(steps = 64, direction = 'in') {
+      const curve = new Float32Array(steps);
+      for (let i = 0; i < steps; i++) {
+        const t = i / (steps - 1);
+        curve[i] = direction === 'in'
+          ? Math.sin(t * Math.PI / 2)
+          : Math.cos(t * Math.PI / 2);
+      }
+      // avoid a hard 0 (Web Audio dislikes ramping to/from exactly 0 in some paths)
+      curve[curve.length - 1] = Math.max(curve[curve.length - 1], 0.0001);
+      curve[0] = Math.max(curve[0], 0.0001);
+      return curve;
     }
 
     function calculateBufferRms(buffer) {
@@ -692,15 +759,27 @@
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     }
 
-    // --- REAL AUDIO MASTER MIXING ENGINE WITH TRUE EQUAL-POWER S-CURVE & TIMESTRETCH ---
+    // --- TURBO DROP-MIX SWITCH ENGINE v2 (real BPM match + equal-power crossfades) ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
       let trackOffsets = [];
       let cursor = 0;
 
-      // Analyze real BPM and structure for all tracks
-      const audioAnalysis = buffers.map(b => detectRealBpmAndOffset(b));
+      // Analyze every track for real BPM + downbeat offset (no more fake metadata BPM).
+      const structures = buffers.map(b => analyzeTrackStructure(b));
+
+      // Use the FIRST track's detected BPM as the set's reference tempo, then compute
+      // a playbackRate for every other track so they actually beat-match instead of
+      // just hoping the metadata BPMs were close.
+      const referenceBpm = structures[0].detectedBpm || 124;
+      const playbackRates = structures.map(s => {
+        const bpm = s.detectedBpm || referenceBpm;
+        const rawRate = referenceBpm / bpm;
+        // clamp so pitch/tempo shift stays musically reasonable (+-8%)
+        return Math.max(0.92, Math.min(1.08, rawRate));
+      });
+
       const TARGET_RMS = 0.14;
       const trackGains = buffers.map(buf => {
         const rms = calculateBufferRms(buf);
@@ -709,54 +788,61 @@
 
       for (let i = 0; i < buffers.length; i++) {
         const buf = buffers[i];
-        const realBpm = audioAnalysis[i].bpm;
-        const transitionDuration = (60.0 / realBpm) * 4; // Exactly 4 beats transition window
-        const cueOut = Math.max(12.0, buf.duration - transitionDuration);
+        const bpm = structures[i].detectedBpm || referenceBpm;
+        const beatDuration = 60 / bpm;
+        // Transition length in whole beats (half a musical phrase) rather than a
+        // fixed 3.5s, so it always lands musically regardless of tempo.
+        const transitionBeats = 8;
+        const transitionDuration = Math.max(2.5, Math.min(6, beatDuration * transitionBeats));
+        const playbackRate = playbackRates[i];
+        const effectiveDuration = buf.duration / playbackRate;
+        const cueOut = Math.max(10.0, effectiveDuration - transitionDuration);
 
-        sliceInfos.push({ buffer: buf, cueOut, transitionDuration, analysis: audioAnalysis[i] });
+        sliceInfos.push({ buffer: buf, cueOut, transitionDuration, struct: structures[i], playbackRate, effectiveDuration });
         trackOffsets.push(cursor);
 
         if (i < buffers.length - 1) {
           cursor += cueOut;
         } else {
-          cursor += buf.duration + 3.0; // Extra room for clean outro fade-out
+          cursor += effectiveDuration;
         }
 
         if (targetDurationSec && cursor >= targetDurationSec) break;
       }
 
-      const totalRenderLen = Math.min(cursor, targetDurationSec || cursor);
+      // Always leave room for a clean fade-out tail at the very end, even if the
+      // target duration would otherwise chop the last track mid-phrase.
+      const FINAL_FADE = 2.0;
+      const totalRenderLen = Math.min(cursor, targetDurationSec || cursor) + FINAL_FADE;
       const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
         2, Math.ceil(sampleRate * (totalRenderLen + 0.5)), sampleRate
       );
 
+      // Gentler master bus compression: only leans in during the louder crossfade
+      // overlaps instead of squashing the whole mix and causing constant pumping.
       const masterCompressor = offlineCtx.createDynamicsCompressor();
-      masterCompressor.threshold.setValueAtTime(-10.0, 0); // Gentle professional threshold
-      masterCompressor.ratio.setValueAtTime(3.0, 0);
+      masterCompressor.threshold.setValueAtTime(-9, 0);
+      masterCompressor.knee.setValueAtTime(6, 0);
+      masterCompressor.ratio.setValueAtTime(2.5, 0);
+      masterCompressor.attack.setValueAtTime(0.01, 0);
+      masterCompressor.release.setValueAtTime(0.2, 0);
       masterCompressor.connect(offlineCtx.destination);
+
+      const lastRenderedEnd = Math.min(cursor, targetDurationSec || cursor);
 
       for (let i = 0; i < sliceInfos.length; i++) {
         const src = offlineCtx.createBufferSource();
         src.buffer = sliceInfos[i].buffer;
+        src.playbackRate.value = sliceInfos[i].playbackRate;
 
         const info = sliceInfos[i];
         const cueOut = info.cueOut;
         const tDur = info.transitionDuration;
         const autoGain = trackGains[i];
 
-        // Real Audio Time-Stretching & BPM Matching
-        if (i < sliceInfos.length - 1) {
-          const bpm1 = info.analysis.bpm;
-          const bpm2 = sliceInfos[i + 1].analysis.bpm;
-          const rateRatio = Math.max(0.85, Math.min(1.18, bpm2 / bpm1));
-
-          src.playbackRate.setValueAtTime(1.0, 0);
-          src.playbackRate.setValueAtTime(1.0, cueOut);
-          src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
-        }
-
+        // Hard Low-Cut Filter (מונע התנגשות בסים בזמן החפיפה)
         const lowEq = offlineCtx.createBiquadFilter();
-        lowEq.type = 'lowshelf'; lowEq.frequency.value = 250; lowEq.gain.value = 0;
+        lowEq.type = 'lowshelf'; lowEq.frequency.value = 220; lowEq.gain.value = 0;
 
         const directGain = offlineCtx.createGain();
 
@@ -767,59 +853,48 @@
         const startTime = trackOffsets[i];
         if (startTime >= totalRenderLen) break;
 
+        const isLast = (i === sliceInfos.length - 1);
+        const fadeInCurve = equalPowerCurve(48, 'in').map(v => v * autoGain);
+        const fadeOutCurve = equalPowerCurve(48, 'out').map(v => v * autoGain);
+
         if (i === 0) {
           directGain.gain.setValueAtTime(autoGain, 0);
           directGain.gain.setValueAtTime(autoGain, cueOut);
-          
-          // True Equal-Power S-Curve Out
-          for (let step = 0; step <= 15; step++) {
-            const p = step / 15;
-            const t = cueOut + p * tDur;
-            const val = autoGain * Math.cos(p * 0.5 * Math.PI);
-            directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
-          }
+          // Equal-power fade-out instead of a linear ramp (no perceived volume dip)
+          directGain.gain.setValueCurveAtTime(fadeOutCurve, cueOut, tDur);
           lowEq.gain.setValueAtTime(0, cueOut);
-          lowEq.gain.linearRampToValueAtTime(-40, cueOut + tDur);
-          src.start(0, 0, cueOut + tDur);
-        } else if (i < sliceInfos.length - 1) {
-          const phraseOffset = info.analysis.phraseOffset || 0;
-          
-          directGain.gain.setValueAtTime(0.0001, startTime);
-          
-          // True Equal-Power S-Curve In (Phrase Matched)
-          for (let step = 0; step <= 15; step++) {
-            const p = step / 15;
-            const t = startTime + p * tDur;
-            const val = autoGain * Math.sin(p * 0.5 * Math.PI);
-            directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
-          }
+          lowEq.gain.linearRampToValueAtTime(-45, cueOut + tDur);
+          // duration arg is in buffer-native time, so scale by playbackRate
+          src.start(0, 0, (cueOut + tDur) * info.playbackRate);
+        } else if (!isLast) {
+          const downbeat = info.struct.downbeatOffset || 0;
+
+          // Equal-power fade-in for the incoming track, timed to its detected downbeat.
+          directGain.gain.setValueCurveAtTime(fadeInCurve, startTime, Math.min(tDur, 1.5));
+          directGain.gain.setValueAtTime(autoGain, startTime + Math.min(tDur, 1.5));
           directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
 
-          // Harmonic Bass Swap
-          lowEq.gain.setValueAtTime(-40, startTime);
-          lowEq.gain.linearRampToValueAtTime(0, startTime + (tDur * 0.5));
+          // Bass duck for the outgoing track during the overlap, not an absolute cut
+          lowEq.gain.setValueAtTime(-45, startTime);
+          lowEq.gain.linearRampToValueAtTime(0, startTime + 0.4);
 
-          for (let step = 0; step <= 15; step++) {
-            const p = step / 15;
-            const t = startTime + cueOut + p * tDur;
-            const val = autoGain * Math.cos(p * 0.5 * Math.PI);
-            directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
-          }
+          directGain.gain.setValueCurveAtTime(fadeOutCurve, startTime + cueOut, tDur);
           lowEq.gain.setValueAtTime(0, startTime + cueOut);
-          lowEq.gain.linearRampToValueAtTime(-40, startTime + cueOut + tDur);
+          lowEq.gain.linearRampToValueAtTime(-45, startTime + cueOut + tDur);
 
-          src.start(startTime, phraseOffset, cueOut + tDur);
+          src.start(startTime, downbeat, (cueOut + tDur) * info.playbackRate);
         } else {
-          // Final Track Outro Fade-Out
-          const phraseOffset = info.analysis.phraseOffset || 0;
-          directGain.gain.setValueAtTime(0.0001, startTime);
-          directGain.gain.linearRampToValueAtTime(autoGain, startTime + 0.1);
-          
-          const playDuration = Math.min(buffers[i].duration - phraseOffset, 25.0);
-          directGain.gain.setValueAtTime(autoGain, startTime + playDuration - 3.0);
-          directGain.gain.linearRampToValueAtTime(0.0001, startTime + playDuration);
+          const downbeat = info.struct.downbeatOffset || 0;
+          directGain.gain.setValueCurveAtTime(fadeInCurve, startTime, Math.min(tDur, 1.5));
+          directGain.gain.setValueAtTime(autoGain, startTime + Math.min(tDur, 1.5));
 
-          src.start(startTime, phraseOffset, playDuration);
+          // Guaranteed clean fade-out at the very end of the render, wherever it falls.
+          const fadeOutStart = Math.max(startTime + Math.min(tDur, 1.5), lastRenderedEnd - FINAL_FADE);
+          directGain.gain.setValueAtTime(autoGain, fadeOutStart);
+          directGain.gain.setValueCurveAtTime(fadeOutCurve, fadeOutStart, FINAL_FADE);
+
+          const playLen = Math.min(info.effectiveDuration, (fadeOutStart + FINAL_FADE) - startTime);
+          src.start(startTime, downbeat, playLen * info.playbackRate);
         }
       }
 
@@ -838,7 +913,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מנתח BPM ומעבד מיקס Pro DJ...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעים ומעבד מיקס Pro DJ...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -872,7 +947,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ עם ניתוח BPM אמיתי הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
@@ -887,7 +962,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM אמיתי ומאתר שירים תואמים...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM, סולם הרמוני וסגנון משני השירים...';
 
       try {
         const seed1 = selectedQuickTrack1;
@@ -898,11 +973,13 @@
 
         let curatedTracks = [seed1, seed2];
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM)...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM, ${detectedGenre})...`;
 
         const searchQueries = [
           `${seed1.artistName} hits`,
           `${seed2.artistName} hits`,
+          `${seed1.artistName} ${detectedGenre}`,
+          `${seed2.artistName} ${detectedGenre}`,
           `${detectedGenre} club hits`,
           `${detectedGenre} party dance`
         ];
@@ -932,7 +1009,7 @@
 
         curatedTracks.sort((a, b) => a.bpm - b.bpm);
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים ומבצע Time-Stretching...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים ומסנכרן ביטים...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         const fetchPromises = curatedTracks.map(async t => {
@@ -965,11 +1042,11 @@
           const buf = loadedBuffers[idx];
           extendedBuffers.push(buf);
           extendedTracks.push(validTracks[idx]);
-          accumulatedTime += Math.max(18, buf.duration - 5.0);
+          accumulatedTime += Math.max(18, buf.duration - 3.5);
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Real BPM + Equal Power)...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Turbo Drop-Mix)...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
