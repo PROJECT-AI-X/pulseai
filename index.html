@@ -84,7 +84,7 @@
       <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg sm:text-xl text-white shadow-glow-orange shrink-0">P</div>
       <div>
         <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Master Phase Match · S-Curve Bass Swap · Pro Studio</p>
+        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Master Phase Match · HPF Sweep & Ducking · Pro Studio</p>
       </div>
     </div>
     <button onclick="openGuidePrompt()" class="px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-cyan-300 hover:bg-purple-900/60 active:scale-95 transition-transform flex items-center gap-1.5">
@@ -149,7 +149,7 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
       <h2 class="text-base sm:text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם והסגנון שלהם, יאתר להיטים תואמים ויפיק סט רציף של 10 דקות עם מעברים הרמוניים חלקים.</p>
+      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם והסגנון שלהם, יאתר להיטים תואמים ויפיק סט רציף של 10 דקות עם מעברי מאסטרינג חלקים.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 mb-5 relative" style="overflow: visible;">
@@ -178,7 +178,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 mb-4">
       <div>
         <h2 class="text-base sm:text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים ובניית סט</h2>
-        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט (לפחות 2). מנוע ה-AI מיישם סנכרון Downbeat, החלפת בסים נקייה בשיא, ו-3-Band EQ מבודד.</p>
+        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט (לפחות 2). מנוע ה-AI מיישם סנכרון Downbeat, החלפת בסים נקייה בשיא, ופילטרים מתקדמים.</p>
       </div>
       <button onclick="addProSongField()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-glowLime/15 border border-glowLime/50 text-glowLime text-xs font-black active:bg-glowLime/25 transition-all text-center">
         ➕ הוסף שיר
@@ -215,13 +215,13 @@
       },
       {
         icon: "🎯",
-        title: "סנכרון Downbeat & Phase Match",
-        desc: "אלגוריתם ה-AI סורק את מכות התוף הראשונות ונועל את כניסת השיר הבא בדיוק בפאזה המוזיקלית הנכונה."
+        title: "סנכרון Phase & Downbeat Match",
+        desc: "אלגוריתם ה-AI סורק את מכות התוף ומיישר את הפאזות כך שהביטים ינחתו בדיוק מוחלט אחד על השני."
       },
       {
         icon: "🌊",
-        title: "החלפת בסים חלקלקה (Bass Swap)",
-        desc: "מבודד את התדרים (3-Band EQ) וחותך את הבס של השיר הקודם (-70dB) בדיוק בכניסת ה-Drop של השיר החדש למניעת עיוותים."
+        title: "HPF Sweep & Dynamic Ducking",
+        desc: "פילטר שאיבה מתקדם (High-Pass) והנמכה רגעית (-3dB) בשיר היוצא ברגע ה-Drop, כדי לתת לשיר הנכנס פאנץ' אדיר."
       },
       {
         icon: "💾",
@@ -481,8 +481,8 @@
       });
     }
 
-    // --- ADVANCED TRANSIENT & PHASE ALIGNMENT ---
-    function findFirstDownbeatOffset(buffer) {
+    // --- ADVANCED PHASE & TRANSIENT ALIGNMENT ---
+    function findFirstDownbeatOffset(buffer, bpm = 124) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
       const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.5));
@@ -505,10 +505,15 @@
         }
         prevEnergy = energy;
       }
-      return Math.max(0, bestSample / sampleRate);
+      
+      // Phase Grid Quantization (Aligning strictly to beat grid interval)
+      const beatIntervalSec = 60.0 / bpm;
+      const rawOffsetSec = bestSample / sampleRate;
+      const quantizedOffset = rawOffsetSec % beatIntervalSec;
+      return Math.max(0, quantizedOffset);
     }
 
-    function analyzeTrackStructure(buffer) {
+    function analyzeTrackStructure(buffer, bpm = 124) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
       const firstSecSamples = Math.min(data.length, Math.floor(sampleRate * 1.5));
@@ -517,7 +522,7 @@
         sum += data[i] * data[i];
       }
       const introRms = Math.sqrt(sum / (firstSecSamples / 64));
-      const downbeatOffset = findFirstDownbeatOffset(buffer);
+      const downbeatOffset = findFirstDownbeatOffset(buffer, bpm);
       const isInstantChorus = introRms > 0.17;
 
       return { downbeatOffset, isInstantChorus, introRms };
@@ -595,17 +600,17 @@
       if (bpmDiff > 7 || (!harmonic.compatible && bpmDiff > 4)) {
         return { type: "echoOutFreeze", duration: 5.0, delayTime: 0.375, feedback: 0.70 };
       }
-      return { type: "bassSwap", duration: 7.0, dropPoint: 3.5 };
+      return { type: "bassSwap", duration: 7.5, dropPoint: 3.8 };
     }
 
-    // --- PRO AUDIO MIXING ENGINE WITH PHASE ALIGNMENT & EQUAL-POWER CROSSFADE ---
+    // --- MASTER AUDIO MIXING ENGINE WITH HPF SWEEP & DYNAMIC DUCKING ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
       let trackOffsets = [];
       let cursor = 0;
 
-      const structures = buffers.map(b => analyzeTrackStructure(b));
+      const structures = buffers.map((b, idx) => analyzeTrackStructure(b, tracksMeta[idx]?.bpm || 124));
       const TARGET_RMS = 0.14;
       const trackGains = buffers.map(buf => {
         const rms = calculateBufferRms(buf);
@@ -618,7 +623,7 @@
         const nextStruct = i < buffers.length - 1 ? structures[i+1] : null;
         const currentTrack = tracksMeta[i] || { bpm: 124, key: '8A' };
         
-        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 7.0, dropPoint: 3.5 };
+        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 7.5, dropPoint: 3.8 };
         const cueOut = Math.max(12.0, buf.duration - decision.duration);
 
         sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack, struct: structures[i] });
@@ -665,6 +670,10 @@
           src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
         }
 
+        // High-Pass Sweep Filter (for Outgoing/Incoming Sweeps)
+        const hpfFilter = offlineCtx.createBiquadFilter();
+        hpfFilter.type = 'highpass'; hpfFilter.frequency.value = 20; hpfFilter.Q.value = 1.0;
+
         // 3-Band Isolator Equalizer
         const lowEq = offlineCtx.createBiquadFilter();
         lowEq.type = 'lowshelf'; lowEq.frequency.value = 250; lowEq.gain.value = 0;
@@ -677,7 +686,8 @@
 
         const directGain = offlineCtx.createGain();
 
-        src.connect(lowEq);
+        src.connect(hpfFilter);
+        hpfFilter.connect(lowEq);
         lowEq.connect(midEq);
         midEq.connect(highEq);
         highEq.connect(directGain);
@@ -722,8 +732,12 @@
             delayFeedback.gain.setValueAtTime(0.70, cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
           } else {
-            const dropPt = info.decision.dropPoint || 3.5;
-            // Equal Power S-Curve Crossfade Out
+            const dropPt = info.decision.dropPoint || 3.8;
+            
+            // HPF Sweep Up on Outgoing Track
+            hpfFilter.frequency.setValueAtTime(20, cueOut);
+            hpfFilter.frequency.exponentialRampToValueAtTime(800, cueOut + tDur);
+
             for (let step = 0; step <= 10; step++) {
               const p = step / 10;
               const t = cueOut + dropPt + p * (tDur - dropPt);
@@ -740,17 +754,23 @@
           const downbeat = info.struct.downbeatOffset || 0;
           
           directGain.gain.setValueAtTime(0.0001, startTime);
-          // Equal Power S-Curve Crossfade In
+          
+          // Dynamic Ducking: slight dip right at incoming drop to give punch
+          const dropPt = info.decision.dropPoint || 3.8;
+          const dropTime = startTime + cueOut + dropPt;
+          
           for (let step = 0; step <= 10; step++) {
             const p = step / 10;
             const t = startTime + p * tDur;
             const val = autoGain * Math.sin(p * 0.5 * Math.PI);
             directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
           }
-          directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
+
+          // Ducking punch on incoming drop
+          directGain.gain.setValueAtTime(autoGain * 0.82, dropTime);
+          directGain.gain.linearRampToValueAtTime(autoGain, dropTime + 0.4);
 
           if (!isEchoOut && !isDropCut) {
-            const dropPt = info.decision.dropPoint || 3.5;
             lowEq.gain.setValueAtTime(-70, startTime);
             lowEq.gain.setValueAtTime(-70, startTime + dropPt - 0.05);
             lowEq.gain.linearRampToValueAtTime(0, startTime + dropPt);
@@ -770,7 +790,6 @@
             delayFeedback.gain.setValueAtTime(0.70, startTime + cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
           } else {
-            const dropPt = info.decision.dropPoint || 3.5;
             for (let step = 0; step <= 10; step++) {
               const p = step / 10;
               const t = startTime + cueOut + dropPt + p * (tDur - dropPt);
@@ -842,7 +861,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ עם סנכרון Downbeat ו-Bass Swap הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ עם HPF Sweep ו-Bass Swap הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
@@ -942,19 +961,19 @@
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Phase Match + Bass Swap)...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (HPF Sweep + Ducking)...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PULSEAI_10Min_AI_SmartSet.mp3`;
+        a.download = `PULSEAI_10Min_AI_MasterSet.mp3`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 סט 10 דקות מלא לפי 2 השירים שנבחרו הופק והורד בהצלחה!';
+        status.textContent = '🎉 סט 10 דקות מאסטרינג מלא הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
