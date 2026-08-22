@@ -56,60 +56,9 @@
       border: 1px solid rgba(143, 0, 255, 0.2);
       overflow: visible !important;
     }
-    .active-deck {
-      border: 1px solid rgba(255, 94, 54, 0.6) !important;
-      box-shadow: 0 0 25px rgba(255, 94, 54, 0.25);
-    }
-    .cue-marker {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #10E773;
-      box-shadow: 0 0 8px #10E773;
-      pointer-events: none;
-      z-index: 20;
-    }
-    .playhead {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: #FF5E36;
-      box-shadow: 0 0 10px #FF5E36;
-      pointer-events: none;
-      z-index: 30;
-      left: 0%;
-      transition: left 0.05s linear;
-    }
-    .drop-zone {
-      border: 2px dashed rgba(143, 0, 255, 0.35);
-      transition: all 0.2s ease;
-    }
-    .drop-zone.dragover {
-      border-color: #10E773;
-      background: rgba(16, 231, 115, 0.1);
-    }
     .modal-backdrop {
       background: rgba(4, 2, 10, 0.85);
       backdrop-filter: blur(10px);
-    }
-    .preset-card {
-      transition: all 0.2s ease;
-    }
-    .preset-card:hover {
-      transform: translateY(-2px);
-    }
-    .preset-card.active-preset {
-      border-color: #10E773 !important;
-      background: rgba(16, 231, 115, 0.1) !important;
-    }
-    @keyframes radarScan {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .radar-sweep {
-      animation: radarScan 1.8s linear infinite;
     }
     .mode-tab { transition: all .2s ease; }
     .mode-tab.active {
@@ -120,43 +69,11 @@
     }
     .metric-card { background: rgba(5,3,12,.75); border: 1px solid rgba(143,0,255,.3); border-radius: 12px; }
     .metric-value { font-variant-numeric: tabular-nums; }
-    .energy-track { background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
-    .energy-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#8F00FF,#00F0FF,#10E773); transition: width .5s ease; }
-    .score-ring { background: conic-gradient(#10E773 var(--score), rgba(255,255,255,.08) 0); }
     .quick-search-card { box-shadow: inset 0 0 30px rgba(143,0,255,.06); overflow: visible !important; }
   </style>
 </head>
 
-<body class="p-3 md:p-8 flex flex-col items-center" onclick="unlockAudioOnce()">
-
-  <!-- AI MIX READY MODAL -->
-  <div id="aiMixReadyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-    <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden">
-      <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl">🎧</div>
-      <h2 class="text-xl font-bold text-white">המיקס מוכן להשמעה!</h2>
-      <p class="text-xs text-purple-300 mt-1" id="modalAiMentorTip">מנטור ה-DJ ניתח את התיבות והבאסים ומעבר ה-Auto-DJ מוכן.</p>
-
-      <div class="my-4 p-3 rounded-xl bg-black/60 border border-purple-800/50 flex items-center justify-between text-xs font-semibold">
-        <span class="text-sunset truncate max-w-[120px]" id="modalSongAName">שיר ראשון</span>
-        <span class="text-glowLime" id="modalVibeBadge">➔ EQ Bass Swap ➔</span>
-        <span class="text-electricCyan truncate max-w-[120px]" id="modalSongBName">שיר שני</span>
-      </div>
-
-      <div class="flex flex-col gap-2.5">
-        <button id="modalPlayBtn" onclick="toggleModalMixPlayback()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-bold text-sm shadow-glow-orange flex items-center justify-center gap-2">
-          <span id="modalPlayIcon">▶</span>
-          <span id="modalPlayText">נגן את המיקס עכשיו</span>
-        </button>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="executeRealMergedAudioDownload()" class="py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-bold text-xs shadow-glow-lime flex items-center justify-center">📥 הורד קובץ</button>
-          <button onclick="shareMixToWhatsApp()" class="py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">💬 שתף בוואטסאפ</button>
-        </div>
-
-        <button onclick="closeMixReadyModalAndScroll()" class="w-full py-2.5 rounded-xl bg-purple-950/60 text-purple-200 text-xs font-medium">צור עוד מיקסים!</button>
-      </div>
-    </div>
-  </div>
+<body class="p-3 md:p-8 flex flex-col items-center">
 
   <!-- Header -->
   <header class="w-full max-w-5xl flex justify-between items-center mb-5 pb-3 border-b border-purple-900/30">
@@ -169,372 +86,87 @@
     </div>
   </header>
 
-  <!-- EXPERIENCE MODE -->
+  <!-- QUICK MIX / PRO MODE TOGGLE SWITCH -->
   <section class="w-full max-w-5xl mb-4">
-    <div class="glass-panel p-2 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border border-purple-800/40">
+    <div class="glass-panel p-2 rounded-2xl flex items-center justify-between gap-2 border border-purple-800/40">
       <div class="flex items-center gap-2 px-2">
         <span class="text-sm">🎛️</span>
         <div>
           <div class="text-xs font-black text-white">מצב עבודה</div>
-          <div class="text-[9px] text-purple-400">בחר כמה שליטה אתה רוצה</div>
+          <div class="text-[9px] text-purple-400">בחר בין יצירה מהירה לעבודה מתקדמת</div>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-1.5">
-        <button id="quickModeBtn" onclick="setUIMode('quick')" class="mode-tab active px-5 py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200">⚡ Quick Mix</button>
-        <button id="proModeBtn" onclick="setUIMode('pro')" class="mode-tab px-5 py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200">🎚️ Pro Mode</button>
+      <div class="grid grid-cols-2 gap-1.5 w-64">
+        <button id="quickModeBtn" onclick="setUIMode('quick')" class="mode-tab active py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200">QUICK MIX</button>
+        <button id="proModeBtn" onclick="setUIMode('pro')" class="mode-tab py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200">PRO MODE</button>
       </div>
     </div>
   </section>
 
-  <!-- QUICK MIX -->
-  <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 rounded-2xl border border-glowLime/30 relative">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
-      <div>
-        <h2 class="text-base font-black text-white">⚡ Quick Mix</h2>
-        <p class="text-[10px] text-purple-300">בחר שני שירים, סגנון — וה־AI יטפל בשאר.</p>
-      </div>
-      <button onclick="activatePlaylistFromQuick()" class="px-3 py-2 rounded-xl bg-glowLime/10 border border-glowLime/40 text-glowLime text-[10px] font-black">🎧 Make Me a Playlist</button>
+  <!-- QUICK MIX PANEL -->
+  <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
+    <div class="mb-4">
+      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת מיקס 10 דקות אוטומטי</h2>
+      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — וה-AI יפיק עבורך מיקס רציף ומקצועי באורך 10 דקות להורדה.</p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 relative">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 relative">
       <div class="relative">
-        <label class="text-[9px] text-sunset font-bold">DECK A · שיר ראשון</label>
-        <input id="quickSearchA" type="text" oninput="debounceQuickSearch(this.value,'A')" placeholder="חפש שיר..." autocomplete="off" aria-label="חיפוש שיר ראשון" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-sunset">
-        <div id="quickDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
+        <label class="text-[10px] text-sunset font-bold">שיר ראשון (אופציונלי)</label>
+        <input id="quickGenInput1" type="text" oninput="debounceQuickGenSearch(this.value, 1)" placeholder="חפש שיר ראשון..." autocomplete="off" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-sunset">
+        <div id="quickGenDrop1" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
       </div>
       <div class="relative">
-        <label class="text-[9px] text-glowLime font-bold">DECK B · שיר שני</label>
-        <input id="quickSearchB" type="text" oninput="debounceQuickSearch(this.value,'B')" placeholder="חפש שיר..." autocomplete="off" aria-label="חיפוש שיר שני" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-glowLime">
-        <div id="quickDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
+        <label class="text-[10px] text-glowLime font-bold">שיר שני (אופציונלי)</label>
+        <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2)" placeholder="חפש שיר שני..." autocomplete="off" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-glowLime">
+        <div id="quickGenDrop2" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
       </div>
     </div>
-    <div class="mt-3 flex flex-col sm:flex-row gap-2">
-      <select id="quickVibe" onchange="setQuickVibe(this.value)" aria-label="סגנון מיקס" class="flex-1 py-2.5 px-3 rounded-xl bg-purple-950/70 border border-purple-800/70 text-white text-xs font-bold focus:outline-none focus:border-glowLime">
-        <option value="party">🎉 מסיבה ישראלית</option>
-        <option value="dance">🌟 להיטי דאנס</option>
-        <option value="workout">🏋️ אימון ואנרגיה</option>
-        <option value="playlist">🎧 פלייליסט אישי</option>
+
+    <div class="mb-5">
+      <label class="text-[10px] text-electricCyan font-bold">בחירת ז'אנר (חובה אם לא נבחרו שירים)</label>
+      <select id="quickGenGenre" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-purple-950/70 border border-purple-800/70 text-white text-xs font-bold focus:outline-none focus:border-electricCyan">
+        <option value="Dance">🌟 Dance & Club Hits</option>
+        <option value="Israeli">🎉 מסיבה ישראלית / מזרחי</option>
+        <option value="Workout">🏋️ Workout & Energy Beats</option>
+        <option value="House">🏠 Deep & Tech House</option>
+        <option value="Pop">🎤 Pop Commercial</option>
       </select>
-      <button onclick="runQuickMix()" class="sm:w-56 py-2.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-xs shadow-glow-orange">✨ CREATE AI MIX</button>
-    </div>
-  </section>
-
-  <!-- DJ MASTER GUIDE: 4 VIBE PERSONALITIES -->
-  <section id="proVibeSection" class="pro-only w-full max-w-5xl mb-5 hidden">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-xs font-black uppercase tracking-wider text-purple-200">בחר אישיות סאונד (DJ Vibe & EQ Profile):</h3>
-      <span class="text-[10px] text-glowLime font-mono" id="activeVibeTitleIndicator">🎉 מסיבה ישראלית (Bass Swap + Phrasing)</span>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-      <div id="presetParty" onclick="applyMixPreset('party')" class="preset-card glass-panel p-3 rounded-xl border border-glowLime/50 bg-glowLime/5 cursor-pointer active-preset text-center">
-        <span class="text-base">🎉</span>
-        <div class="text-xs font-bold text-white mt-1">מסיבה ישראלית</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">Bass Swap (3.0s)</div>
-      </div>
-      <div id="presetWorkout" onclick="applyMixPreset('workout')" class="preset-card glass-panel p-3 rounded-xl border border-purple-800/40 hover:border-sunset cursor-pointer text-center">
-        <span class="text-base">🏋️</span>
-        <div class="text-xs font-bold text-white mt-1">אימון ואנרגיה</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">Drop Mix אגרסיבי (2.0s)</div>
-      </div>
-      <div id="presetDance" onclick="applyMixPreset('dance')" class="preset-card glass-panel p-3 rounded-xl border border-purple-800/40 hover:border-ultraviolet cursor-pointer text-center">
-        <span class="text-base">🌟</span>
-        <div class="text-xs font-bold text-white mt-1">להיטי דאנס</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">Filter & Phrasing (4.5s)</div>
-      </div>
-      <div id="presetPlaylist" onclick="applyMixPreset('playlist')" class="preset-card glass-panel p-3 rounded-xl border border-glowLime/40 hover:border-glowLime cursor-pointer text-center bg-glowLime/5">
-        <span class="text-base">🎧</span>
-        <div class="text-xs font-bold text-glowLime mt-1">Make me a Playlist</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">5 שירים לבחירה חופשית</div>
-      </div>
-    </div>
-
-    <!-- MAKE ME A PLAYLIST -->
-    <div id="playlistBuilder" class="hidden mt-3 p-4 rounded-2xl bg-black/35 border border-glowLime/30 shadow-glow-lime/10 relative">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-        <div>
-          <div class="text-sm font-black text-glowLime">🎧 Make me a Playlist</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">בחר שירים לכל שדה וצור מיקס רציף מרובה-שירים.</div>
-        </div>
-      </div>
-
-      <div id="playlistSearchGrid" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
-
-      <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <span id="playlistStatus" class="text-[10px] text-purple-400">בחר שירים מהרשימות הנפתחות.</span>
-        <div class="flex gap-2">
-          <button onclick="executeMultiTrackPlaylistDownload()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs shadow-glow-lime hover:scale-[1.02] transition-transform">
-            ✨ הפעל וצור מיקס פלייליסט מלא (MP3)
-          </button>
-          <button onclick="loadPlaylistIntoSet()" class="px-4 py-2 rounded-xl bg-purple-900/70 border border-purple-700 text-white font-black text-xs hover:border-glowLime">🎚️ טען לסט</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- DUAL SEARCH STUDIO -->
-  <section id="dualSearchStudio" class="pro-only w-full max-w-5xl mb-4 hidden glass-panel p-5 rounded-2xl border border-sunset/30 relative">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-      <h2 class="text-base font-bold text-white">חיפוש שירים ובניית סט:</h2>
-      
-      <label class="flex items-center gap-2 cursor-pointer bg-purple-950/80 px-3 py-1.5 rounded-xl border border-glowLime/40">
-        <input type="checkbox" id="autoDjToggle" checked onchange="toggleAutoDjMode(this.checked)" class="accent-glowLime w-4 h-4 cursor-pointer">
-        <span class="text-xs font-bold text-glowLime">⚡ מעבר אוטומטי (Auto-DJ Phrasing)</span>
-      </label>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
-      <!-- Song A -->
-      <div class="space-y-2 p-3.5 rounded-xl bg-black/40 border border-purple-900/50 relative">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-bold text-sunset">שיר ראשון (מקור האנרגיה)</span>
-          <span id="searchLoaderA" class="text-[10px] text-purple-400 hidden animate-pulse">מחפש...</span>
-        </div>
-        <div class="relative">
-          <input type="text" id="dualSearchInputA" oninput="debounceGlobalSearch(this.value, 'A')" placeholder="חפש שיר (עומר אדם, טונה, The Weeknd)..."
-                 class="w-full py-2 px-3 text-xs rounded-lg bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-sunset">
-          <div id="dualDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
-        </div>
-        <div class="flex items-center gap-2.5 pt-1">
-          <img id="dualImgA" src="https://via.placeholder.com/40" class="w-9 h-9 rounded-lg object-cover border border-purple-800 hidden">
-          <div id="dualTitleA" class="text-xs font-semibold text-white truncate">עומר אדם — שני משוגעים</div>
-        </div>
-      </div>
-
-      <!-- Song B -->
-      <div class="space-y-2 p-3.5 rounded-xl bg-black/40 border border-purple-900/50 relative">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-bold text-glowLime">שיר שני (המשך המסע)</span>
-          <span id="searchLoaderB" class="text-[10px] text-purple-400 hidden animate-pulse">מחפש...</span>
-        </div>
-        <div class="relative">
-          <input type="text" id="dualSearchInputB" oninput="debounceGlobalSearch(this.value, 'B')" placeholder="חפש שיר (נועה קירל, פאר טסי, Dua Lipa)..."
-                 class="w-full py-2 px-3 text-xs rounded-lg bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-glowLime">
-          <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
-        </div>
-        <div class="flex items-center gap-2.5 pt-1">
-          <img id="dualImgB" src="https://via.placeholder.com/40" class="w-9 h-9 rounded-lg object-cover border border-purple-800 hidden">
-          <div id="dualTitleB" class="text-xs font-semibold text-white truncate">נועה קירל — יוניקורן (Unicorn)</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3 INSTANT RECOMMENDATIONS -->
-    <div id="instantSmartSuggestionsBox" class="mt-4 p-3.5 rounded-xl bg-purple-950/50 border border-glowLime/30 shadow-inner">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-bold text-glowLime flex items-center gap-1.5">
-          <span>✨</span> המלצות מנטור ה-DJ (Harmonic Match & Energy Flow):
-        </span>
-        <span class="text-[10px] text-purple-300">לחיצה אחת מחברת את השיר</span>
-      </div>
-      <div id="instantSuggestionsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
-    </div>
-
-    <!-- כפתור יחיד: DJ AI -->
-    <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
-      <button id="generateDualMixBtn" onclick="runAiDualMixingProcess()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-bold text-xs shadow-glow-orange">
-        ✨ DJ AI
+    <div class="text-center">
+      <button onclick="generate10MinQuickMix()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime hover:scale-105 transition-transform flex items-center justify-center gap-2 mx-auto">
+        <span>✨ צור והורד מיקס 10 דקות (MP3)</span>
       </button>
-    </div>
-
-    <!-- AI Loading Screen -->
-    <div id="aiLoadingOverlay" class="hidden mt-4 p-4 rounded-xl bg-black/70 text-center space-y-2">
-      <div class="w-8 h-8 mx-auto border-2 border-dashed border-sunset rounded-full radar-sweep"></div>
-      <p id="loadingStepText" class="text-xs font-semibold text-purple-200">מנטור ה-AI מנתח תדרים, תיבות ובאס סוואפ...</p>
-      <div class="w-48 mx-auto h-1.5 bg-purple-950 rounded-full overflow-hidden">
-        <div id="aiProgressBar" class="h-full bg-glowLime transition-all duration-300" style="width: 20%;"></div>
-      </div>
+      <div id="quickGenStatus" class="mt-3 text-xs text-glowLime font-mono"></div>
     </div>
   </section>
 
-  <!-- WORKSPACE -->
-  <main id="mainWorkspaceSection" class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-5">
-    <section class="lg:col-span-2 space-y-5">
-      <!-- Track A -->
-      <div id="deckAContainer" class="glass-panel p-4 rounded-xl active-deck relative">
-        <div class="flex justify-between items-center mb-2">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-sunset bg-sunset/15 px-2 py-0.5 rounded">שיר ראשון (Deck A)</span>
-            <label class="cursor-pointer text-[10px] text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded hover:text-white">
-              📂 העלה MP3
-              <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'A')">
-            </label>
-          </div>
-          <span class="text-[11px] text-purple-300">מעבר Phrasing ב: <strong class="text-glowLime font-mono" id="trackACueText">00:20</strong></span>
-        </div>
+  <!-- PRO MODE PANEL (5 Columns for Custom Track Selection & Mixing) -->
+  <section id="proModeContainer" class="w-full max-w-5xl mb-5 hidden glass-panel p-6 rounded-2xl border border-glowLime/50 shadow-glow-lime relative">
+    <div class="mb-4">
+      <h2 class="text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת 5 שירים מדויקים למיקס</h2>
+      <p class="text-xs text-purple-300 mt-1">הכנס בשדות הבאים את השירים שאתה מעוניין בהם בלבד. ה-AI יבנה וימזג את הסט בדיוק מהשירים שבחרת בלי להוסיף שום שיר משלו.</p>
+    </div>
 
-        <h3 class="text-sm font-bold text-white truncate" id="trackATitle">עומר אדם — שני משוגעים</h3>
-        <div class="grid grid-cols-3 gap-2 mt-2.5">
-          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">ENERGY</div><div id="trackAEnergy" class="metric-value text-xs font-black text-glowLime">82%</div></div>
-          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">KEY</div><div id="trackAKey" class="metric-value text-xs font-black text-electricCyan">6A</div></div>
-          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">BPM</div><div id="trackABpm" class="metric-value text-xs font-black text-white">124</div></div>
-        </div>
+    <div id="proColumnsGrid" class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-5">
+      <!-- 5 Dynamic Columns generated by JS -->
+    </div>
 
-        <div id="dropZoneA" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2.5"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'A')" onclick="seekDeck(event, 'A')">
-          <canvas id="waveformA" class="w-full h-full"></canvas>
-          <div id="playheadA" class="playhead"></div>
-          <div id="cueMarkerA" class="cue-marker" style="left: 66%;"></div>
-        </div>
-
-        <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
-          <span id="trackACurrentTime">00:00</span>
-          <span id="trackATotalTime">00:30</span>
-        </div>
-      </div>
-
-      <!-- MASTER CONTROLS -->
-      <div id="masterControlsTourTarget" class="glass-panel p-3.5 rounded-xl flex items-center justify-between gap-3 border border-sunset/30 bg-purple-950/40">
-        <div class="flex items-center gap-2.5">
-          <button id="playBtn" aria-label="נגן או עצור את המיקס" title="נגן / עצור" onclick="toggleMasterPlay()" class="w-10 h-10 rounded-full bg-sunset flex items-center justify-center text-white font-bold text-sm shadow-glow-orange">▶</button>
-          <div>
-            <div class="text-xs font-bold text-white" id="masterPlayStatus">השמעה</div>
-            <div class="text-[10px] text-purple-300" id="transitionStatus">מוכן להשמעה</div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button id="triggerTransitionBtn" aria-label="בצע מעבר DJ" title="בצע מעבר DJ" onclick="triggerSmartCrossfade()" class="px-3.5 py-2 rounded-xl bg-ultraviolet text-white font-bold text-xs hover:bg-purple-700">✨ AI SMART TRANSITION</button>
-        </div>
-      </div>
-
-      <!-- Track B -->
-      <div id="deckBContainer" class="glass-panel p-4 rounded-xl relative">
-        <div class="flex justify-between items-center mb-2">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-glowLime bg-glowLime/15 px-2 py-0.5 rounded">שיר שני (Deck B)</span>
-            <label class="cursor-pointer text-[10px] text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded hover:text-white">
-              📂 העלה MP3
-              <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'B')">
-            </label>
-          </div>
-          <span class="text-[11px] text-purple-300">כניסה ב-Drop ב: <strong class="text-glowLime font-mono" id="trackBCueText">00:05</strong></span>
-        </div>
-
-        <h3 class="text-sm font-bold text-white truncate" id="trackBTitle">נועה קירל — יוניקורן (Unicorn)</h3>
-        <div class="grid grid-cols-3 gap-2 mt-2.5">
-          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">ENERGY</div><div id="trackBEnergy" class="metric-value text-xs font-black text-glowLime">88%</div></div>
-          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">KEY</div><div id="trackBKey" class="metric-value text-xs font-black text-electricCyan">7A</div></div>
-          <div class="metric-card p-2 text-center"><div class="text-[9px] text-purple-400 font-bold mb-0.5">BPM</div><div id="trackBBpm" class="metric-value text-xs font-black text-white">126</div></div>
-        </div>
-
-        <div id="dropZoneB" class="relative h-16 bg-black/60 rounded-lg overflow-hidden cursor-pointer border drop-zone mt-2.5"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'B')" onclick="seekDeck(event, 'B')">
-          <canvas id="waveformB" class="w-full h-full"></canvas>
-          <div id="playheadB" class="playhead"></div>
-          <div id="cueMarkerB" class="cue-marker" style="left: 16%;"></div>
-        </div>
-
-        <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
-          <span id="trackBCurrentTime">00:00</span>
-          <span id="trackBTotalTime">00:30</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sidebar: AI DJ Copilot -->
-    <aside class="space-y-4">
-      <div class="glass-panel p-4 rounded-xl border border-electricCyan/30">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-xs font-black text-electricCyan flex items-center gap-1"><span>🧠</span> AI DJ COPILOT</h3>
-          <span id="copilotMatchBadge" class="text-[9px] px-2 py-0.5 rounded-full bg-glowLime/10 text-glowLime border border-glowLime/30">EXCELLENT</span>
-        </div>
-        <div class="space-y-2 text-[10px]">
-          <div><span class="text-purple-400">המעבר המומלץ</span><div id="copilotTransition" class="text-white font-bold mt-0.5">Bass Swap + Phrasing</div></div>
-          <div><span class="text-purple-400">למה?</span><div id="copilotWhy" class="text-purple-200 mt-0.5 leading-relaxed">BPM קרוב, אנרגיה עולה והתאמה הרמונית טובה.</div></div>
-          <div class="grid grid-cols-2 gap-2">
-            <div class="metric-card rounded-lg p-2"><div class="text-[8px] text-purple-400">BPM GAP</div><div id="copilotBpmGap" class="font-black text-white">+2</div></div>
-            <div class="metric-card rounded-lg p-2"><div class="text-[8px] text-purple-400">KEY MATCH</div><div id="copilotKeyMatch" class="font-black text-glowLime">YES</div></div>
-          </div>
-        </div>
-        <button onclick="previewAiTransition()" class="w-full mt-3 py-2 rounded-xl bg-electricCyan/10 border border-electricCyan/30 text-electricCyan text-[10px] font-black hover:bg-electricCyan/15">▶ PREVIEW TRANSITION</button>
-      </div>
-
-      <div class="glass-panel p-4 rounded-xl border border-glowLime/30">
-        <h3 class="text-xs font-black text-glowLime flex items-center gap-1 mb-2"><span>💡</span> טיפ מנטור ה-DJ</h3>
-        <p id="djMentorTipText" class="text-xs text-purple-200 leading-relaxed">"ה-AI מחפש Phrase, Beat ו-Energy לפני המעבר — לא רק מבצע Crossfade. Bass Swap נכנס רק כששני השירים מתאימים."</p>
-      </div>
-
-      <div class="glass-panel p-4 rounded-xl">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-xs font-black text-white">📈 ENERGY FLOW</h3>
-          <span id="mixScoreLabel" class="text-[9px] text-purple-400">AI SET SCORE</span>
-        </div>
-        <div class="flex items-center gap-3 mb-3">
-          <div id="mixScoreRing" class="score-ring w-14 h-14 rounded-full flex items-center justify-center" style="--score:92%;">
-            <div class="w-11 h-11 rounded-full bg-night flex items-center justify-center"><span id="mixScore" class="text-sm font-black text-white">92</span></div>
-          </div>
-          <div class="flex-1">
-            <div class="flex justify-between text-[9px] mb-1"><span class="text-purple-400">Track A</span><span id="energyAValue" class="text-glowLime">82%</span></div>
-            <div class="energy-track h-1.5"><div id="energyABar" class="energy-fill" style="width:82%"></div></div>
-            <div class="flex justify-between text-[9px] mt-2 mb-1"><span class="text-purple-400">Track B</span><span id="energyBValue" class="text-glowLime">88%</span></div>
-            <div class="energy-track h-1.5"><div id="energyBBar" class="energy-fill" style="width:88%"></div></div>
-          </div>
-        </div>
-        <div id="energyFlowText" class="text-[10px] text-purple-200">Energy עולה בצורה חלקה — מעבר מתאים ל־Peak Time.</div>
-      </div>
-
-      <div class="glass-panel p-4 rounded-xl pro-only hidden">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="text-xs font-bold text-white">שירים מתאימים נוספים</h3>
-          <span class="text-[10px] text-sunset cursor-pointer" onclick="refreshSmartRecommendations()">רענן</span>
-        </div>
-        <div id="recommendationsContainer" class="space-y-2"></div>
-      </div>
-    </aside>
-  </main>
+    <div class="text-center">
+      <button onclick="executeProCustomMixDownload()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange hover:scale-105 transition-transform inline-flex items-center gap-2">
+        <span>✨ צור והורד מיקס מקצועי מהשירים שנבחרו (MP3)</span>
+      </button>
+      <div id="proMixStatus" class="mt-3 text-xs text-glowLime font-mono"></div>
+    </div>
+  </section>
 
   <!-- SCRIPT -->
   <script>
-    let isAutoDjEnabled = true;
-    let isTransitioning = false;
-    let crossfadeInterval = null;
-    let searchTimerA = null, searchTimerB = null;
-    let transitionGeneration = 0;
-    let djAudioEngine = null;
-    let smartTransitionPlan = null;
-
-    let currentVibe = {
-      name: 'מסיבה ישראלית',
-      transitionDuration: 3.0,
-      bassSwap: true,
-      energyBoost: 1.25,
-      mentorTip: 'בסט מסיבה, שמור על Phrasing של 32 תיבות ותזמן את ה-Drop בדיוק בסיום השיר הראשון.'
-    };
-
-    const audioA = new Audio();
-    const audioB = new Audio();
-    audioA.crossOrigin = "anonymous";
-    audioB.crossOrigin = "anonymous";
-
-    let songA = {
-      title: 'עומר אדם — שני משוגעים',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
-      cueOut: 20,
-      duration: 30
-    };
-
-    let songB = {
-      title: 'נועה קירל — יוניקורן (Unicorn)',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
-      cueIn: 5,
-      duration: 30
-    };
-
-    let isPlaying = false;
-    let activeDeck = 'A';
-    let uiMode = 'quick';
-    let quickSearchTimers = { A: null, B: null };
-    const trackAnalysis = {
-      A: { bpm: 124, key: '6A', energy: 82, confidence: 0.86 },
-      B: { bpm: 126, key: '7A', energy: 88, confidence: 0.84 }
-    };
-
-    function unlockAudioOnce() {
-      if (audioA.paused && !isPlaying) {
-        audioA.play().then(() => audioA.pause()).catch(() => {});
-        audioB.play().then(() => audioB.pause()).catch(() => {});
-      }
-    }
+    let proSelectedTracks = Array(5).fill(null);
+    let proSearchTimers = Array(5).fill(null);
+    let quickGenTimer1 = null, quickGenTimer2 = null;
+    let selectedQuickTrack1 = null, selectedQuickTrack2 = null;
 
     function formatTime(sec) {
       if (isNaN(sec) || sec < 0) return "00:00";
@@ -543,43 +175,124 @@
       return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    // --- EXPERIENCE MODE + QUICK MIX ---
     window.setUIMode = function(mode) {
-      uiMode = mode;
-      document.getElementById('quickModeBtn')?.classList.toggle('active', mode === 'quick');
-      document.getElementById('proModeBtn')?.classList.toggle('active', mode === 'pro');
-      document.querySelectorAll('.pro-only').forEach(el => el.classList.toggle('hidden', mode !== 'pro'));
-      const quick = document.getElementById('quickMixPanel');
-      if (quick) {
-        quick.classList.toggle('hidden', mode === 'pro');
-        quick.classList.toggle('border-glowLime/30', mode === 'quick');
+      const isQuick = (mode === 'quick');
+      document.getElementById('quickModeBtn')?.classList.toggle('active', isQuick);
+      document.getElementById('proModeBtn')?.classList.toggle('active', !isQuick);
+      document.getElementById('quickMixPanel')?.classList.toggle('hidden', !isQuick);
+      document.getElementById('proModeContainer')?.classList.toggle('hidden', isQuick);
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // --- BUILD 5 COLUMNS FOR PRO MODE ---
+    function buildProColumns() {
+      const grid = document.getElementById('proColumnsGrid');
+      if (!grid || grid.children.length) return;
+
+      grid.innerHTML = Array.from({ length: 5 }, (_, index) => `
+        <div class="relative p-3 rounded-xl bg-purple-950/50 border border-purple-800/70 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-black text-glowLime">שיר ${index + 1}</span>
+              <span id="proLoader${index}" class="text-[9px] text-purple-400 hidden animate-pulse">מחפש...</span>
+            </div>
+            <div class="relative">
+              <input id="proInput${index}" type="text"
+                oninput="debounceProSearch(this.value, ${index})"
+                placeholder="חפש שיר..."
+                autocomplete="off"
+                class="w-full py-2 px-2.5 rounded-lg bg-black/50 border border-purple-800 text-white placeholder-purple-400/60 text-xs focus:outline-none focus:border-glowLime">
+              <div id="proDropdown${index}"
+                class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+            </div>
+          </div>
+          <div id="proSelected${index}" class="mt-2 text-[10px] text-purple-400 truncate text-center">טרם נבחר שיר</div>
+        </div>
+      `).join('');
+    }
+
+    window.debounceProSearch = function(query, index) {
+      clearTimeout(proSearchTimers[index]);
+      proSearchTimers[index] = setTimeout(() => executeProSearch(query, index), 300);
+    };
+
+    async function executeProSearch(query, index) {
+      const dropdown = document.getElementById(`proDropdown${index}`);
+      const loader = document.getElementById(`proLoader${index}`);
+      if (!dropdown) return;
+
+      if (!query || query.trim().length < 2) {
+        dropdown.classList.add('hidden');
+        return;
       }
+
+      loader?.classList.remove('hidden');
+
+      try {
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query.trim())}&entity=song&limit=6&country=IL`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        dropdown.innerHTML = (data.results || []).filter(item => item.previewUrl).map(item => {
+          const title = `${item.artistName} — ${item.trackName}`;
+          const title64 = btoa(unescape(encodeURIComponent(title)));
+          const url64 = btoa(unescape(encodeURIComponent(item.previewUrl)));
+          const art64 = btoa(unescape(encodeURIComponent(item.artworkUrl60 || '')));
+          return `
+            <div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2 cursor-pointer text-xs text-white"
+                 onclick="selectProTrackEncoded(${index}, '${title64}', '${url64}', '${art64}')">
+              <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt="">
+              <div class="truncate">
+                <div class="font-bold truncate">${escapeHtml(item.trackName)}</div>
+                <div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div>
+              </div>
+            </div>
+          `;
+        }).join('') || '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
+
+        dropdown.classList.remove('hidden');
+      } catch (e) {
+        dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">שגיאת חיפוש</div>';
+        dropdown.classList.remove('hidden');
+      } finally {
+        loader?.classList.add('hidden');
+      }
+    }
+
+    window.selectProTrackEncoded = function(index, title64, url64, art64) {
+      const decode = value => decodeURIComponent(escape(atob(value)));
+      const title = decode(title64), previewUrl = decode(url64), artwork = decode(art64);
+      proSelectedTracks[index] = { title, previewUrl, artwork };
+
+      const input = document.getElementById(`proInput${index}`);
+      const selected = document.getElementById(`proSelected${index}`);
+      const dropdown = document.getElementById(`proDropdown${index}`);
+
+      if (input) input.value = title;
+      if (selected) {
+        selected.textContent = `✓ ${title}`;
+        selected.className = 'mt-2 text-[10px] text-glowLime truncate text-center font-bold';
+      }
+      dropdown?.classList.add('hidden');
     };
 
-    window.activatePlaylistFromQuick = function() {
-      setUIMode('pro');
-      applyMixPreset('playlist');
-      document.getElementById('playlistBuilder')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // --- QUICK MIX SEARCH ---
+    window.debounceQuickGenSearch = function(query, num) {
+      clearTimeout(num === 1 ? quickGenTimer1 : quickGenTimer2);
+      if (num === 1) quickGenTimer1 = setTimeout(() => executeQuickGenSearch(query, 1), 300);
+      else quickGenTimer2 = setTimeout(() => executeQuickGenSearch(query, 2), 300);
     };
 
-    window.setQuickVibe = function(key) {
-      if (key === 'playlist') { activatePlaylistFromQuick(); return; }
-      applyMixPreset(key);
-    };
-
-    window.runQuickMix = function() {
-      const vibe = document.getElementById('quickVibe')?.value || 'party';
-      if (vibe !== 'playlist') applyMixPreset(vibe);
-      runAiDualMixingProcess();
-    };
-
-    window.debounceQuickSearch = function(query, side) {
-      clearTimeout(quickSearchTimers[side]);
-      quickSearchTimers[side] = setTimeout(() => executeQuickSearch(query, side), 300);
-    };
-
-    async function executeQuickSearch(query, side) {
-      const dropdown = document.getElementById(`quickDropdown${side}`);
+    async function executeQuickGenSearch(query, num) {
+      const dropdown = document.getElementById(`quickGenDrop${num}`);
       if (!dropdown) return;
       if (!query || query.trim().length < 2) { dropdown.classList.add('hidden'); return; }
       try {
@@ -590,938 +303,64 @@
           const title = `${item.artistName} — ${item.trackName}`;
           const title64 = btoa(unescape(encodeURIComponent(title)));
           const url64 = btoa(unescape(encodeURIComponent(item.previewUrl)));
-          const art64 = btoa(unescape(encodeURIComponent(item.artworkUrl60 || '')));
-          return `<div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2 cursor-pointer text-xs text-white" onclick="selectQuickSong(${JSON.stringify(side)}, '${title64}', '${url64}', '${art64}')"><img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt=""><div class="truncate"><div class="font-bold truncate">${escapeHtml(item.trackName)}</div><div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div></div></div>`;
+          return `<div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2 cursor-pointer text-xs text-white" onclick="selectQuickGenTrack(${num}, '${title64}', '${url64}')"><img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt=""><div class="truncate"><div class="font-bold truncate">${escapeHtml(item.trackName)}</div><div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div></div></div>`;
         }).join('') || '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         dropdown.classList.remove('hidden');
-      } catch(e) { dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא ניתן לטעון תוצאות</div>'; dropdown.classList.remove('hidden'); }
+      } catch(e) { dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">שגיאת חיפוש</div>'; dropdown.classList.remove('hidden'); }
     }
 
-    window.selectQuickSong = function(side, title64, url64, art64) {
+    window.selectQuickGenTrack = function(num, title64, url64) {
       const decode = value => decodeURIComponent(escape(atob(value)));
-      const title = decode(title64), url = decode(url64), art = decode(art64);
-      selectSong(title, url, art, side);
-      const input = document.getElementById(`quickSearch${side}`);
-      if (input) input.value = title;
-      document.getElementById(`quickDropdown${side}`)?.classList.add('hidden');
-    };
-
-    // --- Global Search Engine ---
-    window.debounceGlobalSearch = function(query, side) {
-      clearTimeout(side === 'A' ? searchTimerA : searchTimerB);
-      if (side === 'A') searchTimerA = setTimeout(() => executeSearch(query, 'A'), 350);
-      else searchTimerB = setTimeout(() => executeSearch(query, 'B'), 350);
-    };
-
-    async function executeSearch(query, side) {
-      const dropdown = document.getElementById(`dualDropdown${side}`);
-      const loader = document.getElementById(`searchLoader${side}`);
-
-      if (!query || query.trim().length < 2) {
-        dropdown.classList.add('hidden');
-        return;
-      }
-
-      loader.classList.remove('hidden');
-
-      try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=7&country=IL`;
-        const res = await fetch(url);
-        const data = await res.json();
-        loader.classList.add('hidden');
-
-        if (!data.results || data.results.length === 0) {
-          dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
-        } else {
-          dropdown.innerHTML = data.results.map((item) => {
-            if (!item.previewUrl) return '';
-            const art = item.artworkUrl60 || '';
-            const title = `${item.artistName} — ${item.trackName}`;
-            const cleanTitle = title.replace(/'/g, "\\'");
-
-            return `
-              <div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white transition-all"
-                   onclick="selectSong('${cleanTitle}', '${item.previewUrl}', '${art}', '${side}')">
-                <img src="${art}" class="w-8 h-8 rounded object-cover">
-                <div class="truncate">
-                  <div class="font-bold truncate">${item.trackName}</div>
-                  <div class="text-[10px] text-purple-300 truncate">${item.artistName}</div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-        dropdown.classList.remove('hidden');
-      } catch (e) {
-        loader.classList.add('hidden');
-      }
-    }
-
-    window.selectSong = function(title, previewUrl, artwork, side) {
-      if (side === 'A') {
-        songA = { title, audioUrl: previewUrl, artwork, cueOut: 20, cueIn: 0, duration: 30 };
-        document.getElementById('dualTitleA').textContent = title;
-        document.getElementById('trackATitle').textContent = title;
-        document.getElementById('dualDropdownA').classList.add('hidden');
-        document.getElementById('dualSearchInputA').value = '';
-        if (artwork) {
-          const img = document.getElementById('dualImgA');
-          img.src = artwork;
-          img.classList.remove('hidden');
-        }
-        audioA.src = previewUrl;
-        audioA.load();
-        generateRecommendationsForSongA(title);
-        analyzeTrackForDJ('A', previewUrl, title);
+      const title = decode(title64), previewUrl = decode(url64);
+      if (num === 1) {
+        selectedQuickTrack1 = { title, previewUrl };
+        document.getElementById('quickGenInput1').value = title;
+        document.getElementById('quickGenDrop1').classList.add('hidden');
       } else {
-        songB = { title, audioUrl: previewUrl, artwork, cueOut: 25, cueIn: 5, duration: 30 };
-        document.getElementById('dualTitleB').textContent = title;
-        document.getElementById('trackBTitle').textContent = title;
-        document.getElementById('dualDropdownB').classList.add('hidden');
-        document.getElementById('dualSearchInputB').value = '';
-        if (artwork) {
-          const img = document.getElementById('dualImgB');
-          img.src = artwork;
-          img.classList.remove('hidden');
-        }
-        audioB.src = previewUrl;
-        audioB.load();
-        analyzeTrackForDJ('B', previewUrl, title);
-      }
-      generateWaveform(side);
-      updateCopilot();
-    };
-
-    // --- DJ ANALYSIS: BPM + KEY + ENERGY + COPILOT ---
-    const KEY_NAMES = ['1A','2A','3A','4A','5A','6A','7A','8A','9A','10A','11A','12A'];
-
-    function fallbackAnalysis(title, side) {
-      const seed = Array.from(title).reduce((a,c) => (a * 31 + c.charCodeAt(0)) >>> 0, side === 'A' ? 17 : 43);
-      const bpm = 112 + (seed % 25);
-      const key = KEY_NAMES[seed % KEY_NAMES.length];
-      const energy = 58 + (seed % 37);
-      return { bpm, key, energy, confidence: 0.64, phraseAnchor: 0, beat: 60 / bpm, bar: (60 / bpm) * 4, gridOffset: 0, beatGrid: {bpm, beat:60/bpm, bar:(60/bpm)*4, offset:0, confidence:55}, introEnd: 8, outroStart: 24, drops: [], energyCurve: [], analysisConfidence: 55 };
-    }
-
-    async function estimateBpm(buffer) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
-      const step = 1024;
-      const frameCount = Math.floor(data.length / step);
-      const env = new Float32Array(frameCount);
-      for (let i = 0; i < frameCount; i++) {
-        let sum = 0, start = i * step;
-        for (let j = 0; j < step; j += 8) { const v = data[start + j] || 0; sum += v * v; }
-        env[i] = Math.sqrt(sum / (step / 8));
-      }
-      let bestBpm = 120, bestScore = -Infinity;
-      for (let bpm = 80; bpm <= 160; bpm++) {
-        const lag = Math.max(1, Math.round((60 * sampleRate / bpm) / step));
-        let score = 0;
-        for (let i = lag; i < frameCount; i++) score += Math.max(0, env[i] - env[i-1]) * env[i-lag];
-        if (score > bestScore) { bestScore = score; bestBpm = bpm; }
-      }
-      return bestBpm;
-    }
-
-    function estimateKey(buffer) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
-      const N = 4096;
-      const chroma = new Float64Array(12);
-      const hop = 4096;
-      const frames = Math.min(24, Math.floor(data.length / hop));
-      for (let f = 0; f < frames; f++) {
-        const start = f * hop;
-        for (let k = 0; k < 12; k++) {
-          let re = 0, im = 0;
-          const freq = 440 * Math.pow(2, (k - 9) / 12);
-          const step = Math.max(1, Math.floor(sampleRate / (freq * 6)));
-          for (let i = 0; i < N && start + i < data.length; i += step) {
-            const angle = 2 * Math.PI * freq * i / sampleRate;
-            re += data[start+i] * Math.cos(angle); im += data[start+i] * Math.sin(angle);
-          }
-          chroma[k] += Math.sqrt(re*re + im*im);
-        }
-      }
-      let idx = 0; for (let i=1;i<12;i++) if (chroma[i] > chroma[idx]) idx=i;
-      return KEY_NAMES[idx];
-    }
-
-    function analyzePhraseStructure(buffer, bpm) {
-      const data = buffer.getChannelData(0);
-      const sr = buffer.sampleRate;
-      const frame = 1024;
-      const hop = 512;
-      const count = Math.max(1, Math.floor((data.length - frame) / hop));
-      const rms = new Float32Array(count);
-      const onset = new Float32Array(count);
-      let prev = 0;
-
-      for (let i = 0; i < count; i++) {
-        const start = i * hop;
-        let sum = 0;
-        let zc = 0;
-        let last = data[start] || 0;
-        for (let j = 0; j < frame; j += 8) {
-          const v = data[start + j] || 0;
-          sum += v * v;
-          if ((v >= 0) !== (last >= 0)) zc++;
-          last = v;
-        }
-        const r = Math.sqrt(sum / (frame / 8));
-        rms[i] = r;
-        onset[i] = Math.max(0, r - prev) + Math.min(0.08, zc / 1000);
-        prev = r;
-      }
-
-      const beat = 60 / Math.max(70, bpm);
-      const bar = beat * 4;
-      const duration = data.length / sr;
-
-      const smooth = new Float32Array(count);
-      const radius = Math.max(1, Math.round((0.75 * sr) / hop));
-      for (let i = 0; i < count; i++) {
-        let sum = 0, n = 0;
-        for (let j = Math.max(0, i - radius); j <= Math.min(count - 1, i + radius); j++) {
-          sum += rms[j]; n++;
-        }
-        smooth[i] = n ? sum / n : rms[i];
-      }
-      let eMin = Infinity, eMax = -Infinity;
-      for (let i = 0; i < smooth.length; i++) { eMin = Math.min(eMin, smooth[i]); eMax = Math.max(eMax, smooth[i]); }
-      const span = Math.max(1e-6, eMax - eMin);
-      const energy = new Float32Array(count);
-      for (let i = 0; i < count; i++) energy[i] = (smooth[i] - eMin) / span;
-
-      const beatFrames = Math.max(1, Math.round((beat * sr) / hop));
-      let bestOffset = 0, bestScore = -Infinity;
-      const phaseSteps = Math.min(beatFrames, 80);
-      for (let off = 0; off < phaseSteps; off++) {
-        let score = 0, n = 0;
-        for (let i = off; i < count; i += beatFrames) {
-          score += onset[i]; n++;
-        }
-        if (n && score / n > bestScore) { bestScore = score / n; bestOffset = off; }
-      }
-      const gridOffset = bestOffset * hop / sr;
-
-      let anchor = gridOffset;
-      for (let t = Math.max(gridOffset, 0.25); t < Math.min(duration, 12); t += beat) {
-        const idx = Math.min(count - 1, Math.round(t * sr / hop));
-        if (onset[idx] > 0.45 * Math.max(...onset.slice(Math.max(0, idx - 20), Math.min(count, idx + 20)))) {
-          anchor = t; break;
-        }
-      }
-
-      const earlyN = Math.min(count, Math.max(1, Math.round(12 * sr / hop)));
-      let earlySum = 0;
-      for (let i = 0; i < earlyN; i++) earlySum += energy[i];
-      const earlyAvg = earlySum / earlyN;
-      const introThreshold = Math.max(0.24, earlyAvg + 0.14);
-      const stableFrames = Math.max(4, Math.round((2 * bar * sr) / hop));
-      let introEnd = Math.min(duration * 0.25, Math.max(4, 2 * bar));
-      for (let i = Math.round(1 * sr / hop); i < count - stableFrames; i++) {
-        let avg = 0;
-        for (let j = 0; j < stableFrames; j++) avg += energy[i + j];
-        avg /= stableFrames;
-        if (avg >= introThreshold) { introEnd = i * hop / sr; break; }
-      }
-      introEnd = Math.max(0, Math.min(duration * 0.4, introEnd));
-
-      const dropCandidates = [];
-      for (let i = 1; i < count - 1; i++) {
-        const prevE = energy[Math.max(0, i - Math.round(bar * sr / hop))];
-        const jump = energy[i] - prevE;
-        const localOnset = onset[i];
-        const score = jump * 0.72 + localOnset * 0.28;
-        const t = i * hop / sr;
-        if (t > introEnd + 2 * bar && t < duration - 4 * bar && score > 0.12) {
-          dropCandidates.push({ time: t, score });
-        }
-      }
-      dropCandidates.sort((a,b) => b.score - a.score);
-      const drops = [];
-      for (const c of dropCandidates) {
-        if (drops.every(d => Math.abs(d.time - c.time) > 4 * bar)) drops.push(c);
-        if (drops.length >= 4) break;
-      }
-      drops.sort((a,b) => a.time - b.time);
-
-      const outroWindowStart = duration * 0.68;
-      const tailAvg = energy[Math.min(count - 1, Math.floor((duration * 0.92) * sr / hop))];
-      let outroStart = duration * 0.82;
-      const declineFrames = Math.max(6, Math.round((2 * bar * sr) / hop));
-      for (let i = Math.floor(outroWindowStart * sr / hop); i < count - declineFrames; i++) {
-        const before = energy[i];
-        let after = 0;
-        for (let j = 0; j < declineFrames; j++) after += energy[i + j];
-        after /= declineFrames;
-        if (before - after > 0.16 && after <= Math.max(0.62, tailAvg + 0.04)) {
-          outroStart = i * hop / sr; break;
-        }
-      }
-      outroStart = Math.max(introEnd + 4 * bar, Math.min(duration - 2 * bar, outroStart));
-
-      const confidence = Math.round(Math.max(55, Math.min(96,
-        58 + Math.min(18, drops.length * 5) + (bestScore > 0 ? 10 : 0) + (duration > 30 ? 8 : 0)
-      )));
-
-      return {
-        anchor, beat, bar, gridOffset,
-        beatGrid: { bpm, beat, bar, offset: gridOffset, confidence },
-        introEnd, outroStart,
-        drops,
-        energyCurve: Array.from(energy).filter((_,i) => i % Math.max(1, Math.floor(count/80)) === 0),
-        confidence
-      };
-    }
-
-    function snapToBeat(time, analysis, direction = 'nearest') {
-      const beat = analysis?.beat || (60 / Math.max(70, analysis?.bpm || 120));
-      const offset = analysis?.gridOffset || analysis?.phraseAnchor || 0;
-      const n = (time - offset) / beat;
-      const idx = direction === 'ceil' ? Math.ceil(n) : direction === 'floor' ? Math.floor(n) : Math.round(n);
-      return Math.max(0, offset + idx * beat);
-    }
-
-    function findBestIncomingTarget(analysis, transitionDuration, minTime = 0) {
-      const intro = analysis?.introEnd || 0;
-      const drops = analysis?.drops || [];
-      const preferred = drops.find(d => d.time > Math.max(intro + 2 * analysis.bar, minTime + transitionDuration));
-      if (preferred) return preferred.time;
-      return snapToBeat(Math.max(intro + analysis.bar * 4, minTime + transitionDuration), analysis, 'ceil');
-    }
-
-    async function analyzeTrackForDJ(side, url, title) {
-      const fallback = fallbackAnalysis(title, side);
-      Object.assign(trackAnalysis[side], fallback);
-      updateTrackMetrics(side);
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const res = await fetch(url);
-        const buf = await ctx.decodeAudioData(await res.arrayBuffer());
-        const bpm = await estimateBpm(buf);
-        const key = estimateKey(buf);
-        const phrase = analyzePhraseStructure(buf, bpm);
-        const data = buf.getChannelData(0);
-        let rms = 0; for (let i=0;i<data.length;i+=Math.max(1,Math.floor(data.length/8000))) rms += data[i]*data[i];
-        rms = Math.sqrt(rms / Math.min(8000, data.length));
-        const energy = Math.max(35, Math.min(98, Math.round(50 + rms * 190)));
-        trackAnalysis[side] = {
-          bpm, key, energy, confidence: Math.min(0.98, phrase.confidence / 100),
-          phraseAnchor: phrase.anchor, beat: phrase.beat, bar: phrase.bar,
-          gridOffset: phrase.gridOffset, beatGrid: phrase.beatGrid,
-          introEnd: phrase.introEnd, outroStart: phrase.outroStart,
-          drops: phrase.drops, energyCurve: phrase.energyCurve,
-          analysisConfidence: phrase.confidence
-        };
-        updateStructuralUI(side);
-        updateTrackMetrics(side);
-        updateCopilot();
-        ctx.close?.();
-      } catch (e) {
-        updateCopilot();
-      }
-    }
-
-    function updateTrackMetrics(side) {
-      const a = trackAnalysis[side];
-      const cap = side === 'A' ? 'A' : 'B';
-      document.getElementById(`track${cap}Bpm`)?.replaceChildren(document.createTextNode(a.bpm));
-      document.getElementById(`track${cap}Key`)?.replaceChildren(document.createTextNode(a.key));
-      document.getElementById(`track${cap}Energy`)?.replaceChildren(document.createTextNode(`${a.energy}%`));
-      updateCopilot();
-    }
-
-    function updateStructuralUI(side) {
-      const a = trackAnalysis[side];
-      const cap = side === 'A' ? 'A' : 'B';
-      const cue = document.getElementById(`track${cap}CueText`);
-      if (cue) cue.textContent = side === 'A'
-        ? formatTime(Math.max(0, (a.outroStart || 0) - (smartTransitionPlan?.duration || 8)))
-        : formatTime(a.drops?.[0]?.time || a.introEnd || 0);
-      const marker = document.getElementById(`cueMarker${cap}`);
-      const audio = side === 'A' ? audioA : audioB;
-      if (marker && audio?.duration) {
-        const t = side === 'A' ? (a.outroStart || audio.duration * .82) : (a.drops?.[0]?.time || a.introEnd || 5);
-        marker.style.left = `${Math.max(0, Math.min(100, (t / audio.duration) * 100))}%`;
-      }
-      updateCopilot();
-    }
-
-    function getCamelotDistance(keyA, keyB) {
-      const a = parseInt(keyA) || 0, b = parseInt(keyB) || 0;
-      const d = Math.abs(a - b);
-      return Math.min(d, 12 - d);
-    }
-
-    function buildSmartTransitionPlan() {
-      const a = trackAnalysis.A, b = trackAnalysis.B;
-      const bpmGap = b.bpm - a.bpm;
-      const harmonicDistance = getCamelotDistance(a.key, b.key);
-      const energyDelta = b.energy - a.energy;
-      const harmonic = harmonicDistance <= 1;
-      const bpmGood = Math.abs(bpmGap) <= 4;
-
-      let bars = 8;
-      if (Math.abs(bpmGap) > 8 || harmonicDistance > 2) bars = 4;
-      else if (Math.abs(energyDelta) > 14) bars = 4;
-      else if (bpmGood && harmonic) bars = 8;
-
-      const beatSeconds = 60 / Math.max(70, a.bpm);
-      const duration = Math.max(4, Math.min(16, bars * 4 * beatSeconds));
-
-      let type = 'Harmonic Phrase Blend';
-      if (!harmonic && Math.abs(bpmGap) > 6) type = 'Filtered Energy Reset';
-      else if (!harmonic) type = 'EQ + Filter Transition';
-      else if (energyDelta > 8) type = 'Riser → Bass Swap';
-      else if (energyDelta < -8) type = 'Smooth Energy Downshift';
-      else if (Math.abs(bpmGap) > 4) type = 'Beatmatched Phrase Mix';
-
-      const playbackRate = Math.max(0.94, Math.min(1.06, a.bpm / Math.max(1, b.bpm)));
-
-      return {
-        bpmGap,
-        harmonicDistance,
-        harmonic,
-        energyDelta,
-        bpmGood,
-        bars,
-        beats: bars * 4,
-        duration,
-        playbackRate,
-        type,
-        fromCue: null,
-        toCue: null,
-        structural: {
-          fromOutro: a.outroStart || null,
-          toIntroEnd: b.introEnd || null,
-          toDrop: b.drops?.[0]?.time || null,
-          beatgridA: a.beatGrid?.confidence || 0,
-          beatgridB: b.beatGrid?.confidence || 0
-        },
-        confidence: Math.round(Math.max(55, Math.min(99,
-          78 + (bpmGood ? 8 : 0) + (harmonic ? 8 : 0) + (Math.abs(energyDelta) <= 10 ? 5 : 0)
-          - Math.min(10, Math.abs(bpmGap) * 0.7) - harmonicDistance * 2
-          + Math.min(6, ((a.beatGrid?.confidence || 55) + (b.beatGrid?.confidence || 55) - 110) * 0.06)
-        )))
-      };
-    }
-
-    function updateCopilot() {
-      const a = trackAnalysis.A, b = trackAnalysis.B;
-      smartTransitionPlan = buildSmartTransitionPlan();
-      const p = smartTransitionPlan;
-      const score = p.confidence;
-
-      document.getElementById('copilotBpmGap')?.replaceChildren(document.createTextNode(`${p.bpmGap >= 0 ? '+' : ''}${p.bpmGap}`));
-      document.getElementById('copilotKeyMatch')?.replaceChildren(document.createTextNode(
-        p.harmonic ? (p.harmonicDistance === 0 ? 'PERFECT' : 'YES') : 'ADJUST'
-      ));
-      document.getElementById('copilotMatchBadge')?.replaceChildren(document.createTextNode(
-        score >= 90 ? 'EXCELLENT' : score >= 78 ? 'GOOD' : 'REVIEW'
-      ));
-      document.getElementById('copilotTransition')?.replaceChildren(document.createTextNode(
-        `${p.type} · ${p.bars} Bars · ${p.duration.toFixed(1)}s`
-      ));
-
-      let why = '';
-      if (p.harmonic && p.bpmGood && Math.abs(p.energyDelta) <= 10) {
-        why = `ה־BPM קרוב, ה־Key תואם והאנרגיה מאוזנת. ה־AI משתמש ב־Beatgrid, יוצא מאזור ה־Outro ומכוון את כניסת B כך שה־Drop נוחת בסוף ה־Blend.`;
-      } else if (p.harmonic && p.bpmGood) {
-        why = `התאמה הרמונית טובה ו־BPM קרוב. בגלל שינוי האנרגיה, המעבר מקצר את ה־Blend ומחליף Bass בנקודת ה־Phrase.`;
-      } else if (p.bpmGood) {
-        why = `ה־BPM מתאים אך ה־Key פחות קרוב. ה־AI משתמש ב־Filter + EQ כדי להימנע מהתנגשות תדרים בזמן החיבור.`;
-      } else {
-        why = `פער ה־BPM הוא ${Math.abs(p.bpmGap)}. ה־AI מבצע Beatmatch עדין בלבד ומעדיף מעבר קצר כדי לשמור על טבעיות.`;
-      }
-      document.getElementById('copilotWhy')?.replaceChildren(document.createTextNode(why));
-      document.getElementById('mixScore')?.replaceChildren(document.createTextNode(score));
-      const ring = document.getElementById('mixScoreRing'); if (ring) ring.style.setProperty('--score', `${score}%`);
-
-      const flow = p.energyDelta > 8
-        ? 'Energy עולה — הכניסה מתוכננת ב־Phrase חדש כדי שה־Drop ירגיש כמו המשך טבעי.'
-        : p.energyDelta < -8
-          ? 'Energy יורדת — ה־AI מוריד תדרים בהדרגה כדי למנוע נפילה חדה.'
-          : 'Energy מאוזנת — ניתן לבצע Blend ארוך וחלק בלי קפיצה בעוצמה.';
-      document.getElementById('energyFlowText')?.replaceChildren(document.createTextNode(flow));
-    }
-
-    function ensureDjAudioEngine() {
-      if (djAudioEngine) return djAudioEngine;
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const sourceA = ctx.createMediaElementSource(audioA);
-        const sourceB = ctx.createMediaElementSource(audioB);
-        const gainA = ctx.createGain(), gainB = ctx.createGain();
-        const hpA = ctx.createBiquadFilter(), lpA = ctx.createBiquadFilter();
-        const hpB = ctx.createBiquadFilter(), lpB = ctx.createBiquadFilter();
-        [hpA, hpB].forEach(f => { f.type = 'highpass'; f.frequency.value = 20; f.Q.value = 0.7; });
-        [lpA, lpB].forEach(f => { f.type = 'lowpass'; f.frequency.value = 22000; f.Q.value = 0.7; });
-        sourceA.connect(hpA).connect(lpA).connect(gainA).connect(ctx.destination);
-        sourceB.connect(hpB).connect(lpB).connect(gainB).connect(ctx.destination);
-        gainA.gain.value = 1; gainB.gain.value = 0;
-        djAudioEngine = { ctx, sourceA, sourceB, gainA, gainB, hpA, lpA, hpB, lpB };
-        return djAudioEngine;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function setPitchPreservation(audio) {
-      try { audio.preservesPitch = true; } catch(e) {}
-      try { audio.mozPreservesPitch = true; } catch(e) {}
-      try { audio.webkitPreservesPitch = true; } catch(e) {}
-    }
-
-    function chooseTransitionCues(fromSide, toSide, plan) {
-      const fromSong = fromSide === 'A' ? songA : songB;
-      const toSong = toSide === 'A' ? songA : songB;
-      const fromAudio = fromSide === 'A' ? audioA : audioB;
-      const toAudio = toSide === 'A' ? audioA : audioB;
-      const fromAnalysis = trackAnalysis[fromSide];
-      const toAnalysis = trackAnalysis[toSide];
-      const duration = plan.duration;
-      const fromDur = fromAudio.duration || fromSong.duration || 30;
-      const toDur = toAudio.duration || toSong.duration || 30;
-      const fromBar = fromAnalysis.bar || (60 / Math.max(70, fromAnalysis.bpm || 120)) * 4;
-
-      let fromCue = (fromAnalysis.outroStart || Math.max(0, fromDur - duration - 8 * fromBar)) - duration;
-      if (fromCue < 0.5) fromCue = Math.max(0, fromDur - duration - 4 * fromBar);
-      fromCue = snapToBeat(fromCue, fromAnalysis, 'nearest');
-      fromCue = Math.max(0, Math.min(fromCue, Math.max(0, fromDur - duration - 0.05)));
-
-      const target = findBestIncomingTarget(toAnalysis, duration, 0);
-      let toCue = target - duration;
-      if (toCue < 0.25) toCue = Math.max(0, toAnalysis.introEnd || 0);
-      toCue = snapToBeat(toCue, toAnalysis, 'nearest');
-      toCue = Math.max(0, Math.min(toCue, Math.max(0, toDur - 0.5)));
-
-      const targetDrop = (toAnalysis.drops || []).find(d => Math.abs((d.time - toCue) - duration) < toAnalysis.bar * 0.75);
-      if (targetDrop) {
-        toCue = snapToBeat(targetDrop.time - duration, toAnalysis, 'nearest');
-      }
-
-      return {
-        fromCue, toCue,
-        targetDrop: targetDrop?.time || null,
-        fromOutro: fromAnalysis.outroStart || null,
-        toIntroEnd: toAnalysis.introEnd || null,
-        beatAligned: true
-      };
-    }
-
-    function applyTransitionCurve(engine, fromSide, toSide, startTime, duration, mode) {
-      const fromGain = fromSide === 'A' ? engine.gainA : engine.gainB;
-      const toGain = toSide === 'A' ? engine.gainA : engine.gainB;
-      const fromHp = fromSide === 'A' ? engine.hpA : engine.hpB;
-      const toLp = toSide === 'A' ? engine.lpA : engine.lpB;
-
-      fromGain.gain.cancelScheduledValues(startTime);
-      toGain.gain.cancelScheduledValues(startTime);
-      fromHp.frequency.cancelScheduledValues(startTime);
-      toLp.frequency.cancelScheduledValues(startTime);
-
-      const steps = 32;
-      for (let i = 0; i <= steps; i++) {
-        const p = i / steps;
-        const t = startTime + duration * p;
-        const eased = p * p * (3 - 2 * p);
-        fromGain.gain.setValueAtTime(Math.cos(eased * Math.PI / 2), t);
-        toGain.gain.setValueAtTime(Math.sin(eased * Math.PI / 2), t);
-      }
-
-      const end = startTime + duration;
-      fromHp.frequency.setValueAtTime(20, startTime);
-      fromHp.frequency.linearRampToValueAtTime(mode === 'reset' ? 220 : 140, end * 0.72);
-      fromHp.frequency.linearRampToValueAtTime(20, end);
-      toLp.frequency.setValueAtTime(mode === 'reset' ? 900 : 650, startTime);
-      toLp.frequency.linearRampToValueAtTime(6500, startTime + duration * 0.55);
-      toLp.frequency.linearRampToValueAtTime(22000, end);
-    }
-
-    window.previewAiTransition = function() {
-      if (isTransitioning) return;
-      const plan = smartTransitionPlan || buildSmartTransitionPlan();
-      const fromSide = activeDeck;
-      const toSide = activeDeck === 'A' ? 'B' : 'A';
-      const from = fromSide === 'A' ? audioA : audioB;
-      const to = toSide === 'A' ? audioA : audioB;
-      const cues = chooseTransitionCues(fromSide, toSide, plan);
-      const engine = ensureDjAudioEngine();
-      if (!engine) {
-        from.currentTime = cues.fromCue;
-        to.currentTime = cues.toCue;
-        to.volume = 0;
-        to.play().catch(()=>{});
-        const old = from.volume;
-        from.volume = 1;
-        const started = performance.now();
-        const timer = setInterval(() => {
-          const p = Math.min(1, (performance.now()-started)/plan.duration/1000);
-          from.volume = Math.cos(p*Math.PI/2);
-          to.volume = Math.sin(p*Math.PI/2);
-          if(p>=1){ clearInterval(timer); from.pause(); from.volume=old; }
-        },30);
-        return;
-      }
-      engine.ctx.resume?.();
-      setPitchPreservation(to);
-      to.playbackRate = plan.playbackRate;
-      from.playbackRate = 1;
-      from.currentTime = cues.fromCue;
-      to.currentTime = cues.toCue;
-      engine.gainA.gain.value = fromSide === 'A' ? 1 : 0;
-      engine.gainB.gain.value = fromSide === 'B' ? 1 : 0;
-      from.play().catch(()=>{});
-      to.play().catch(()=>{});
-      applyTransitionCurve(engine, fromSide, toSide, engine.ctx.currentTime + 0.08, plan.duration, plan.harmonic ? 'blend' : 'reset');
-      setTimeout(() => { to.pause(); from.pause(); }, (plan.duration + 0.15) * 1000);
-    };
-
-    // --- Instant 3 Recommendations ---
-    async function generateRecommendationsForSongA(baseTitle) {
-      const grid = document.getElementById('instantSuggestionsGrid');
-      grid.innerHTML = '<div class="col-span-3 text-center text-xs text-purple-400 py-1">מנתח הרמוניה וקצב (Harmonic Mixing)...</div>';
-
-      const queryTerm = baseTitle.split('—')[0].trim();
-      try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=4&country=IL`;
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        let list = (data.results || []).filter(s => s.previewUrl && !s.trackName.includes(baseTitle.split('—')[1] || '---'));
-        
-        if (list.length < 3) {
-          list = [
-            { trackName: 'יוניקורן', artistName: 'נועה קירל', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3' },
-            { trackName: 'אהבה חולה', artistName: 'פאר טסי', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3' },
-            { trackName: 'אלוף העולם', artistName: 'חנן בן ארי', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3' }
-          ];
-        }
-
-        grid.innerHTML = list.slice(0, 3).map(item => {
-          const fullTitle = `${item.artistName} — ${item.trackName}`;
-          const cleanTitle = fullTitle.replace(/'/g, "\\'");
-          return `
-            <div onclick="applyInstantSuggestion('${cleanTitle}', '${item.previewUrl}', '${item.artworkUrl60 || ''}')"
-                 class="p-2 rounded-xl bg-black/40 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 cursor-pointer flex items-center justify-between group transition-all">
-              <div class="truncate text-right pr-1">
-                <div class="text-xs font-bold text-white group-hover:text-glowLime truncate">${item.trackName}</div>
-                <div class="text-[10px] text-purple-300 truncate">${item.artistName}</div>
-              </div>
-              <span class="px-2 py-1 rounded-lg bg-glowLime/15 text-glowLime font-bold text-[10px]">+ חבר</span>
-            </div>
-          `;
-        }).join('');
-      } catch(e) {
-        grid.innerHTML = '';
-      }
-    }
-
-    window.applyInstantSuggestion = function(title, previewUrl, artwork) {
-      window.selectSong(title, previewUrl, artwork, 'B');
-    };
-
-    // --- Master DJ Crossfader & Bass Swap Engine ---
-    window.toggleMasterPlay = function() {
-      unlockAudioOnce();
-      const playBtn = document.getElementById('playBtn');
-      const statusEl = document.getElementById('masterPlayStatus');
-
-      if (!isPlaying) {
-        if (activeDeck === 'A') {
-          audioA.volume = currentVibe.energyBoost > 1 ? 1.0 : 0.9;
-          audioA.play().then(() => {
-            isPlaying = true;
-            playBtn.textContent = '⏸';
-            statusEl.textContent = `מנגן (${currentVibe.name})`;
-          }).catch(() => {});
-        } else {
-          audioB.volume = 1.0;
-          audioB.play().then(() => {
-            isPlaying = true;
-            playBtn.textContent = '⏸';
-            statusEl.textContent = `מנגן (${currentVibe.name})`;
-          });
-        }
-      } else {
-        audioA.pause();
-        audioB.pause();
-        isPlaying = false;
-        playBtn.textContent = '▶';
-        statusEl.textContent = 'מושהה';
+        selectedQuickTrack2 = { title, previewUrl };
+        document.getElementById('quickGenInput2').value = title;
+        document.getElementById('quickGenDrop2').classList.add('hidden');
       }
     };
 
-    window.triggerSmartCrossfade = function() {
-      if (isTransitioning) return;
-      isTransitioning = true;
-      const generation = ++transitionGeneration;
-      const plan = smartTransitionPlan || buildSmartTransitionPlan();
-      const fromSide = activeDeck;
-      const toSide = activeDeck === 'A' ? 'B' : 'A';
-      const fromAudio = fromSide === 'A' ? audioA : audioB;
-      const toAudio = toSide === 'A' ? audioA : audioB;
-      const cues = chooseTransitionCues(fromSide, toSide, plan);
-      plan.fromCue = cues.fromCue;
-      plan.toCue = cues.toCue;
-      smartTransitionPlan = plan;
-
-      const engine = ensureDjAudioEngine();
-      const transitionStatus = document.getElementById('transitionStatus');
-      if (transitionStatus) transitionStatus.textContent = `AI ${plan.type} · ${plan.bars} Bars · Beatgrid + Drop`;
-
-      setPitchPreservation(fromAudio);
-      setPitchPreservation(toAudio);
-      fromAudio.playbackRate = 1;
-      toAudio.playbackRate = plan.playbackRate;
-      fromAudio.currentTime = cues.fromCue;
-      toAudio.currentTime = cues.toCue;
-
-      if (!engine) {
-        fromAudio.volume = 1;
-        toAudio.volume = 0;
-        toAudio.play().catch(()=>{});
-        const start = performance.now();
-        const timer = setInterval(() => {
-          if (generation !== transitionGeneration) { clearInterval(timer); return; }
-          const p = Math.min(1, (performance.now() - start) / (plan.duration * 1000));
-          const e = p*p*(3-2*p);
-          fromAudio.volume = Math.cos(e*Math.PI/2);
-          toAudio.volume = Math.sin(e*Math.PI/2);
-          if (p >= 1) {
-            clearInterval(timer);
-            fromAudio.pause();
-            fromAudio.volume = 1;
-            activeDeck = toSide;
-            isTransitioning = false;
-            updateActiveDeckUI();
-          }
-        }, 25);
-        return;
-      }
-
-      engine.ctx.resume?.();
-      const fromGain = fromSide === 'A' ? engine.gainA : engine.gainB;
-      const toGain = toSide === 'A' ? engine.gainA : engine.gainB;
-      fromGain.gain.cancelScheduledValues(engine.ctx.currentTime);
-      toGain.gain.cancelScheduledValues(engine.ctx.currentTime);
-      fromGain.gain.setValueAtTime(1, engine.ctx.currentTime);
-      toGain.gain.setValueAtTime(0, engine.ctx.currentTime);
-      fromAudio.volume = 1;
-      toAudio.volume = 1;
-
-      fromAudio.play().catch(()=>{});
-      toAudio.play().catch(()=>{});
-      const mode = plan.harmonic && Math.abs(plan.energyDelta) <= 10 ? 'blend' : 'reset';
-      applyTransitionCurve(engine, fromSide, toSide, engine.ctx.currentTime + 0.08, plan.duration, mode);
-
-      setTimeout(() => {
-        if (generation !== transitionGeneration) return;
-        fromAudio.pause();
-        fromAudio.currentTime = cues.fromCue;
-        fromAudio.playbackRate = 1;
-        toAudio.playbackRate = 1;
-        const nextGain = toSide === 'A' ? engine.gainA : engine.gainB;
-        const oldGain = fromSide === 'A' ? engine.gainA : engine.gainB;
-        nextGain.gain.value = 1;
-        oldGain.gain.value = 0;
-        engine.hpA.frequency.value = 20; engine.hpB.frequency.value = 20;
-        engine.lpA.frequency.value = 22000; engine.lpB.frequency.value = 22000;
-        activeDeck = toSide;
-        isTransitioning = false;
-        updateActiveDeckUI();
-        if (transitionStatus) transitionStatus.textContent = `מוכן · ${plan.type}`;
-      }, (plan.duration + 0.15) * 1000);
-    };
-
-    function updateActiveDeckUI() {
-      const containerA = document.getElementById('deckAContainer');
-      const containerB = document.getElementById('deckBContainer');
-      if (activeDeck === 'A') {
-        containerA.classList.add('active-deck');
-        containerB.classList.remove('active-deck');
-        document.getElementById('masterPlayStatus').textContent = `מנגן (${currentVibe.name})`;
-      } else {
-        containerB.classList.add('active-deck');
-        containerA.classList.remove('active-deck');
-        document.getElementById('masterPlayStatus').textContent = `מנגן (${currentVibe.name})`;
-      }
-    }
-
-    // --- Real Vibe-Based Audio Exporter ---
     async function fetchAudioBuffer(url, ctx) {
       const response = await fetch(url);
       const arrayBuffer = await response.arrayBuffer();
       return await ctx.decodeAudioData(arrayBuffer);
     }
 
-    window.executeRealMergedAudioDownload = async function() {
-      try {
-        const urlA = audioA.src || songA.audioUrl;
-        const urlB = audioB.src || songB.audioUrl;
+    // --- GENERATE PRO CUSTOM MIX (Strictly user-selected tracks) ---
+    window.executeProCustomMixDownload = async function() {
+      const chosenTracks = proSelectedTracks.filter(Boolean);
+      const status = document.getElementById('proMixStatus');
 
-        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const [bufferA, bufferB] = await Promise.all([
-          fetchAudioBuffer(urlA, tempCtx),
-          fetchAudioBuffer(urlB, tempCtx)
-        ]);
-
-        const sampleRate = bufferA.sampleRate;
-        const plan = smartTransitionPlan || buildSmartTransitionPlan();
-        const transitionDuration = plan.duration;
-        const cuePlan = chooseTransitionCues('A', 'B', plan);
-        const fromCue = Math.min(cuePlan.fromCue, Math.max(0, bufferA.duration - transitionDuration));
-        const toCue = Math.min(cuePlan.toCue, Math.max(0, bufferB.duration - 0.5));
-        const trackADur = Math.min(bufferA.duration - fromCue, transitionDuration);
-        const trackBDur = Math.max(10, bufferB.duration - toCue);
-        const totalLen = fromCue + trackBDur;
-
-        const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
-          2, Math.ceil(sampleRate * totalLen), sampleRate
-        );
-
-        const srcA = offlineCtx.createBufferSource();
-        srcA.buffer = bufferA;
-        const gainA = offlineCtx.createGain();
-        const hpA = offlineCtx.createBiquadFilter();
-        hpA.type = 'highpass'; hpA.frequency.value = 20; hpA.Q.value = 0.7;
-
-        const srcB = offlineCtx.createBufferSource();
-        srcB.buffer = bufferB;
-        const gainB = offlineCtx.createGain();
-        const lpB = offlineCtx.createBiquadFilter();
-        lpB.type = 'lowpass'; lpB.frequency.value = 650; lpB.Q.value = 0.7;
-
-        srcA.connect(hpA).connect(gainA).connect(offlineCtx.destination);
-        srcB.connect(lpB).connect(gainB).connect(offlineCtx.destination);
-
-        const rate = Math.max(0.94, Math.min(1.06, trackAnalysis.A.bpm / Math.max(1, trackAnalysis.B.bpm)));
-        srcB.playbackRate.value = rate;
-
-        const transitionStart = fromCue;
-        const transitionEnd = Math.min(totalLen, transitionStart + transitionDuration);
-        const startAt = transitionStart;
-        const endAt = transitionEnd;
-        const steps = 32;
-        for (let i = 0; i <= steps; i++) {
-          const p = i / steps;
-          const e = p*p*(3-2*p);
-          const t = startAt + (endAt - startAt) * p;
-          gainA.gain.setValueAtTime(Math.cos(e*Math.PI/2), t);
-          gainB.gain.setValueAtTime(Math.sin(e*Math.PI/2), t);
-        }
-        gainA.gain.setValueAtTime(1, 0);
-        gainB.gain.setValueAtTime(0, 0);
-        hpA.frequency.setValueAtTime(20, startAt);
-        hpA.frequency.linearRampToValueAtTime(plan.harmonic ? 130 : 220, startAt + transitionDuration * 0.7);
-        hpA.frequency.linearRampToValueAtTime(20, endAt);
-        lpB.frequency.setValueAtTime(650, startAt);
-        lpB.frequency.linearRampToValueAtTime(7000, startAt + transitionDuration * 0.55);
-        lpB.frequency.linearRampToValueAtTime(22000, endAt);
-
-        const bBoost = Math.min(1.15, currentVibe.energyBoost);
-        gainA.gain.setValueAtTime(bBoost, 0);
-        gainA.gain.setValueAtTime(1, startAt);
-        gainB.gain.setValueAtTime(0, startAt);
-        gainB.gain.setValueAtTime(1, endAt);
-        srcA.start(0, 0, Math.min(bufferA.duration, startAt + transitionDuration));
-        srcB.start(startAt, toCue, Math.min(trackBDur, bufferB.duration - toCue));
-
-        const renderedBuffer = await offlineCtx.startRendering();
-
-        if (!window.lamejs) throw new Error('MP3 encoder unavailable');
-
-        const channels = Math.min(2, renderedBuffer.numberOfChannels);
-        const left = renderedBuffer.getChannelData(0);
-        const right = channels > 1 ? renderedBuffer.getChannelData(1) : left;
-        const mp3encoder = new lamejs.Mp3Encoder(2, renderedBuffer.sampleRate, 192);
-        const mp3Data = [];
-        const sampleBlockSize = 1152;
-
-        for (let i = 0; i < renderedBuffer.length; i += sampleBlockSize) {
-          const leftChunk = new Int16Array(Math.min(sampleBlockSize, renderedBuffer.length - i));
-          const rightChunk = new Int16Array(leftChunk.length);
-
-          for (let j = 0; j < leftChunk.length; j++) {
-            leftChunk[j] = Math.max(-32768, Math.min(32767, left[i + j] * 32767));
-            rightChunk[j] = Math.max(-32768, Math.min(32767, right[i + j] * 32767));
-          }
-
-          const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
-          if (mp3buf.length > 0) mp3Data.push(new Int8Array(mp3buf));
-        }
-
-        const endBuf = mp3encoder.flush();
-        if (endBuf.length > 0) mp3Data.push(new Int8Array(endBuf));
-
-        const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
-        const downloadUrl = URL.createObjectURL(mp3Blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `PULSEAI_${currentVibe.name.replace(/[^\w\u0590-\u05FF-]+/g, '_')}_MasterMix.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-        tempCtx.close?.();
-      } catch (err) {
-        console.error('PULSEAI MP3 export failed:', err);
-        const fallbackUrl = audioA.src || songA.audioUrl;
-        const a = document.createElement('a');
-        a.href = fallbackUrl;
-        a.download = 'PULSEAI_Mix_Source.mp3';
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }
-    };
-
-    window.executeMultiTrackPlaylistDownload = async function() {
-      const activeTracks = playlistTracks.filter(Boolean);
-      if (activeTracks.length < 2) {
-        alert('אנא בחר לפחות 2 שירים בשדות הפלייליסט כדי ליצור מיקס רציף!');
+      if (chosenTracks.length === 0) {
+        alert('אנא בחר לפחות שיר אחד באחת מעמודות Pro Mode!');
         return;
       }
 
-      const status = document.getElementById('playlistStatus');
-      if (status) status.textContent = '⏳ מעבד וממזג את פלייליסט ה־Pro DJ...';
+      status.textContent = '⏳ מעבד וממזג את הסט בדיוק מהשירים שבחרת...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const buffers = await Promise.all(
-          activeTracks.map(t => fetchAudioBuffer(t.previewUrl, tempCtx))
-        );
+        const buffers = await Promise.all(chosenTracks.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
         tempCtx.close?.();
 
         const sampleRate = buffers[0].sampleRate;
-        const plan = smartTransitionPlan || buildSmartTransitionPlan();
-        const transitionDuration = plan.duration;
-        
-        let sliceInfos = [];
-        for (let i = 0; i < buffers.length; i++) {
-          const buf = buffers[i];
+        const transitionDuration = 3.0;
+
+        let sliceInfos = buffers.map(buf => {
           const cueOut = Math.min(26.0, buf.duration - transitionDuration);
-          sliceInfos.push({
-            buffer: buf,
-            cueOut: cueOut > 0 ? cueOut : Math.max(5, buf.duration - transitionDuration - 1)
-          });
-        }
+          return { buffer: buf, cueOut: cueOut > 0 ? cueOut : 15 };
+        });
 
         let totalLen = 0;
         let trackOffsets = [];
         let cursor = 0;
         for (let i = 0; i < sliceInfos.length; i++) {
           trackOffsets.push(cursor);
-          if (i < sliceInfos.length - 1) {
-            cursor += sliceInfos[i].cueOut;
-          } else {
-            cursor += buffers[i].duration;
-          }
+          if (i < sliceInfos.length - 1) cursor += sliceInfos[i].cueOut;
+          else cursor += buffers[i].duration;
         }
         totalLen = cursor;
 
@@ -1538,38 +377,25 @@
           src.connect(filter); filter.connect(gain); gain.connect(offlineCtx.destination);
 
           const startTime = trackOffsets[i];
-          const bBoost = currentVibe.energyBoost;
-
           if (i === 0) {
-            gain.gain.setValueAtTime(bBoost, 0);
-            gain.gain.setValueAtTime(bBoost, sliceInfos[0].cueOut);
+            gain.gain.setValueAtTime(1.1, 0);
+            gain.gain.setValueAtTime(1.1, sliceInfos[0].cueOut);
             gain.gain.exponentialRampToValueAtTime(0.0001, sliceInfos[0].cueOut + transitionDuration);
-            filter.frequency.setValueAtTime(22000, sliceInfos[0].cueOut);
-            filter.frequency.exponentialRampToValueAtTime(400, sliceInfos[0].cueOut + transitionDuration);
             src.start(0, 0, sliceInfos[0].cueOut + transitionDuration);
           } else if (i < buffers.length - 1) {
             gain.gain.setValueAtTime(0.0001, startTime);
-            gain.gain.exponentialRampToValueAtTime(bBoost, startTime + transitionDuration);
-            gain.gain.setValueAtTime(bBoost, startTime + sliceInfos[i].cueOut);
+            gain.gain.exponentialRampToValueAtTime(1.1, startTime + transitionDuration);
+            gain.gain.setValueAtTime(1.1, startTime + sliceInfos[i].cueOut);
             gain.gain.exponentialRampToValueAtTime(0.0001, startTime + sliceInfos[i].cueOut + transitionDuration);
-
-            filter.frequency.setValueAtTime(400, startTime);
-            filter.frequency.exponentialRampToValueAtTime(22000, startTime + transitionDuration);
-            filter.frequency.setValueAtTime(22000, startTime + sliceInfos[i].cueOut);
-            filter.frequency.exponentialRampToValueAtTime(400, startTime + sliceInfos[i].cueOut + transitionDuration);
-
             src.start(startTime, 0, sliceInfos[i].cueOut + transitionDuration);
           } else {
             gain.gain.setValueAtTime(0.0001, startTime);
-            gain.gain.exponentialRampToValueAtTime(bBoost, startTime + transitionDuration);
-            filter.frequency.setValueAtTime(400, startTime);
-            filter.frequency.exponentialRampToValueAtTime(22000, startTime + transitionDuration);
+            gain.gain.exponentialRampToValueAtTime(1.1, startTime + transitionDuration);
             src.start(startTime, 0, buffers[i].duration);
           }
         }
 
         const renderedBuffer = await offlineCtx.startRendering();
-
         if (!window.lamejs) throw new Error('MP3 encoder unavailable');
 
         const channels = Math.min(2, renderedBuffer.numberOfChannels);
@@ -1577,179 +403,169 @@
         const right = channels > 1 ? renderedBuffer.getChannelData(1) : left;
         const mp3encoder = new lamejs.Mp3Encoder(2, renderedBuffer.sampleRate, 192);
         const mp3Data = [];
-        const sampleBlockSize = 1152;
+        const block = 1152;
 
-        for (let i = 0; i < renderedBuffer.length; i += sampleBlockSize) {
-          const leftChunk = new Int16Array(Math.min(sampleBlockSize, renderedBuffer.length - i));
-          const rightChunk = new Int16Array(leftChunk.length);
-
-          for (let j = 0; j < leftChunk.length; j++) {
-            leftChunk[j] = Math.max(-32768, Math.min(32767, left[i + j] * 32767));
-            rightChunk[j] = Math.max(-32768, Math.min(32767, right[i + j] * 32767));
+        for (let i = 0; i < renderedBuffer.length; i += block) {
+          const lChunk = new Int16Array(Math.min(block, renderedBuffer.length - i));
+          const rChunk = new Int16Array(lChunk.length);
+          for (let j = 0; j < lChunk.length; j++) {
+            lChunk[j] = Math.max(-32768, Math.min(32767, left[i+j] * 32767));
+            rChunk[j] = Math.max(-32768, Math.min(32767, right[i+j] * 32767));
           }
-
-          const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
-          if (mp3buf.length > 0) mp3Data.push(new Int8Array(mp3buf));
+          const buf = mp3encoder.encodeBuffer(lChunk, rChunk);
+          if (buf.length > 0) mp3Data.push(new Int8Array(buf));
         }
+        const endB = mp3encoder.flush();
+        if (endB.length > 0) mp3Data.push(new Int8Array(endB));
 
-        const endBuf = mp3encoder.flush();
-        if (endBuf.length > 0) mp3Data.push(new Int8Array(endBuf));
-
-        const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
-        const downloadUrl = URL.createObjectURL(mp3Blob);
+        const blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `PULSEAI_ProDJ_PlaylistMix.mp3`;
+        a.href = url;
+        a.download = `PULSEAI_ProCustom_Mix.mp3`;
         document.body.appendChild(a);
         a.click();
         a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-        if (status) status.textContent = 'הפלייליסט הורד בהצלחה!';
+        status.textContent = '🎉 המיקס המקצועי הופק והורד בהצלחה!';
       } catch (err) {
-        console.error('Playlist MP3 export failed:', err);
-        if (status) status.textContent = 'שגיאה ביצירת הפלייליסט.';
+        console.error(err);
+        status.textContent = 'שגיאה ביצירת המיקס.';
       }
     };
 
-    window.runAiDualMixingProcess = function() {
-      updateCopilot();
-      const loader = document.getElementById('aiLoadingOverlay');
-      const progressBar = document.getElementById('aiProgressBar');
-      loader.classList.remove('hidden');
-      progressBar.style.width = '30%';
+    // --- GENERATE 10-MIN QUICK MIX ---
+    window.generate10MinQuickMix = async function() {
+      const status = document.getElementById('quickGenStatus');
+      const genre = document.getElementById('quickGenGenre').value;
+      status.textContent = '⏳ מעבד מיקס AI אוטומטי באורך 10 דקות...';
 
-      setTimeout(() => { progressBar.style.width = '80%'; }, 200);
-      setTimeout(() => {
-        progressBar.style.width = '100%';
-        loader.classList.add('hidden');
-        showMixReadyModal();
-      }, 450);
-    };
+      try {
+        let tracksToUse = [];
+        if (selectedQuickTrack1) tracksToUse.push(selectedQuickTrack1);
+        if (selectedQuickTrack2) tracksToUse.push(selectedQuickTrack2);
 
-    function showMixReadyModal() {
-      const modal = document.getElementById('aiMixReadyModal');
-      document.getElementById('modalSongAName').textContent = songA.title.split('—')[0];
-      document.getElementById('modalSongBName').textContent = songB.title.split('—')[0];
-      document.getElementById('modalAiMentorTip').textContent = `מנטור ה-DJ יישם כאן אישיות סאונד "${currentVibe.name}" עם Bass Swap מושלם.`;
-      modal.classList.remove('hidden');
-    }
+        if (tracksToUse.length === 0) {
+          status.textContent = `⏳ מחפש להיטים מובילים בז'אנר ${genre}...`;
+          const url = `https://itunes.apple.com/search?term=${encodeURIComponent(genre + ' hits')}&entity=song&limit=5&country=IL`;
+          const res = await (await fetch(url)).json();
+          tracksToUse = (res.results || []).filter(i => i.previewUrl).map(i => ({ title: `${i.artistName} — ${i.trackName}`, previewUrl: i.previewUrl }));
+        }
 
-    window.toggleModalMixPlayback = function() {
-      window.toggleMasterPlay();
-      const playIcon = document.getElementById('modalPlayIcon');
-      const playText = document.getElementById('modalPlayText');
-      playIcon.textContent = isPlaying ? '⏸' : '▶';
-      playText.textContent = isPlaying ? 'השהה מיקס' : 'נגן את המיקס עכשיו';
-    };
+        if (tracksToUse.length === 0) {
+          tracksToUse = [
+            { title: 'Track 1', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3' },
+            { title: 'Track 2', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3' }
+          ];
+        }
 
-    window.closeMixReadyModalAndScroll = function() {
-      document.getElementById('aiMixReadyModal').classList.add('hidden');
-      document.getElementById('mainWorkspaceSection').scrollIntoView({ behavior: 'smooth' });
-    };
+        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const buffers = await Promise.all(tracksToUse.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
+        tempCtx.close?.();
 
-    window.shareMixToWhatsApp = function() {
-      const msg = `🔥 שמע את המיקס המקצועי בסגנון ${currentVibe.name} שיצרתי ב-PULSEAI:\n🎵 ${songA.title} ➔ ${songB.title}\n\n🎧 כנס להאזין:\n${window.location.href}`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-    };
+        const sampleRate = buffers[0].sampleRate;
+        const targetDuration = 600;
+        const transitionDuration = 3.0;
 
-    function generateWaveform(deckId) {
-      const canvas = document.getElementById(`waveform${deckId}`);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const width = canvas.width = canvas.parentElement.offsetWidth || 400;
-      const height = canvas.height = canvas.parentElement.offsetHeight || 60;
-      ctx.clearRect(0, 0, width, height);
+        let sequenceBuffers = [];
+        let totalSeqDuration = 0;
+        let bufIdx = 0;
+        while (totalSeqDuration < targetDuration) {
+          const b = buffers[bufIdx % buffers.length];
+          sequenceBuffers.push(b);
+          totalSeqDuration += (b.duration - transitionDuration);
+          bufIdx++;
+        }
 
-      const bars = Math.floor(width / 3.5);
-      for (let i = 0; i < bars; i++) {
-        const barHeight = Math.max(4, (Math.sin(i * 0.18) * 0.7 + Math.random() * 0.3) * (height * 0.8));
-        ctx.fillStyle = deckId === 'A' ? '#FF5E36' : '#10E773';
-        ctx.fillRect(i * 3.5, (height - barHeight) / 2, 2, barHeight);
+        let cursor = 0;
+        let trackOffsets = [];
+        let sliceInfos = [];
+        for (let i = 0; i < sequenceBuffers.length; i++) {
+          trackOffsets.push(cursor);
+          const buf = sequenceBuffers[i];
+          const cueOut = Math.min(26.0, buf.duration - transitionDuration);
+          sliceInfos.push({ buffer: buf, cueOut: cueOut > 0 ? cueOut : 15 });
+          if (i < sequenceBuffers.length - 1) cursor += cueOut;
+          else cursor += buf.duration;
+        }
+
+        const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+          2, Math.ceil(sampleRate * Math.min(targetDuration, cursor)), sampleRate
+        );
+
+        for (let i = 0; i < sequenceBuffers.length; i++) {
+          const src = offlineCtx.createBufferSource();
+          src.buffer = sequenceBuffers[i];
+          const filter = offlineCtx.createBiquadFilter();
+          filter.type = 'lowpass'; filter.frequency.value = 22000;
+          const gain = offlineCtx.createGain();
+          src.connect(filter); filter.connect(gain); gain.connect(offlineCtx.destination);
+
+          const startTime = trackOffsets[i];
+          if (startTime >= targetDuration) break;
+
+          if (i === 0) {
+            gain.gain.setValueAtTime(1.1, 0);
+            gain.gain.setValueAtTime(1.1, sliceInfos[0].cueOut);
+            gain.gain.exponentialRampToValueAtTime(0.0001, sliceInfos[0].cueOut + transitionDuration);
+            src.start(0, 0, sliceInfos[0].cueOut + transitionDuration);
+          } else if (i < sequenceBuffers.length - 1 && startTime + sliceInfos[i].cueOut < targetDuration) {
+            gain.gain.setValueAtTime(0.0001, startTime);
+            gain.gain.exponentialRampToValueAtTime(1.1, startTime + transitionDuration);
+            gain.gain.setValueAtTime(1.1, startTime + sliceInfos[i].cueOut);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + sliceInfos[i].cueOut + transitionDuration);
+            src.start(startTime, 0, sliceInfos[i].cueOut + transitionDuration);
+          } else {
+            gain.gain.setValueAtTime(0.0001, startTime);
+            gain.gain.exponentialRampToValueAtTime(1.1, startTime + transitionDuration);
+            src.start(startTime, 0, sequenceBuffers[i].duration);
+          }
+        }
+
+        const renderedBuffer = await offlineCtx.startRendering();
+        if (!window.lamejs) throw new Error('MP3 encoder unavailable');
+
+        const channels = Math.min(2, renderedBuffer.numberOfChannels);
+        const left = renderedBuffer.getChannelData(0);
+        const right = channels > 1 ? renderedBuffer.getChannelData(1) : left;
+        const mp3encoder = new lamejs.Mp3Encoder(2, renderedBuffer.sampleRate, 192);
+        const mp3Data = [];
+        const block = 1152;
+
+        for (let i = 0; i < renderedBuffer.length; i += block) {
+          const lChunk = new Int16Array(Math.min(block, renderedBuffer.length - i));
+          const rChunk = new Int16Array(lChunk.length);
+          for (let j = 0; j < lChunk.length; j++) {
+            lChunk[j] = Math.max(-32768, Math.min(32767, left[i+j] * 32767));
+            rChunk[j] = Math.max(-32768, Math.min(32767, right[i+j] * 32767));
+          }
+          const buf = mp3encoder.encodeBuffer(lChunk, rChunk);
+          if (buf.length > 0) mp3Data.push(new Int8Array(buf));
+        }
+        const endB = mp3encoder.flush();
+        if (endB.length > 0) mp3Data.push(new Int8Array(endB));
+
+        const blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `PULSEAI_10Min_${genre}_Mix.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        status.textContent = '🎉 מיקס באורך 10 דקות נוצר והורד בהצלחה!';
+      } catch (err) {
+        console.error(err);
+        status.textContent = 'שגיאה ביצירת המיקס.';
       }
-    }
-
-    window.toggleAutoDjMode = function(checked) {
-      isAutoDjEnabled = checked;
-    };
-
-    window.handleDragOver = function(e) {
-      e.preventDefault();
-      e.currentTarget.classList.add('dragover');
-    };
-    window.handleDragLeave = function(e) {
-      e.currentTarget.classList.remove('dragover');
-    };
-    window.handleDrop = function(e, deckId) {
-      e.preventDefault();
-      e.currentTarget.classList.remove('dragover');
-      const file = e.dataTransfer?.files?.[0];
-      if (file) loadLocalAudioFile(file, deckId);
-    };
-    window.handleFileInput = function(e, deckId) {
-      const file = e.target?.files?.[0];
-      if (file) loadLocalAudioFile(file, deckId);
-    };
-    function loadLocalAudioFile(file, deckId) {
-      if (!file.type.startsWith('audio/')) return;
-      const url = URL.createObjectURL(file);
-      const title = file.name.replace(/\.[^.]+$/, '');
-      const audio = deckId === 'A' ? audioA : audioB;
-      audio.src = url;
-      audio.load();
-      if (deckId === 'A') {
-        songA = { title, audioUrl: url, artwork: '', cueOut: 20, cueIn: 0, duration: 30 };
-        document.getElementById('trackATitle').textContent = title;
-        document.getElementById('dualTitleA').textContent = title;
-      } else {
-        songB = { title, audioUrl: url, artwork: '', cueOut: 25, cueIn: 5, duration: 30 };
-        document.getElementById('trackBTitle').textContent = title;
-        document.getElementById('dualTitleB').textContent = title;
-      }
-      analyzeTrackForDJ(deckId, url, title);
-      generateWaveform(deckId);
-      updateCopilot();
-    }
-
-    function getAutoTransitionCue(side) {
-      const plan = smartTransitionPlan || buildSmartTransitionPlan();
-      const other = side === 'A' ? 'B' : 'A';
-      return chooseTransitionCues(side, other, plan).fromCue;
-    }
-
-    audioA.ontimeupdate = () => {
-      const cur = audioA.currentTime, dur = audioA.duration || 30;
-      document.getElementById('playheadA').style.left = `${(cur / dur) * 100}%`;
-      document.getElementById('trackACurrentTime').textContent = formatTime(cur);
-      document.getElementById('trackATotalTime').textContent = formatTime(dur);
-      if (isAutoDjEnabled && !isTransitioning && activeDeck === 'A' && cur >= getAutoTransitionCue('A')) window.triggerSmartCrossfade();
-    };
-
-    audioB.ontimeupdate = () => {
-      const cur = audioB.currentTime, dur = audioB.duration || 30;
-      document.getElementById('playheadB').style.left = `${(cur / dur) * 100}%`;
-      document.getElementById('trackBCurrentTime').textContent = formatTime(cur);
-      document.getElementById('trackBTotalTime').textContent = formatTime(dur);
-      if (isAutoDjEnabled && !isTransitioning && activeDeck === 'B' && cur >= getAutoTransitionCue('B')) window.triggerSmartCrossfade();
-    };
-
-    window.seekDeck = function(e, deckId) {
-      const targetAudio = deckId === 'A' ? audioA : audioB;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      targetAudio.currentTime = ratio * (targetAudio.duration || 30);
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      audioA.src = songA.audioUrl;
-      audioB.src = songB.audioUrl;
-      generateWaveform('A');
-      generateWaveform('B');
-      analyzeTrackForDJ('A', songA.audioUrl, songA.title);
-      analyzeTrackForDJ('B', songB.audioUrl, songB.title);
-      buildPlaylistFields();
+      buildProColumns();
       setUIMode('quick');
-      updateCopilot();
     });
   </script>
 </body>
