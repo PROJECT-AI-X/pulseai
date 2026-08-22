@@ -101,7 +101,7 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
       <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת מיקס 10 דקות אוטומטי</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — ה-AI יפיק עבורך מיקס רציף של 10 דקות עם 3-Band Isolator EQ ו-Echo Out Freeze חכם.</p>
+      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — ה-AI יבנה סט רציף מלא של 10 דקות עם Dynamic Tempo Ramping, Auto-Gain ו-Isolator EQ.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 relative" style="overflow: visible;">
@@ -141,7 +141,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
       <div>
         <h2 class="text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים ובניית סט</h2>
-        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט (לפחות 2). ה-AI ימזג אותם ברצף מקצועי עם 3-Band Isolator EQ ו-Echo Out Freeze לפערי קצב.</p>
+        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט (לפחות 2). ה-AI ימזג אותם עם סנכרון קצב דינמי (Tempo Ramping), Auto-Gain ו-3-Band Isolator EQ.</p>
       </div>
       <button onclick="addProSongField()" class="px-3.5 py-2 rounded-xl bg-glowLime/15 border border-glowLime/50 text-glowLime text-xs font-black hover:bg-glowLime/25 transition-all">
         ➕ הוסף שיר
@@ -312,6 +312,19 @@
       return await ctx.decodeAudioData(arrayBuffer);
     }
 
+    // --- AUTO-GAIN RMS CALCULATION ---
+    function calculateBufferRms(buffer) {
+      const data = buffer.getChannelData(0);
+      let sum = 0;
+      const step = Math.max(1, Math.floor(data.length / 40000));
+      let count = 0;
+      for (let i = 0; i < data.length; i += step) {
+        sum += data[i] * data[i];
+        count++;
+      }
+      return Math.sqrt(sum / count) || 0.12;
+    }
+
     // --- ASYNC NON-BLOCKING MP3 ENCODER ---
     async function encodeMp3Async(renderedBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
@@ -368,24 +381,28 @@
       const bpmDiff = Math.abs((trackA?.bpm || 124) - (trackB?.bpm || 124));
       const harmonic = checkHarmonicCompatibility(trackA?.key, trackB?.key);
 
-      // 1. פערי קצב או חוסר הרמוניה מובהק -> Echo Out Freeze
       if (bpmDiff > 7 || (!harmonic.compatible && bpmDiff > 4)) {
         return { type: "echoOutFreeze", duration: 5.0, delayTime: 0.375, feedback: 0.72 };
       }
-      // 2. קצב צמוד + הרמוניה מושלמת -> Double Drop / Bass Swap
       if (bpmDiff <= 3 && harmonic.compatible) {
         return { type: "bassSwap", duration: 7.0, dropPoint: 3.5 };
       }
-      // 3. ברירת מחדל הרמונית
       return { type: "bassSwap", duration: 6.0, dropPoint: 3.0 };
     }
 
-    // --- ADVANCED AUDIO MIXING ENGINE: 3-BAND ISOLATOR + ECHO OUT FREEZE ---
+    // --- PRO-DJ AUDIO MIXING ENGINE (Dynamic Tempo Ramping + Auto-Gain + 3-Band EQ) ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
       let trackOffsets = [];
       let cursor = 0;
+
+      // 1. Pre-analyze RMS for Auto-Gain
+      const TARGET_RMS = 0.14;
+      const trackGains = buffers.map(buf => {
+        const rms = calculateBufferRms(buf);
+        return Math.max(0.65, Math.min(1.6, TARGET_RMS / rms));
+      });
 
       for (let i = 0; i < buffers.length; i++) {
         const buf = buffers[i];
@@ -394,7 +411,7 @@
         const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack) : { type: 'bassSwap', duration: 6.0, dropPoint: 3.0 };
         const cueOut = Math.max(12.0, buf.duration - decision.duration);
 
-        sliceInfos.push({ buffer: buf, cueOut, decision });
+        sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack });
         trackOffsets.push(cursor);
 
         if (i < buffers.length - 1) {
@@ -413,15 +430,30 @@
         const src = offlineCtx.createBufferSource();
         src.buffer = buffers[i];
 
-        // 1. Low Shelf Filter (<250Hz: Sub & Kick)
+        // Dynamic Tempo Ramping
+        const info = sliceInfos[i];
+        const cueOut = info.cueOut;
+        const tDur = info.decision.duration;
+        const autoGain = trackGains[i];
+
+        if (i < buffers.length - 1 && info.nextTrack) {
+          const bpm1 = info.currentTrack.bpm || 124;
+          const bpm2 = info.nextTrack.bpm || 124;
+          const rateRatio = Math.max(0.88, Math.min(1.14, bpm2 / bpm1));
+
+          // Smoothly ramp tempo of outgoing track during transition to lock phase
+          src.playbackRate.setValueAtTime(1.0, 0);
+          src.playbackRate.setValueAtTime(1.0, cueOut);
+          src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
+        }
+
+        // 3-Band Isolator EQ
         const lowEq = offlineCtx.createBiquadFilter();
         lowEq.type = 'lowshelf'; lowEq.frequency.value = 250; lowEq.gain.value = 0;
 
-        // 2. Mid Peaking Filter (250Hz - 2.5kHz: Vocals & Leads)
         const midEq = offlineCtx.createBiquadFilter();
         midEq.type = 'peaking'; midEq.frequency.value = 1200; midEq.Q.value = 1.0; midEq.gain.value = 0;
 
-        // 3. High Shelf Filter (>2.5kHz: Hi-Hats & Air)
         const highEq = offlineCtx.createBiquadFilter();
         highEq.type = 'highshelf'; highEq.frequency.value = 2500; highEq.gain.value = 0;
 
@@ -446,38 +478,33 @@
         echoSendGain.connect(delayNode);
         delayNode.connect(delayFilter);
         delayFilter.connect(delayFeedback);
-        delayFeedback.connect(delayNode); // feedback loop
+        delayFeedback.connect(delayNode);
         delayFilter.connect(echoMasterGain);
         echoMasterGain.connect(offlineCtx.destination);
 
         const startTime = trackOffsets[i];
         if (startTime >= totalRenderLen) break;
 
-        const info = sliceInfos[i];
-        const cueOut = info.cueOut;
-        const tDur = info.decision.duration;
         const isEchoOut = info.decision.type === 'echoOutFreeze';
 
         echoSendGain.gain.setValueAtTime(0, 0);
         delayFeedback.gain.setValueAtTime(0.7, 0);
         delayNode.delayTime.setValueAtTime(info.decision.delayTime || 0.375, 0);
-        echoMasterGain.gain.setValueAtTime(1.0, 0);
+        echoMasterGain.gain.setValueAtTime(autoGain, 0);
 
         if (i === 0) {
-          directGain.gain.setValueAtTime(1.0, 0);
-          directGain.gain.setValueAtTime(1.0, cueOut);
+          directGain.gain.setValueAtTime(autoGain, 0);
+          directGain.gain.setValueAtTime(autoGain, cueOut);
 
           if (isEchoOut) {
-            // Echo Out Freeze: פתיחת Send, לכידת הפעימה ועצירה מוחלטת
-            echoSendGain.gain.setValueAtTime(1.0, cueOut);
+            echoSendGain.gain.setValueAtTime(autoGain, cueOut);
             echoSendGain.gain.setValueAtTime(0.0001, cueOut + 0.18);
-            directGain.gain.setValueAtTime(0.0001, cueOut + 0.18); // Hard Stop!
+            directGain.gain.setValueAtTime(0.0001, cueOut + 0.18);
             delayFeedback.gain.setValueAtTime(0.72, cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
           } else {
-            // 3-Band Isolator Bass Swap
             const dropPt = info.decision.dropPoint || 3.5;
-            directGain.gain.setValueAtTime(0.95, cueOut + dropPt);
+            directGain.gain.setValueAtTime(autoGain * 0.95, cueOut + dropPt);
             directGain.gain.exponentialRampToValueAtTime(0.0001, cueOut + tDur);
             midEq.gain.setValueAtTime(0, cueOut);
             midEq.gain.linearRampToValueAtTime(-40, cueOut + tDur);
@@ -489,10 +516,9 @@
           src.start(0, 0, cueOut + tDur);
         } else if (i < buffers.length - 1) {
           directGain.gain.setValueAtTime(0.0001, startTime);
-          directGain.gain.exponentialRampToValueAtTime(1.0, startTime + (isEchoOut ? 0.2 : tDur));
-          directGain.gain.setValueAtTime(1.0, startTime + cueOut);
+          directGain.gain.exponentialRampToValueAtTime(autoGain, startTime + (isEchoOut ? 0.2 : tDur));
+          directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
 
-          // Entry settings
           if (!isEchoOut) {
             const dropPt = info.decision.dropPoint || 3.5;
             lowEq.gain.setValueAtTime(-70, startTime);
@@ -505,16 +531,15 @@
             midEq.gain.setValueAtTime(0, startTime);
           }
 
-          // Exit settings
           if (isEchoOut) {
-            echoSendGain.gain.setValueAtTime(1.0, startTime + cueOut);
+            echoSendGain.gain.setValueAtTime(autoGain, startTime + cueOut);
             echoSendGain.gain.setValueAtTime(0.0001, startTime + cueOut + 0.18);
             directGain.gain.setValueAtTime(0.0001, startTime + cueOut + 0.18);
             delayFeedback.gain.setValueAtTime(0.72, startTime + cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
           } else {
             const dropPt = info.decision.dropPoint || 3.5;
-            directGain.gain.setValueAtTime(0.95, startTime + cueOut + dropPt);
+            directGain.gain.setValueAtTime(autoGain * 0.95, startTime + cueOut + dropPt);
             directGain.gain.exponentialRampToValueAtTime(0.0001, startTime + cueOut + tDur);
             lowEq.gain.setValueAtTime(0, startTime + cueOut + dropPt - 0.05);
             lowEq.gain.linearRampToValueAtTime(-70, startTime + cueOut + dropPt);
@@ -524,7 +549,7 @@
           src.start(startTime, 0, cueOut + tDur);
         } else {
           directGain.gain.setValueAtTime(0.0001, startTime);
-          directGain.gain.exponentialRampToValueAtTime(1.0, startTime + (isEchoOut ? 0.2 : tDur));
+          directGain.gain.exponentialRampToValueAtTime(autoGain, startTime + (isEchoOut ? 0.2 : tDur));
           lowEq.gain.setValueAtTime(0, startTime);
           midEq.gain.setValueAtTime(0, startTime);
           src.start(startTime, 0, buffers[i].duration);
@@ -547,7 +572,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס Pro DJ עם 3-Band Isolator ו-Echo Out...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס Pro DJ (Tempo Ramping + Auto-Gain + Isolator EQ)...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -565,7 +590,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ עם 3-Band Isolator ו-Echo Out Freeze הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ עם סנכרון קצב דינמי ו-Auto-Gain הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס.';
@@ -576,7 +601,7 @@
     window.generate10MinQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
       const genre = document.getElementById('quickGenGenre').value;
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מנוע ה-AI מאתר שירים ובונה מיקס 10 דקות...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מנוע ה-AI מאתר שירים ומסנכרן טמפו ל-10 דקות...';
 
       try {
         let tracksToUse = [];
@@ -609,7 +634,7 @@
           );
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען ${tracksToUse.length} שירים לרצף המיקס...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאזן עוצמות וסנכרון ביטים עבור ${tracksToUse.length} שירים...`;
 
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         const buffers = await Promise.all(tracksToUse.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
@@ -627,7 +652,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס 10 דקות מקצועי עם 3-Band Isolator ו-Echo Out Freeze הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס 10 דקות מקצועי עם Dynamic Tempo Ramping ו-Auto-Gain הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס.';
