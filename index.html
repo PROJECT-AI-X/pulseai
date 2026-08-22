@@ -75,7 +75,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
       <div>
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ אוטומטי — AI Similarity Matcher · Harmonic BPM Match · 45s Extensions</p>
+        <p class="text-[11px] text-purple-300">אולפן DJ אוטומטי מהיר — Turbo Engine · AI Curation · Downbeat Lock</p>
       </div>
     </div>
   </header>
@@ -100,8 +100,8 @@
   <!-- QUICK MIX PANEL -->
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
-      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם המוזיקלי והסגנון שלהם, יאתר שירים תואמים נוספים, ויפיק סט מלא של 10 דקות (45 שניות לכל שיר עם מעברי DJ חלקים).</p>
+      <h2 class="text-lg font-black text-white">⚡ Quick Mix — סט 10 דקות מהיר לפי 2 שירים</h2>
+      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים. מנוע ה-AI יאתר להיטים תואמים מקבילים ויפיק סט מלא של 10 דקות במהירות שיא.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 relative" style="overflow: visible;">
@@ -119,7 +119,7 @@
 
     <div class="text-center">
       <button onclick="generate10MinQuickMix()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime hover:scale-105 transition-transform flex items-center justify-center gap-2 mx-auto">
-        <span>✨ צור סט 10 דקות מותאם אישית (MP3)</span>
+        <span>✨ צור סט 10 דקות (מהיר)</span>
       </button>
       <div id="quickGenStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
     </div>
@@ -141,7 +141,7 @@
 
     <div class="text-center">
       <button onclick="executeProCustomMixDownload()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange hover:scale-105 transition-transform inline-flex items-center gap-2">
-        <span>✨ צור והורד מיקס מקצועי מהשירים שנבחרו (MP3)</span>
+        <span>✨ צור והורד מיקס מקצועי (MP3)</span>
       </button>
       <div id="proMixStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
     </div>
@@ -207,7 +207,7 @@
         .trim();
     }
 
-    async function searchItunesApi(term, limit = 12) {
+    async function searchItunesApi(term, limit = 10) {
       const cleaned = cleanSearchQuery(term);
       const termsToTry = [cleaned, term];
       for (const t of termsToTry) {
@@ -328,72 +328,19 @@
       return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
-    // --- EXTEND TRACK TO 45s WITH SEAMLESS AUDIO LOOPING ---
-    function extendAudioBufferTo45s(buffer, audioCtx) {
-      const sampleRate = buffer.sampleRate;
-      const originalDuration = buffer.duration;
-      if (originalDuration >= 44) return buffer;
-
-      const TARGET_DURATION = 45.0;
-      const newLength = Math.ceil(TARGET_DURATION * sampleRate);
-      const newBuffer = audioCtx.createBuffer(buffer.numberOfChannels, newLength, sampleRate);
-
-      const loopStartSec = 10.0;
-      const loopEndSec = Math.min(26.0, originalDuration - 2.0);
-      const crossfadeLenSec = 0.08;
-      const crossfadeSamples = Math.floor(crossfadeLenSec * sampleRate);
-
-      for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-        const srcData = buffer.getChannelData(ch);
-        const destData = newBuffer.getChannelData(ch);
-
-        const firstCopyLen = Math.floor(loopEndSec * sampleRate);
-        destData.set(srcData.subarray(0, firstCopyLen), 0);
-
-        let currentWriteIdx = firstCopyLen;
-        const loopStartSample = Math.floor(loopStartSec * sampleRate);
-        const loopEndSample = Math.floor(loopEndSec * sampleRate);
-        const loopChunkLength = loopEndSample - loopStartSample;
-
-        while (currentWriteIdx < newLength - Math.floor((originalDuration - loopEndSec) * sampleRate)) {
-          for (let i = 0; i < crossfadeSamples; i++) {
-            const p = i / crossfadeSamples;
-            const fadeIn = Math.sin(p * 0.5 * Math.PI);
-            const fadeOut = Math.cos(p * 0.5 * Math.PI);
-            const oldIdx = currentWriteIdx - crossfadeSamples + i;
-            if (oldIdx < newLength) {
-              destData[oldIdx] = destData[oldIdx] * fadeOut + srcData[loopStartSample + i] * fadeIn;
-            }
-          }
-          const copyLength = Math.min(loopChunkLength - crossfadeSamples, newLength - currentWriteIdx);
-          destData.set(srcData.subarray(loopStartSample + crossfadeSamples, loopStartSample + crossfadeSamples + copyLength), currentWriteIdx);
-          currentWriteIdx += copyLength;
-        }
-
-        const outroStartSample = loopEndSample;
-        const remainingSamples = Math.min(destData.length - currentWriteIdx, srcData.length - outroStartSample);
-        if (remainingSamples > 0) {
-          destData.set(srcData.subarray(outroStartSample, outroStartSample + remainingSamples), currentWriteIdx);
-        }
-      }
-
-      return newBuffer;
-    }
-
     async function fetchAudioBuffer(url, ctx) {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
-      const decoded = await new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         ctx.decodeAudioData(arrayBuffer, resolve, reject);
       });
-      return extendAudioBufferTo45s(decoded, ctx);
     }
 
     function findFirstDownbeatOffset(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
-      const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.5));
+      const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.0));
       const windowSize = 256;
       let maxDelta = 0;
       let bestSample = 0;
@@ -434,7 +381,7 @@
     function calculateBufferRms(buffer) {
       const data = buffer.getChannelData(0);
       let sum = 0;
-      const step = Math.max(1, Math.floor(data.length / 40000));
+      const step = Math.max(1, Math.floor(data.length / 30000));
       let count = 0;
       for (let i = 0; i < data.length; i += step) {
         sum += data[i] * data[i];
@@ -443,6 +390,7 @@
       return Math.sqrt(sum / count) || 0.12;
     }
 
+    // --- TURBO FAST MP3 ENCODER ---
     async function encodeMp3Async(renderedBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
       const left = renderedBuffer.getChannelData(0);
@@ -452,7 +400,7 @@
       const block = 1152;
       const totalLen = renderedBuffer.length;
       let i = 0;
-      const CHUNK_STEP = block * 35;
+      const CHUNK_STEP = block * 80;
 
       while (i < totalLen) {
         const nextTarget = Math.min(i + CHUNK_STEP, totalLen);
@@ -498,12 +446,12 @@
       const harmonic = checkHarmonicCompatibility(trackA?.key, trackB?.key);
 
       if (structB?.isInstantChorus) {
-        return { type: "dropCut", duration: 2.0, dropPoint: 0.15 };
+        return { type: "dropCut", duration: 1.8, dropPoint: 0.15 };
       }
       if (bpmDiff > 7 || (!harmonic.compatible && bpmDiff > 4)) {
-        return { type: "echoOutFreeze", duration: 5.0, delayTime: 0.375, feedback: 0.70 };
+        return { type: "echoOutFreeze", duration: 4.5, delayTime: 0.375, feedback: 0.70 };
       }
-      return { type: "bassSwap", duration: 6.5, dropPoint: 3.2 };
+      return { type: "bassSwap", duration: 5.5, dropPoint: 2.8 };
     }
 
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
@@ -525,8 +473,8 @@
         const nextStruct = i < buffers.length - 1 ? structures[i+1] : null;
         const currentTrack = tracksMeta[i] || { bpm: 124, key: '8A' };
         
-        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 6.0, dropPoint: 3.0 };
-        const cueOut = Math.max(20.0, buf.duration - decision.duration);
+        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 5.5, dropPoint: 2.8 };
+        const cueOut = Math.max(12.0, buf.duration - decision.duration);
 
         sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack, struct: structures[i] });
         trackOffsets.push(cursor);
@@ -628,7 +576,7 @@
             delayFeedback.gain.setValueAtTime(0.70, cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
           } else {
-            const dropPt = info.decision.dropPoint || 3.2;
+            const dropPt = info.decision.dropPoint || 2.8;
             directGain.gain.setValueAtTime(autoGain * 0.95, cueOut + dropPt);
             directGain.gain.exponentialRampToValueAtTime(0.0001, cueOut + tDur);
             midEq.gain.setValueAtTime(0, cueOut);
@@ -641,11 +589,11 @@
           const downbeat = info.struct.downbeatOffset || 0;
           
           directGain.gain.setValueAtTime(0.0001, startTime);
-          directGain.gain.linearRampToValueAtTime(autoGain, startTime + (isDropCut ? 0.05 : 0.3));
+          directGain.gain.linearRampToValueAtTime(autoGain, startTime + (isDropCut ? 0.05 : 0.25));
           directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
 
           if (!isEchoOut && !isDropCut) {
-            const dropPt = info.decision.dropPoint || 3.2;
+            const dropPt = info.decision.dropPoint || 2.8;
             lowEq.gain.setValueAtTime(-70, startTime);
             lowEq.gain.setValueAtTime(-70, startTime + dropPt - 0.05);
             lowEq.gain.linearRampToValueAtTime(0, startTime + dropPt);
@@ -665,7 +613,7 @@
             delayFeedback.gain.setValueAtTime(0.70, startTime + cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
           } else {
-            const dropPt = info.decision.dropPoint || 3.2;
+            const dropPt = info.decision.dropPoint || 2.8;
             directGain.gain.setValueAtTime(autoGain * 0.95, startTime + cueOut + dropPt);
             directGain.gain.exponentialRampToValueAtTime(0.0001, startTime + cueOut + tDur);
             lowEq.gain.setValueAtTime(0, startTime + cueOut + dropPt - 0.05);
@@ -686,7 +634,7 @@
 
       const renderedBuffer = await offlineCtx.startRendering();
       return await encodeMp3Async(renderedBuffer, pct => {
-        if (statusEl) statusEl.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3 באיכות אולפן: ${pct}%...`;
+        if (statusEl) statusEl.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3: ${pct}%...`;
       });
     }
 
@@ -699,25 +647,28 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען ומרחיב קטעים (45s) למיקס Pro...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעים ומעבד מיקס...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const loadedBuffers = [];
-        const validTracks = [];
-
-        for (const t of chosenTracks) {
+        const bufferPromises = chosenTracks.map(async t => {
           try {
             const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
-            loadedBuffers.push(buf);
-            validTracks.push(t);
-          } catch(e) {}
-        }
+            return { buf, track: t };
+          } catch(e) {
+            return null;
+          }
+        });
+
+        const loadedResults = (await Promise.all(bufferPromises)).filter(Boolean);
         if (tempCtx.close) await tempCtx.close();
 
-        if (loadedBuffers.length < 2) {
+        if (loadedResults.length < 2) {
           throw new Error('לא ניתן היה לטעון לפחות 2 שירים תקינים.');
         }
+
+        const loadedBuffers = loadedResults.map(r => r.buf);
+        const validTracks = loadedResults.map(r => r.track);
 
         const blob = await renderDjSetToMp3(loadedBuffers, validTracks, null, status);
 
@@ -730,14 +681,14 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ עם סנכרון Downbeat ו-Isolator EQ הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
       }
     };
 
-    // --- QUICK MIX (10 MINUTES AI HARMONIC CURATION BASED ON 2 SEED SONGS) ---
+    // --- QUICK MIX (10 MINUTES ULTRA-FAST PARALLEL CURATION) ---
     window.generate10MinQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
 
@@ -746,7 +697,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מפענח BPM, סולם הרמוני וסגנון משני השירים שנבחרו...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM ומאתר להיטים תואמים במקביל...';
 
       try {
         const seed1 = selectedQuickTrack1;
@@ -757,26 +708,21 @@
 
         let curatedTracks = [seed1, seed2];
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM, ${detectedGenre})...`;
-
         const searchQueries = [
           `${seed1.artistName} hits`,
           `${seed2.artistName} hits`,
-          `${seed1.artistName} ${detectedGenre}`,
-          `${seed2.artistName} ${detectedGenre}`,
           `${detectedGenre} club hits`,
           `${detectedGenre} party dance`
         ];
 
         const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
 
-        for (const query of searchQueries) {
-          if (curatedTracks.length >= 16) break;
-          const items = await searchItunesApi(query, 12);
+        // Parallel Fetch of Search Queries
+        const searchResults = await Promise.all(searchQueries.map(q => searchItunesApi(q, 10)));
+        for (const items of searchResults) {
           for (const item of items) {
             if (!curatedTracks.some(t => t.previewUrl === item.previewUrl)) {
               const itemBpm = 118 + ((item.trackId || 0) % 14);
-              // סינון קפדני: לוקח רק שירים בטווח ה-BPM של השירים שנבחרו
               if (Math.abs(itemBpm - targetAvgBpm) <= 6) {
                 curatedTracks.push({
                   title: `${item.artistName} — ${item.trackName}`,
@@ -788,61 +734,64 @@
                 });
               }
             }
-            if (curatedTracks.length >= 16) break;
+            if (curatedTracks.length >= 14) break;
           }
+          if (curatedTracks.length >= 14) break;
         }
 
-        // מיון חכם לפי עקומת אנרגיה ו-BPM כדי להבטיח זרימה מושלמת
         curatedTracks.sort((a, b) => a.bpm - b.bpm);
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען ומרחיב ${curatedTracks.length} שירים תואמים ל-45 שניות כל אחד...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים במקביל...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const loadedBuffers = [];
-        const validTracks = [];
-
-        for (const t of curatedTracks) {
+        
+        // Parallel Audio Fetch
+        const fetchPromises = curatedTracks.map(async t => {
           try {
             const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
-            loadedBuffers.push(buf);
-            validTracks.push(t);
-            if (loadedBuffers.length >= 14) break;
-          } catch(e) {}
-        }
+            return { buf, track: t };
+          } catch(e) {
+            return null;
+          }
+        });
+
+        const loadedResults = (await Promise.all(fetchPromises)).filter(Boolean);
         if (tempCtx.close) await tempCtx.close();
 
-        if (loadedBuffers.length < 2) {
+        if (loadedResults.length < 2) {
           throw new Error('שגיאה בטעינת קבצי האודיו. נסה שירים אחרים.');
         }
 
-        // חישוב שרשור מלא עד להגעה ל-600 שניות (10 דקות)
+        const loadedBuffers = loadedResults.map(r => r.buf);
+        const validTracks = loadedResults.map(r => r.track);
+
         const TARGET_DURATION = 600;
         let extendedBuffers = [];
         let extendedTracks = [];
         let accumulatedTime = 0;
         let loopIdx = 0;
 
-        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 25) {
+        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 32) {
           const idx = loopIdx % loadedBuffers.length;
           const buf = loadedBuffers[idx];
           extendedBuffers.push(buf);
           extendedTracks.push(validTracks[idx]);
-          accumulatedTime += Math.max(30, buf.duration - 6.5);
+          accumulatedTime += Math.max(18, buf.duration - 5.5);
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Downbeat Lock + Isolator EQ)...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PULSEAI_10Min_AI_SmartSet.mp3`;
+        a.download = `PULSEAI_10Min_FastMix.mp3`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 סט 10 דקות מלא לפי 2 השירים שנבחרו הופק והורד בהצלחה!';
+        status.textContent = '🎉 סט 10 דקות מלא נוצר והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
