@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PULSEAI — AI Master DJ Studio</title>
+  <title>PULSEAI — AI Smart Music & DJ Studio</title>
 
   <meta name="theme-color" content="#080512">
   <meta name="mobile-web-app-capable" content="yes">
@@ -75,7 +75,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
       <div>
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ מקצועי — DJ Intro · 3-Band Isolator · Sidechain · Double Drop</p>
+        <p class="text-[11px] text-purple-300">אולפן מוזיקה ומיקס חכם — Smart Crossfade · Equal Power S-Curve · Dynamic Flow</p>
       </div>
     </div>
   </header>
@@ -100,8 +100,8 @@
   <!-- QUICK MIX PANEL -->
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
-      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת מיקס אוטומטי</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — ה-AI יפיק עבורך מיקס רציף עם פתיח DJ סוחף ומעברים מקצועיים.</p>
+      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת מיקס אוטומטי חכם</h2>
+      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — ה-AI יפיק עבורך רצף מוזיקלי עם Smart Crossfade טבעי ללא נפילות ווליום.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 relative" style="overflow: visible;">
@@ -154,7 +154,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
       <div>
         <h2 class="text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים ובניית סט</h2>
-        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט. מנוע ה-AI יבנה פתיח מלא, ינתח הרמוניה (Camelot) וישלב Double Drop ו-Isolator EQ.</p>
+        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט. מנוע ה-AI מיישם Smart Crossfade, חיתוך שקט, Equal Power S-Curve וסנכרון תדרים.</p>
       </div>
       <div class="flex flex-wrap gap-2 shrink-0">
         <button onclick="autoArrangeEnergyArc()" title="מסדר לפי BPM עולה כקירוב לעקומת אנרגיה" class="px-3.5 py-2 rounded-xl bg-electricCyan/15 border border-electricCyan/50 text-electricCyan text-xs font-black hover:bg-electricCyan/25 transition-all whitespace-nowrap">📈 סדר לפי אנרגיה (BPM)</button>
@@ -164,7 +164,7 @@
 
     <label class="flex items-center gap-2 mb-4 text-[11px] text-purple-300 cursor-pointer select-none">
       <input type="checkbox" id="clashDropToggle" class="accent-sunset w-3.5 h-3.5">
-      🎯 אפשר "Clash Drop" מכוון — מעבר לא-הרמוני מכוון בשיא אנרגיה (שבירת ציפייה להרמת הרחבה)
+      🎯 אפשר "Clash Drop" מכוון — מעבר חד בשיא אנרגיה (שבירת ציפייה מוזיקלית)
     </label>
 
     <!-- Dynamic Song Slots Container -->
@@ -347,40 +347,56 @@
       return await ctx.decodeAudioData(arrayBuffer);
     }
 
-    // --- TRANSIENT & ONSET DETECTION (Downbeat Lock) ---
-    function findFirstDownbeatOffset(buffer) {
+    // --- SMART SILENCE TRIMMING & STRUCTURAL ANALYSIS ---
+    function analyzeSmartBounds(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
-      const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.0));
       const windowSize = 256;
-      let maxDelta = 0, bestSample = 0, prevEnergy = 0;
+      let startOffset = 0;
+      let endOffset = buffer.duration;
 
-      for (let i = 0; i < searchLen - windowSize; i += 128) {
+      // 1. Start silence trim
+      const maxStartScan = Math.min(data.length - windowSize, Math.floor(sampleRate * 2.0));
+      for (let i = 0; i < maxStartScan; i += windowSize) {
         let sum = 0;
-        for (let j = 0; j < windowSize; j += 4) {
-          const v = data[i + j];
-          sum += v * v;
+        for (let j = 0; j < windowSize; j += 8) {
+          const s = data[i + j];
+          sum += s * s;
         }
-        const energy = Math.sqrt(sum / (windowSize / 4));
-        const delta = energy - prevEnergy;
-        if (delta > maxDelta && energy > 0.06) {
-          maxDelta = delta;
-          bestSample = i;
+        const rms = Math.sqrt(sum / (windowSize / 8));
+        if (rms > 0.02) {
+          startOffset = i / sampleRate;
+          break;
         }
-        prevEnergy = energy;
       }
-      return Math.max(0, bestSample / sampleRate);
-    }
 
-    function analyzeTrackStructure(buffer) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
+      // 2. End silence trim
+      const minEndScan = Math.max(windowSize, data.length - Math.floor(sampleRate * 3.0));
+      for (let i = data.length - windowSize; i >= minEndScan; i -= windowSize) {
+        let sum = 0;
+        for (let j = 0; j < windowSize; j += 8) {
+          const s = data[i + j];
+          sum += s * s;
+        }
+        const rms = Math.sqrt(sum / (windowSize / 8));
+        if (rms > 0.015) {
+          endOffset = Math.min(buffer.duration, (i + windowSize) / sampleRate);
+          break;
+        }
+      }
+
+      // 3. Analyze intro energy
       const firstSecSamples = Math.min(data.length, Math.floor(sampleRate * 1.5));
-      let sum = 0;
-      for (let i = 0; i < firstSecSamples; i += 64) sum += data[i] * data[i];
-      const introRms = Math.sqrt(sum / (firstSecSamples / 64));
+      let introSum = 0;
+      const sStart = Math.floor(startOffset * sampleRate);
+      for (let i = sStart; i < firstSecSamples; i += 64) {
+        introSum += data[i] * data[i];
+      }
+      const introRms = Math.sqrt(introSum / Math.max(1, (firstSecSamples - sStart) / 64));
+
       return {
-        downbeatOffset: findFirstDownbeatOffset(buffer),
+        startOffset: Math.min(startOffset, Math.max(0, buffer.duration - 1)),
+        endOffset: Math.max(startOffset + 2, endOffset),
         isInstantChorus: introRms > 0.17
       };
     }
@@ -397,7 +413,7 @@
       return Math.sqrt(sum / count) || 0.12;
     }
 
-    // --- ASYNC MP3 ENCODER (Non-blocking) ---
+    // --- ASYNC NON-BLOCKING MP3 ENCODER ---
     async function encodeMp3Async(renderedBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
       const left = renderedBuffer.getChannelData(0);
@@ -432,57 +448,38 @@
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     }
 
-    // --- HARMONIC DECISION ENGINE ---
-    function parseCamelot(keyStr) {
-      if (!keyStr) return { num: 8, letter: 'A' };
-      const num = parseInt(keyStr) || 8;
-      const letter = keyStr.slice(-1).toUpperCase() === 'B' ? 'B' : 'A';
-      return { num, letter };
+    // --- EQUAL POWER S-CURVE HELPERS ---
+    function getEqualPowerFadeOutCurve(maxGain, length = 32) {
+      const curve = new Float32Array(length);
+      for (let i = 0; i < length; i++) {
+        const p = i / (length - 1);
+        curve[i] = Math.max(0.0001, maxGain * Math.cos(p * 0.5 * Math.PI));
+      }
+      return curve;
     }
 
-    function checkHarmonicCompatibility(keyA, keyB) {
-      const kA = parseCamelot(keyA);
-      const kB = parseCamelot(keyB);
-      if (kA.num === kB.num && kA.letter === kB.letter) return { compatible: true, type: "perfect" };
-      if (kA.num === kB.num && kA.letter !== kB.letter) return { compatible: true, type: "relative" };
-      if (kA.letter === kB.letter && Math.abs(kA.num - kB.num) === 1) return { compatible: true, type: "adjacent" };
-      return { compatible: false, type: "clash" };
+    function getEqualPowerFadeInCurve(maxGain, length = 32) {
+      const curve = new Float32Array(length);
+      for (let i = 0; i < length; i++) {
+        const p = i / (length - 1);
+        curve[i] = Math.max(0.0001, maxGain * Math.sin(p * 0.5 * Math.PI));
+      }
+      return curve;
     }
 
-    function decideDjTransition(trackA, trackB, structB, clashEnabled) {
+    function decideSmartTransition(trackA, trackB, structB, clashEnabled) {
       const bpmDiff = Math.abs((trackA?.bpm || 124) - (trackB?.bpm || 124));
-      const harmonic = checkHarmonicCompatibility(trackA?.key, trackB?.key);
 
-      if (clashEnabled && !harmonic.compatible && bpmDiff <= 4) {
-        return { type: "clashDrop", duration: 6.0, sidechain: true };
+      if (clashEnabled && bpmDiff <= 4) {
+        return { type: "clashDrop", duration: 5.0 };
       }
       if (structB?.isInstantChorus) {
-        return { type: "dropCut", duration: 1.5, dropPoint: 0.2, sidechain: false };
+        return { type: "dropCut", duration: 2.2 };
       }
-      if (bpmDiff <= 3 && harmonic.compatible) {
-        return { type: "doubleDrop", duration: 7.5, dropPoint: 3.5, sidechain: true };
+      if (bpmDiff > 9) {
+        return { type: "smartFlow", duration: 4.5 };
       }
-      if (bpmDiff > 7 || (!harmonic.compatible && bpmDiff > 4)) {
-        return { type: "echoOutFreeze", duration: 4.5, delayTime: 0.375, feedback: 0.70, sidechain: false };
-      }
-      return { type: "bassSwap", duration: 6.0, dropPoint: 3.0, sidechain: true };
-    }
-
-    // --- SIDECHAIN DUCKING (Pumping synced to BPM) ---
-    function scheduleSidechainDuck(duckGainParam, t0, d, bpm) {
-      const safeBpm = Math.max(70, Math.min(180, bpm || 124));
-      const beatLen = 60 / safeBpm;
-      const duckFloor = 0.55;
-      const attack = 0.015;
-      const release = beatLen * 0.45;
-      let t = t0;
-      duckGainParam.setValueAtTime(1, t0);
-      while (t < t0 + d) {
-        duckGainParam.setValueAtTime(1, t);
-        duckGainParam.linearRampToValueAtTime(duckFloor, t + attack);
-        duckGainParam.linearRampToValueAtTime(1, Math.min(t + attack + release, t0 + d));
-        t += beatLen;
-      }
+      return { type: "smartFlow", duration: 6.0 };
     }
 
     // --- SPECTRAL RGB WAVEFORM VISUALIZER ---
@@ -537,18 +534,18 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    // --- PRO-DJ AUDIO MIXING ENGINE (Extended DJ Intro, 3-Band EQ, Sidechain, Delay Feedback, Downbeat Lock) ---
+    // --- MAIN AUDIO RENDERING ENGINE ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl, clashEnabled) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
       let trackOffsets = [];
       let cursor = 0;
 
-      const structures = buffers.map(b => analyzeTrackStructure(b));
+      const structures = buffers.map(b => analyzeSmartBounds(b));
       const TARGET_RMS = 0.14;
       const trackGains = buffers.map(buf => {
         const rms = calculateBufferRms(buf);
-        return Math.max(0.65, Math.min(1.6, TARGET_RMS / rms));
+        return Math.max(0.70, Math.min(1.5, TARGET_RMS / rms));
       });
 
       for (let i = 0; i < buffers.length; i++) {
@@ -557,14 +554,13 @@
         const nextStruct = i < buffers.length - 1 ? structures[i+1] : null;
         const currentTrack = tracksMeta[i] || { bpm: 124, key: '8A' };
         
-        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct, clashEnabled) : { type: 'bassSwap', duration: 6.0, dropPoint: 3.0, sidechain: true };
+        const decision = nextTrack ? decideSmartTransition(currentTrack, nextTrack, nextStruct, clashEnabled) : { type: 'smartFlow', duration: 6.0 };
         
-        // Track 1 (Intro Track) gets maximum available runtime to build up naturally!
-        let cueOut;
+        const effectiveEnd = Math.max(decision.duration + 2.0, Math.min(buf.duration, structures[i].endOffset));
+        let cueOut = Math.max(8.0, effectiveEnd - decision.duration);
+
         if (i === 0) {
-          cueOut = Math.max(18.0, buf.duration - decision.duration - 0.5);
-        } else {
-          cueOut = Math.max(12.0, buf.duration - decision.duration);
+          cueOut = Math.max(14.0, effectiveEnd - decision.duration);
         }
 
         sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack, struct: structures[i] });
@@ -573,13 +569,13 @@
         if (i < buffers.length - 1) {
           cursor += cueOut;
         } else {
-          cursor += buf.duration;
+          cursor += effectiveEnd;
         }
       }
 
-      const totalRenderLen = Math.min(cursor, targetDurationSec || cursor);
+      const totalRenderLen = Math.max(1.0, Math.min(cursor, targetDurationSec || cursor));
       const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
-        2, Math.ceil(sampleRate * totalRenderLen), sampleRate
+        2, Math.ceil(sampleRate * (totalRenderLen + 0.5)), sampleRate
       );
 
       for (let i = 0; i < buffers.length; i++) {
@@ -590,170 +586,65 @@
         const cueOut = info.cueOut;
         const tDur = info.decision.duration;
         const autoGain = trackGains[i];
+        const startTrim = Math.min(buffers[i].duration - 0.5, info.struct.startOffset || 0);
 
-        // Dynamic Tempo Ramping
-        if (i < buffers.length - 1 && info.nextTrack) {
-          const bpm1 = info.currentTrack.bpm || 124;
-          const bpm2 = info.nextTrack.bpm || 124;
-          const rateRatio = Math.max(0.88, Math.min(1.14, bpm2 / bpm1));
-          src.playbackRate.setValueAtTime(1.0, 0);
-          src.playbackRate.setValueAtTime(1.0, cueOut);
-          src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
-        }
-
-        // 3-Band Isolator EQ
         const lowEq = offlineCtx.createBiquadFilter();
-        lowEq.type = 'lowshelf'; lowEq.frequency.value = 250; lowEq.gain.value = 0;
-
-        const midEq = offlineCtx.createBiquadFilter();
-        midEq.type = 'peaking'; midEq.frequency.value = 1200; midEq.Q.value = 1.0; midEq.gain.value = 0;
+        lowEq.type = 'lowshelf'; lowEq.frequency.value = 220; lowEq.gain.value = 0;
 
         const highEq = offlineCtx.createBiquadFilter();
-        highEq.type = 'highshelf'; highEq.frequency.value = 2500; highEq.gain.value = 0;
+        highEq.type = 'highshelf'; highEq.frequency.value = 3500; highEq.gain.value = 0;
 
         const fadeGain = offlineCtx.createGain();
-        const duckGain = offlineCtx.createGain(); // Dedicated serial stage for Sidechain
 
-        // Direct Signal Path
         src.connect(lowEq);
-        lowEq.connect(midEq);
-        midEq.connect(highEq);
+        lowEq.connect(highEq);
         highEq.connect(fadeGain);
-        fadeGain.connect(duckGain);
-        duckGain.connect(offlineCtx.destination);
-
-        // Echo Out Feedback Path
-        const echoSendGain = offlineCtx.createGain();
-        const delayNode = offlineCtx.createDelay(2.0);
-        const delayFeedback = offlineCtx.createGain();
-        const delayFilter = offlineCtx.createBiquadFilter();
-        delayFilter.type = 'bandpass'; delayFilter.frequency.value = 1600; delayFilter.Q.value = 0.8;
-        const echoMasterGain = offlineCtx.createGain();
-
-        highEq.connect(echoSendGain);
-        echoSendGain.connect(delayNode);
-        delayNode.connect(delayFilter);
-        delayFilter.connect(delayFeedback);
-        delayFeedback.connect(delayNode); // True Feedback Loop
-        delayFilter.connect(echoMasterGain);
-        echoMasterGain.connect(offlineCtx.destination);
+        fadeGain.connect(offlineCtx.destination);
 
         const startTime = trackOffsets[i];
         if (startTime >= totalRenderLen) break;
 
-        const isEchoOut = info.decision.type === 'echoOutFreeze';
-        const isDropCut = info.decision.type === 'dropCut';
-        const isDoubleDrop = info.decision.type === 'doubleDrop' || info.decision.type === 'clashDrop';
-
-        echoSendGain.gain.setValueAtTime(0, 0);
-        delayFeedback.gain.setValueAtTime(0.70, 0);
-        delayNode.delayTime.setValueAtTime(info.decision.delayTime || 0.375, 0);
-        echoMasterGain.gain.setValueAtTime(autoGain, 0);
-        duckGain.gain.setValueAtTime(1.0, 0);
+        const outCurve = getEqualPowerFadeOutCurve(autoGain);
+        const inCurve = getEqualPowerFadeInCurve(autoGain);
 
         if (i === 0) {
-          // --- INTRO SWEEP EFFECT (True DJ Opener) ---
           fadeGain.gain.setValueAtTime(0.0001, 0);
-          fadeGain.gain.exponentialRampToValueAtTime(autoGain, 2.2); // Smooth volume intro
-          fadeGain.gain.setValueAtTime(autoGain, cueOut);
+          fadeGain.gain.exponentialRampToValueAtTime(autoGain, 0.8);
+          fadeGain.gain.setValueCurveAtTime(outCurve, cueOut, tDur);
 
-          // DJ Opening Filter Sweep (Bass & Highs sweep in over 3.2 seconds)
-          lowEq.gain.setValueAtTime(-24, 0);
-          lowEq.gain.linearRampToValueAtTime(0, 3.2);
-          highEq.gain.setValueAtTime(-14, 0);
-          highEq.gain.linearRampToValueAtTime(0, 2.5);
+          lowEq.gain.setValueAtTime(0, cueOut);
+          lowEq.gain.linearRampToValueAtTime(-6, cueOut + tDur);
 
-          if (isDoubleDrop) {
-            fadeGain.gain.setValueAtTime(autoGain, cueOut + tDur - 0.08);
-            fadeGain.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
-          } else if (isDropCut) {
-            fadeGain.gain.linearRampToValueAtTime(0.0001, cueOut + 0.1);
-          } else if (isEchoOut) {
-            echoSendGain.gain.setValueAtTime(autoGain, cueOut);
-            echoSendGain.gain.setValueAtTime(0.0001, cueOut + 0.15);
-            fadeGain.gain.setValueAtTime(0.0001, cueOut + 0.15);
-            delayFeedback.gain.setValueAtTime(0.70, cueOut);
-            delayFeedback.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
-          } else {
-            const dropPt = info.decision.dropPoint || 3.0;
-            fadeGain.gain.setValueAtTime(autoGain * 0.95, cueOut + dropPt);
-            fadeGain.gain.exponentialRampToValueAtTime(0.0001, cueOut + tDur);
-            midEq.gain.setValueAtTime(0, cueOut);
-            midEq.gain.linearRampToValueAtTime(-40, cueOut + tDur);
-            lowEq.gain.setValueAtTime(0, cueOut + dropPt - 0.05);
-            lowEq.gain.linearRampToValueAtTime(-70, cueOut + dropPt);
-          }
-
-          if (info.decision.sidechain) {
-            scheduleSidechainDuck(duckGain.gain, cueOut, tDur, info.currentTrack.bpm);
-          }
-          src.start(0, 0, cueOut + tDur);
+          const playDur = Math.max(0.1, Math.min(cueOut + tDur, buffers[i].duration - startTrim));
+          src.start(0, startTrim, playDur);
         } else if (i < buffers.length - 1) {
-          const downbeat = info.struct.downbeatOffset || 0;
+          fadeGain.gain.setValueCurveAtTime(inCurve, startTime, tDur);
+          fadeGain.gain.setValueCurveAtTime(outCurve, startTime + cueOut, tDur);
 
-          if (isDoubleDrop) {
-            fadeGain.gain.setValueAtTime(autoGain, startTime);
-          } else {
-            fadeGain.gain.setValueAtTime(0.0001, startTime);
-            fadeGain.gain.linearRampToValueAtTime(autoGain, startTime + (isDropCut ? 0.05 : 0.25));
-          }
-          fadeGain.gain.setValueAtTime(autoGain, startTime + cueOut);
+          lowEq.gain.setValueAtTime(-6, startTime);
+          lowEq.gain.linearRampToValueAtTime(0, startTime + tDur * 0.7);
+          lowEq.gain.setValueAtTime(0, startTime + cueOut);
+          lowEq.gain.linearRampToValueAtTime(-6, startTime + cueOut + tDur);
 
-          if (!isEchoOut && !isDropCut && !isDoubleDrop) {
-            const dropPt = info.decision.dropPoint || 3.0;
-            lowEq.gain.setValueAtTime(-70, startTime);
-            lowEq.gain.setValueAtTime(-70, startTime + dropPt - 0.05);
-            lowEq.gain.linearRampToValueAtTime(0, startTime + dropPt);
-            midEq.gain.setValueAtTime(-30, startTime);
-            midEq.gain.linearRampToValueAtTime(0, startTime + tDur);
-          } else {
-            lowEq.gain.setValueAtTime(0, startTime);
-            midEq.gain.setValueAtTime(0, startTime);
-          }
-
-          if (isDoubleDrop) {
-            fadeGain.gain.setValueAtTime(autoGain, startTime + cueOut + tDur - 0.08);
-            fadeGain.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
-          } else if (isDropCut) {
-            fadeGain.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + 0.1);
-          } else if (isEchoOut) {
-            echoSendGain.gain.setValueAtTime(autoGain, startTime + cueOut);
-            echoSendGain.gain.setValueAtTime(0.0001, startTime + cueOut + 0.15);
-            fadeGain.gain.setValueAtTime(0.0001, startTime + cueOut + 0.15);
-            delayFeedback.gain.setValueAtTime(0.70, startTime + cueOut);
-            delayFeedback.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
-          } else {
-            const dropPt = info.decision.dropPoint || 3.0;
-            fadeGain.gain.setValueAtTime(autoGain * 0.95, startTime + cueOut + dropPt);
-            fadeGain.gain.exponentialRampToValueAtTime(0.0001, startTime + cueOut + tDur);
-            lowEq.gain.setValueAtTime(0, startTime + cueOut + dropPt - 0.05);
-            lowEq.gain.linearRampToValueAtTime(-70, startTime + cueOut + dropPt);
-            midEq.gain.setValueAtTime(0, startTime + cueOut);
-            midEq.gain.linearRampToValueAtTime(-40, startTime + cueOut + tDur);
-          }
-
-          if (info.decision.sidechain) {
-            scheduleSidechainDuck(duckGain.gain, startTime, tDur, info.currentTrack.bpm);
-            scheduleSidechainDuck(duckGain.gain, startTime + cueOut, tDur, info.currentTrack.bpm);
-          }
-          src.start(startTime, downbeat, cueOut + tDur);
+          const playDur = Math.max(0.1, Math.min(cueOut + tDur, buffers[i].duration - startTrim));
+          src.start(startTime, startTrim, playDur);
         } else {
-          const downbeat = info.struct.downbeatOffset || 0;
-          fadeGain.gain.setValueAtTime(0.0001, startTime);
-          fadeGain.gain.linearRampToValueAtTime(autoGain, startTime + (isDoubleDrop ? 0.02 : 0.1));
-          lowEq.gain.setValueAtTime(0, startTime);
-          midEq.gain.setValueAtTime(0, startTime);
-          src.start(startTime, downbeat, buffers[i].duration);
+          fadeGain.gain.setValueCurveAtTime(inCurve, startTime, tDur);
+          lowEq.gain.setValueAtTime(-6, startTime);
+          lowEq.gain.linearRampToValueAtTime(0, startTime + tDur * 0.7);
+
+          const playDur = Math.max(0.1, buffers[i].duration - startTrim);
+          src.start(startTime, startTrim, playDur);
         }
       }
 
       const renderedBuffer = await offlineCtx.startRendering();
       return await encodeMp3Async(renderedBuffer, pct => {
-        statusEl.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3 באיכות אולפן: ${pct}%...`;
+        statusEl.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3 באיכות סטודיו: ${pct}%...`;
       });
     }
 
-    // --- SOCIAL CLIP GENERATOR (30s Straight-to-Drop) ---
+    // --- SOCIAL CLIP GENERATOR (30s) ---
     async function generateSocialClip(tracksToUse) {
       const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
       const buffers = await Promise.all(tracksToUse.slice(0, 2).map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
@@ -775,7 +666,7 @@
         src.start(0, offset, Math.min(clipLen, b.duration - offset));
       } else {
         const [bufA, bufB] = buffers;
-        const durA = 16, overlap = 6;
+        const durA = 16, overlap = 5;
         const durB = clipLen - durA + overlap;
         const offsetA = Math.min(bufA.duration * 0.3, Math.max(0, bufA.duration - durA));
         const offsetB = Math.min(bufB.duration * 0.3, Math.max(0, bufB.duration - durB));
@@ -784,16 +675,15 @@
         const gA = offlineCtx.createGain();
         gA.gain.setValueAtTime(0.0001, 0);
         gA.gain.exponentialRampToValueAtTime(1, 0.3);
-        gA.gain.setValueAtTime(1, Math.max(0.31, durA - overlap));
-        gA.gain.linearRampToValueAtTime(0.0001, durA);
+        gA.gain.setValueCurveAtTime(getEqualPowerFadeOutCurve(1.0), durA - overlap, overlap);
         srcA.connect(gA); gA.connect(master);
-        srcA.start(0, offsetA, durA);
+        srcA.start(0, offsetA, Math.min(durA, bufA.duration - offsetA));
 
         const srcB = offlineCtx.createBufferSource(); srcB.buffer = bufB;
         const gB = offlineCtx.createGain();
-        gB.gain.setValueAtTime(1, Math.max(0, durA - overlap));
+        gB.gain.setValueCurveAtTime(getEqualPowerFadeInCurve(1.0), Math.max(0, durA - overlap), overlap);
         srcB.connect(gB); gB.connect(master);
-        srcB.start(Math.max(0, durA - overlap), offsetB, durB);
+        srcB.start(Math.max(0, durA - overlap), offsetB, Math.min(durB, bufB.duration - offsetB));
       }
 
       return await offlineCtx.startRendering();
@@ -810,36 +700,32 @@
       }
 
       const clashEnabled = document.getElementById('clashDropToggle')?.checked || false;
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס Pro DJ (DJ Intro, Double Drop, Sidechain)...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס עם Smart Crossfade (Equal Power S-Curve)...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         const buffers = await Promise.all(chosenTracks.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
         tempCtx.close?.();
 
-        const renderedBuffer = await offlineCtxRenderWrapper(buffers, chosenTracks, null, status, clashEnabled);
+        const renderedBuffer = await renderDjSetToMp3(buffers, chosenTracks, null, status, clashEnabled);
         const blob = await encodeMp3Async(renderedBuffer, pct => {
-          status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3 באיכות אולפן: ${pct}%...`;
+          status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3 באיכות סטודיו: ${pct}%...`;
         });
 
-        downloadBlob(blob, 'PULSEAI_ProDJ_MasterMix.mp3');
+        downloadBlob(blob, 'PULSEAI_Pro_SmartMix.mp3');
 
         const wrap = document.getElementById('proWaveformWrap');
         drawRGBWaveform(document.getElementById('proWaveformCanvas'), renderedBuffer);
         wrap?.classList.remove('hidden');
 
-        status.textContent = '🎉 מיקס Pro DJ עם פתיח מלא ו-Isolator EQ הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro עם Smart Crossfade טבעי הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
-        status.textContent = 'שגיאה ביצירת המיקס.';
+        status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
       }
     };
 
-    async function offlineCtxRenderWrapper(buffers, tracksMeta, targetDurationSec, statusEl, clashEnabled) {
-      return await renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl, clashEnabled);
-    }
-
-    // --- QUICK MIX (10-Minute Full OR 30s Social Clip) ---
+    // --- QUICK MIX ---
     window.generateQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
       const genre = document.getElementById('quickGenGenre').value;
@@ -852,8 +738,8 @@
         if (selectedQuickTrack2) tracksToUse.push(selectedQuickTrack2);
 
         if (tracksToUse.length === 0) {
-          status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מחפש להיטי מועדונים בז'אנר ${genre}...`;
-          const url = `https://itunes.apple.com/search?term=${encodeURIComponent(genre + ' dance hits')}&entity=song&limit=20&country=IL`;
+          status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר להיטים מובילים בז'אנר ${genre}...`;
+          const url = `https://itunes.apple.com/search?term=${encodeURIComponent(genre + ' hits')}&entity=song&limit=20&country=IL`;
           const res = await (await fetch(url)).json();
           tracksToUse = (res.results || []).filter(i => i.previewUrl).map((i, idx) => ({
             title: `${i.artistName} — ${i.trackName}`,
@@ -872,10 +758,10 @@
 
         let renderedBuffer;
         if (durationMode === 'social30') {
-          status.innerHTML = '<span class="inline-block animate-spin">⏳</span> בונה קליפ 30 שניות ישר לדרופ...';
+          status.innerHTML = '<span class="inline-block animate-spin">⏳</span> בונה קליפ 30 שניות...';
           renderedBuffer = await generateSocialClip(tracksToUse);
         } else {
-          status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען שירים ובונה פתיח למיקס 10 דקות...';
+          status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד Smart Crossfade למיקס 10 דקות...';
           const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
           const buffers = await Promise.all(tracksToUse.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
           tempCtx.close?.();
@@ -888,7 +774,7 @@
 
         const filename = durationMode === 'social30'
           ? `PULSEAI_SocialClip_${genre}.mp3`
-          : `PULSEAI_10Min_${genre}_ClubMix.mp3`;
+          : `PULSEAI_10Min_${genre}_SmartMix.mp3`;
         downloadBlob(blob, filename);
 
         const wrap = document.getElementById('quickWaveformWrap');
@@ -898,7 +784,7 @@
         status.textContent = '🎉 המיקס הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
-        status.textContent = 'שגיאה ביצירת המיקס.';
+        status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
       }
     };
 
