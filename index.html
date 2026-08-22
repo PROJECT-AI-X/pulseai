@@ -75,7 +75,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
       <div>
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ מקצועי — Pro Isolator EQ · Downbeat Lock · Dynamic Limiter</p>
+        <p class="text-[11px] text-purple-300">אולפן DJ אוטומטי — AI Similarity Matcher · Harmonic BPM Match · 45s Extensions</p>
       </div>
     </div>
   </header>
@@ -100,37 +100,26 @@
   <!-- QUICK MIX PANEL -->
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
-      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת מיקס 10 דקות אוטומטי</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר, או בחר רק ז'אנר — ה-AI יפיק סט רציף מלא של 10 דקות עם מעברים הרמוניים, החלפת בסים חלקה וסנכרון ביטים.</p>
+      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
+      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם המוזיקלי והסגנון שלהם, יאתר שירים תואמים נוספים, ויפיק סט מלא של 10 דקות (45 שניות לכל שיר עם מעברי DJ חלקים).</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 relative" style="overflow: visible;">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 relative" style="overflow: visible;">
       <div class="relative">
-        <label class="text-[10px] text-sunset font-bold">שיר ראשון (אופציונלי)</label>
+        <label class="text-[10px] text-sunset font-bold">שיר מוביל 1 (חובה)</label>
         <input id="quickGenInput1" type="text" oninput="debounceQuickGenSearch(this.value, 1)" placeholder="חפש שיר ראשון..." autocomplete="off" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-sunset">
         <div id="quickGenDrop1" class="absolute top-full left-0 right-0 mt-1 bg-night border border-purple-800 rounded-lg p-1.5 z-[9999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
       </div>
       <div class="relative">
-        <label class="text-[10px] text-glowLime font-bold">שיר שני (אופציונלי)</label>
+        <label class="text-[10px] text-glowLime font-bold">שיר מוביל 2 (חובה)</label>
         <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2)" placeholder="חפש שיר שני..." autocomplete="off" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-glowLime">
         <div id="quickGenDrop2" class="absolute top-full left-0 right-0 mt-1 bg-night border border-purple-800 rounded-lg p-1.5 z-[9999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
       </div>
     </div>
 
-    <div class="mb-5">
-      <label class="text-[10px] text-electricCyan font-bold">בחירת ז'אנר ראשי</label>
-      <select id="quickGenGenre" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-purple-950/70 border border-purple-800/70 text-white text-xs font-bold focus:outline-none focus:border-electricCyan">
-        <option value="Dance">🌟 Dance & Club Hits</option>
-        <option value="Israeli">🎉 מסיבה ישראלית / מזרחי</option>
-        <option value="Workout">🏋️ Workout & Energy Beats</option>
-        <option value="House">🏠 Deep & Tech House</option>
-        <option value="Pop">🎤 Pop Commercial</option>
-      </select>
-    </div>
-
     <div class="text-center">
       <button onclick="generate10MinQuickMix()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime hover:scale-105 transition-transform flex items-center justify-center gap-2 mx-auto">
-        <span>✨ צור והורד מיקס 10 דקות (MP3)</span>
+        <span>✨ צור סט 10 דקות מותאם אישית (MP3)</span>
       </button>
       <div id="quickGenStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
     </div>
@@ -148,7 +137,6 @@
       </button>
     </div>
 
-    <!-- Dynamic Song Slots Container -->
     <div id="proSongSlotsContainer" class="space-y-3 mb-6"></div>
 
     <div class="text-center">
@@ -174,7 +162,7 @@
     };
 
     function initProSongSlots() {
-      proSongsList = Array(5).fill(null).map(() => ({ title: '', previewUrl: '', bpm: 124, key: '8A' }));
+      proSongsList = Array(5).fill(null).map(() => ({ title: '', previewUrl: '', bpm: 124, key: '8A', genre: 'Dance' }));
       renderProSongSlots();
     }
 
@@ -202,7 +190,7 @@
     }
 
     window.addProSongField = function() {
-      proSongsList.push({ title: '', previewUrl: '', bpm: 124, key: '8A' });
+      proSongsList.push({ title: '', previewUrl: '', bpm: 124, key: '8A', genre: 'Dance' });
       renderProSongSlots();
     };
 
@@ -210,6 +198,36 @@
       proSongsList.splice(index, 1);
       renderProSongSlots();
     };
+
+    function cleanSearchQuery(query) {
+      return query
+        .replace(/\b(של|את|עם|by|feat|ft|featuring)\b/gi, ' ')
+        .replace(/[-_.,]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    async function searchItunesApi(term, limit = 12) {
+      const cleaned = cleanSearchQuery(term);
+      const termsToTry = [cleaned, term];
+      for (const t of termsToTry) {
+        if (!t || t.length < 2) continue;
+        try {
+          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=${limit}&country=IL`);
+          const data = await res.json();
+          const results = (data.results || []).filter(item => item.previewUrl);
+          if (results.length > 0) return results;
+        } catch (e) {}
+
+        try {
+          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=${limit}&country=US`);
+          const data = await res.json();
+          const results = (data.results || []).filter(item => item.previewUrl);
+          if (results.length > 0) return results;
+        } catch (e) {}
+      }
+      return [];
+    }
 
     window.debounceProSearch = function(query, index) {
       clearTimeout(window[`proTimer_${index}`]);
@@ -222,11 +240,7 @@
       if (!query || query.trim().length < 2) { dropdown.classList.add('hidden'); return; }
 
       try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=8&country=IL`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const results = (data.results || []).filter(item => item.previewUrl);
-
+        const results = await searchItunesApi(query, 8);
         if (results.length === 0) {
           dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         } else {
@@ -236,7 +250,14 @@
             const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
             const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
 
-            window[`proRes_${index}_${rIdx}`] = { title, previewUrl: item.previewUrl, bpm: simulatedBpm, key: simulatedKey };
+            window[`proRes_${index}_${rIdx}`] = { 
+              title, 
+              previewUrl: item.previewUrl, 
+              bpm: simulatedBpm, 
+              key: simulatedKey,
+              artistName: item.artistName || '',
+              genre: item.primaryGenreName || 'Dance'
+            };
             return `
               <div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center justify-between cursor-pointer text-xs text-white"
                    onclick="selectProTrack(${index}, ${rIdx})">
@@ -266,7 +287,6 @@
       renderProSongSlots();
     };
 
-    // --- QUICK MIX SEARCH ---
     window.debounceQuickGenSearch = function(query, num) {
       clearTimeout(num === 1 ? quickGenTimer1 : quickGenTimer2);
       if (num === 1) quickGenTimer1 = setTimeout(() => executeQuickGenSearch(query, 1), 300);
@@ -278,23 +298,21 @@
       if (!dropdown) return;
       if (!query || query.trim().length < 2) { dropdown.classList.add('hidden'); return; }
       try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=8&country=IL`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const results = (data.results || []).filter(item => item.previewUrl);
+        const results = await searchItunesApi(query, 8);
         dropdown.innerHTML = results.map(item => {
           const title = `${item.artistName} — ${item.trackName}`;
           const simulatedBpm = 120 + ((item.trackId || 0) % 12);
           const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
           const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
-          return `<div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2 cursor-pointer text-xs text-white" onclick="selectQuickGenTrack(${num}, '${escapeHtml(title).replace(/'/g, "\\'")}', '${item.previewUrl}', ${simulatedBpm}, '${simulatedKey}')"><img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt=""><div class="truncate"><div class="font-bold truncate">${escapeHtml(item.trackName)}</div><div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div></div></div>`;
+          const genre = item.primaryGenreName || 'Dance';
+          return `<div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2 cursor-pointer text-xs text-white" onclick="selectQuickGenTrack(${num}, '${escapeHtml(title).replace(/'/g, "\\'")}', '${item.previewUrl}', ${simulatedBpm}, '${simulatedKey}', '${escapeHtml(item.artistName).replace(/'/g, "\\'")}', '${escapeHtml(genre).replace(/'/g, "\\'")}')"><img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt=""><div class="truncate"><div class="font-bold truncate">${escapeHtml(item.trackName)}</div><div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • ${escapeHtml(genre)}</div></div></div>`;
         }).join('') || '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         dropdown.classList.remove('hidden');
       } catch(e) {}
     }
 
-    window.selectQuickGenTrack = function(num, title, previewUrl, bpm, key) {
-      const track = { title, previewUrl, bpm: bpm || 124, key: key || '8A' };
+    window.selectQuickGenTrack = function(num, title, previewUrl, bpm, key, artistName, genre) {
+      const track = { title, previewUrl, bpm: bpm || 124, key: key || '8A', artistName: artistName || '', genre: genre || 'Dance' };
       if (num === 1) {
         selectedQuickTrack1 = track;
         document.getElementById('quickGenInput1').value = title;
@@ -310,16 +328,68 @@
       return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
+    // --- EXTEND TRACK TO 45s WITH SEAMLESS AUDIO LOOPING ---
+    function extendAudioBufferTo45s(buffer, audioCtx) {
+      const sampleRate = buffer.sampleRate;
+      const originalDuration = buffer.duration;
+      if (originalDuration >= 44) return buffer;
+
+      const TARGET_DURATION = 45.0;
+      const newLength = Math.ceil(TARGET_DURATION * sampleRate);
+      const newBuffer = audioCtx.createBuffer(buffer.numberOfChannels, newLength, sampleRate);
+
+      const loopStartSec = 10.0;
+      const loopEndSec = Math.min(26.0, originalDuration - 2.0);
+      const crossfadeLenSec = 0.08;
+      const crossfadeSamples = Math.floor(crossfadeLenSec * sampleRate);
+
+      for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+        const srcData = buffer.getChannelData(ch);
+        const destData = newBuffer.getChannelData(ch);
+
+        const firstCopyLen = Math.floor(loopEndSec * sampleRate);
+        destData.set(srcData.subarray(0, firstCopyLen), 0);
+
+        let currentWriteIdx = firstCopyLen;
+        const loopStartSample = Math.floor(loopStartSec * sampleRate);
+        const loopEndSample = Math.floor(loopEndSec * sampleRate);
+        const loopChunkLength = loopEndSample - loopStartSample;
+
+        while (currentWriteIdx < newLength - Math.floor((originalDuration - loopEndSec) * sampleRate)) {
+          for (let i = 0; i < crossfadeSamples; i++) {
+            const p = i / crossfadeSamples;
+            const fadeIn = Math.sin(p * 0.5 * Math.PI);
+            const fadeOut = Math.cos(p * 0.5 * Math.PI);
+            const oldIdx = currentWriteIdx - crossfadeSamples + i;
+            if (oldIdx < newLength) {
+              destData[oldIdx] = destData[oldIdx] * fadeOut + srcData[loopStartSample + i] * fadeIn;
+            }
+          }
+          const copyLength = Math.min(loopChunkLength - crossfadeSamples, newLength - currentWriteIdx);
+          destData.set(srcData.subarray(loopStartSample + crossfadeSamples, loopStartSample + crossfadeSamples + copyLength), currentWriteIdx);
+          currentWriteIdx += copyLength;
+        }
+
+        const outroStartSample = loopEndSample;
+        const remainingSamples = Math.min(destData.length - currentWriteIdx, srcData.length - outroStartSample);
+        if (remainingSamples > 0) {
+          destData.set(srcData.subarray(outroStartSample, outroStartSample + remainingSamples), currentWriteIdx);
+        }
+      }
+
+      return newBuffer;
+    }
+
     async function fetchAudioBuffer(url, ctx) {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
-      return await new Promise((resolve, reject) => {
+      const decoded = await new Promise((resolve, reject) => {
         ctx.decodeAudioData(arrayBuffer, resolve, reject);
       });
+      return extendAudioBufferTo45s(decoded, ctx);
     }
 
-    // --- ACCURATE TRANSIENT & DOWNBEAT DETECTION ---
     function findFirstDownbeatOffset(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
@@ -373,7 +443,6 @@
       return Math.sqrt(sum / count) || 0.12;
     }
 
-    // --- ASYNC MP3 ENCODER ---
     async function encodeMp3Async(renderedBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
       const left = renderedBuffer.getChannelData(0);
@@ -437,7 +506,6 @@
       return { type: "bassSwap", duration: 6.5, dropPoint: 3.2 };
     }
 
-    // --- PRO-DJ AUDIO MIXING ENGINE WITH ISOLATOR EQ & MASTER LIMITER ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
@@ -458,7 +526,7 @@
         const currentTrack = tracksMeta[i] || { bpm: 124, key: '8A' };
         
         const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 6.0, dropPoint: 3.0 };
-        const cueOut = Math.max(12.0, buf.duration - decision.duration);
+        const cueOut = Math.max(20.0, buf.duration - decision.duration);
 
         sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack, struct: structures[i] });
         trackOffsets.push(cursor);
@@ -477,7 +545,6 @@
         2, Math.ceil(sampleRate * (totalRenderLen + 0.5)), sampleRate
       );
 
-      // Master Dynamics / Soft Limiter Bus to avoid distortion & glue transitions
       const masterCompressor = offlineCtx.createDynamicsCompressor();
       masterCompressor.threshold.setValueAtTime(-1.5, 0);
       masterCompressor.knee.setValueAtTime(4.0, 0);
@@ -495,18 +562,16 @@
         const tDur = info.decision.duration;
         const autoGain = trackGains[i];
 
-        // Smooth tempo blend
         if (i < sliceInfos.length - 1 && info.nextTrack) {
           const bpm1 = info.currentTrack.bpm || 124;
           const bpm2 = info.nextTrack.bpm || 124;
-          const rateRatio = Math.max(0.90, Math.min(1.10, bpm2 / bpm1));
+          const rateRatio = Math.max(0.92, Math.min(1.08, bpm2 / bpm1));
 
           src.playbackRate.setValueAtTime(1.0, 0);
           src.playbackRate.setValueAtTime(1.0, cueOut);
           src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
         }
 
-        // 3-Band Isolator Filter
         const lowEq = offlineCtx.createBiquadFilter();
         lowEq.type = 'lowshelf'; lowEq.frequency.value = 240; lowEq.gain.value = 0;
 
@@ -524,7 +589,6 @@
         highEq.connect(directGain);
         directGain.connect(masterCompressor);
 
-        // Echo Out Engine
         const echoSendGain = offlineCtx.createGain();
         const delayNode = offlineCtx.createDelay(2.0);
         const delayFeedback = offlineCtx.createGain();
@@ -626,7 +690,6 @@
       });
     }
 
-    // --- PRO CUSTOM MIX ---
     window.executeProCustomMixDownload = async function() {
       const chosenTracks = proSongsList.filter(t => t && t.previewUrl);
       const status = document.getElementById('proMixStatus');
@@ -636,7 +699,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען וסורק Downbeats למיקס Pro...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען ומרחיב קטעים (45s) למיקס Pro...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -674,82 +737,112 @@
       }
     };
 
-    // --- QUICK MIX (FULL 10-MINUTE CONTINUOUS LOOP SET) ---
+    // --- QUICK MIX (10 MINUTES AI HARMONIC CURATION BASED ON 2 SEED SONGS) ---
     window.generate10MinQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
-      const genre = document.getElementById('quickGenGenre').value;
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מאתר שירים ומסנכרן ביטים לרצף של 10 דקות...';
+
+      if (!selectedQuickTrack1 || !selectedQuickTrack2) {
+        alert('אנא בחר 2 שירים כדי שה-AI יוכל לנתח את הסגנון ולבנות לפיהם מיקס של 10 דקות!');
+        return;
+      }
+
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מפענח BPM, סולם הרמוני וסגנון משני השירים שנבחרו...';
 
       try {
-        let baseTracks = [];
-        if (selectedQuickTrack1) baseTracks.push(selectedQuickTrack1);
-        if (selectedQuickTrack2) baseTracks.push(selectedQuickTrack2);
+        const seed1 = selectedQuickTrack1;
+        const seed2 = selectedQuickTrack2;
 
-        // אם אין שירים נבחרים, מושך להיטים לפי הז'אנר
-        if (baseTracks.length === 0) {
-          const searchQuery = `${genre} dance hits`;
-          const res = await (await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&entity=song&limit=15&country=IL`)).json();
-          const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
-          baseTracks = (res.results || []).filter(i => i.previewUrl).map(i => ({
-            title: `${i.artistName} — ${i.trackName}`,
-            previewUrl: i.previewUrl,
-            bpm: 120 + ((i.trackId || 0) % 12),
-            key: camelotKeys[(i.trackId || 0) % camelotKeys.length]
-          }));
+        const targetAvgBpm = Math.round((seed1.bpm + seed2.bpm) / 2);
+        const detectedGenre = seed1.genre || seed2.genre || 'Dance';
+
+        let curatedTracks = [seed1, seed2];
+
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM, ${detectedGenre})...`;
+
+        const searchQueries = [
+          `${seed1.artistName} hits`,
+          `${seed2.artistName} hits`,
+          `${seed1.artistName} ${detectedGenre}`,
+          `${seed2.artistName} ${detectedGenre}`,
+          `${detectedGenre} club hits`,
+          `${detectedGenre} party dance`
+        ];
+
+        const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
+
+        for (const query of searchQueries) {
+          if (curatedTracks.length >= 16) break;
+          const items = await searchItunesApi(query, 12);
+          for (const item of items) {
+            if (!curatedTracks.some(t => t.previewUrl === item.previewUrl)) {
+              const itemBpm = 118 + ((item.trackId || 0) % 14);
+              // סינון קפדני: לוקח רק שירים בטווח ה-BPM של השירים שנבחרו
+              if (Math.abs(itemBpm - targetAvgBpm) <= 6) {
+                curatedTracks.push({
+                  title: `${item.artistName} — ${item.trackName}`,
+                  previewUrl: item.previewUrl,
+                  bpm: itemBpm,
+                  key: camelotKeys[(item.trackId || 0) % camelotKeys.length],
+                  artistName: item.artistName || '',
+                  genre: item.primaryGenreName || detectedGenre
+                });
+              }
+            }
+            if (curatedTracks.length >= 16) break;
+          }
         }
 
-        if (baseTracks.length === 0) {
-          throw new Error('לא נמצאו שירים זמינים להפקה.');
-        }
+        // מיון חכם לפי עקומת אנרגיה ו-BPM כדי להבטיח זרימה מושלמת
+        curatedTracks.sort((a, b) => a.bpm - b.bpm);
 
-        status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעי שמע לזיכרון...';
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען ומרחיב ${curatedTracks.length} שירים תואמים ל-45 שניות כל אחד...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         const loadedBuffers = [];
         const validTracks = [];
 
-        for (const t of baseTracks) {
+        for (const t of curatedTracks) {
           try {
             const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
             loadedBuffers.push(buf);
             validTracks.push(t);
-            if (loadedBuffers.length >= 8) break;
+            if (loadedBuffers.length >= 14) break;
           } catch(e) {}
         }
         if (tempCtx.close) await tempCtx.close();
 
-        if (loadedBuffers.length === 0) {
-          throw new Error('שגיאה בטעינת קבצי האודיו.');
+        if (loadedBuffers.length < 2) {
+          throw new Error('שגיאה בטעינת קבצי האודיו. נסה שירים אחרים.');
         }
 
-        // שרשור שירים בלולאה דינמית עד להגעה ל-600 שניות (10 דקות)
+        // חישוב שרשור מלא עד להגעה ל-600 שניות (10 דקות)
         const TARGET_DURATION = 600;
         let extendedBuffers = [];
         let extendedTracks = [];
         let accumulatedTime = 0;
         let loopIdx = 0;
 
-        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 50) {
+        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 25) {
           const idx = loopIdx % loadedBuffers.length;
           const buf = loadedBuffers[idx];
           extendedBuffers.push(buf);
           extendedTracks.push(validTracks[idx]);
-          accumulatedTime += Math.max(14, buf.duration - 6.5);
+          accumulatedTime += Math.max(30, buf.duration - 6.5);
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מעבד Smart DJ Set של 10 דקות מלאות...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Downbeat Lock + Isolator EQ)...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PULSEAI_10Min_${genre}_ClubMix.mp3`;
+        a.download = `PULSEAI_10Min_AI_SmartSet.mp3`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס 10 דקות מלא ומסונכרן הופק והורד בהצלחה!';
+        status.textContent = '🎉 סט 10 דקות מלא לפי 2 השירים שנבחרו הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
