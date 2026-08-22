@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PULSEAI — Smart Audio Mixer</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Heebo & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Heebo', 'sans-serif'],
+            display: ['Montserrat', 'Heebo', 'sans-serif']
+          },
+          colors: {
+            night: '#090714',
+            surface: 'rgba(23, 18, 41, 0.75)',
+            sunset: '#FF5E36',
+            sunsetHover: '#FF7754',
+            ultraviolet: '#8F00FF',
+            glowLime: '#10E773',
+            electricCyan: '#00F0FF',
+          },
+          boxShadow: {
+            'glow-orange': '0 0 25px rgba(255, 94, 54, 0.45)',
+            'glow-purple': '0 0 30px rgba(143, 0, 255, 0.35)',
+            'glow-lime': '0 0 20px rgba(16, 231, 115, 0.4)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at top right, #1f0d3d 0%, #090714 60%, #04020a 100%);
+      min-height: 100vh;
+      color: #F3F4F6;
+    }
+    .glass-panel {
+      background: rgba(26, 19, 48, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(143, 0, 255, 0.2);
+    }
+    .active-deck {
+      border: 1px solid rgba(255, 94, 54, 0.6);
+      box-shadow: 0 0 25px rgba(255, 94, 54, 0.25);
+    }
+    .cue-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #10E773;
+      box-shadow: 0 0 10px #10E773;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #FF5E36;
+      box-shadow: 0 0 12px #FF5E36;
+      pointer-events: none;
+      z-index: 30;
+      left: 0%;
+    }
+    .drop-zone {
+      border: 2px dashed rgba(143, 0, 255, 0.4);
+      transition: all 0.2s ease;
+    }
+    .drop-zone.dragover {
+      border-color: #10E773;
+      background: rgba(16, 231, 115, 0.1);
+      transform: scale(1.01);
+    }
+    .modal-backdrop {
+      background: rgba(5, 3, 12, 0.85);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+
+<body class="p-4 md:p-8 flex flex-col items-center">
+
+  <!-- ONBOARDING & AUTH MODAL -->
+  <div id="onboardingModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="glass-panel w-full max-w-lg p-6 md:p-8 rounded-3xl border border-sunset/40 shadow-glow-orange relative overflow-hidden">
+      <div class="absolute -top-12 -left-12 w-32 h-32 bg-sunset/20 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <!-- Step 1: User Account Details -->
+      <div id="modalStep1" class="space-y-4">
+        <div class="text-center">
+          <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-sunset to-ultraviolet flex items-center justify-center font-display font-black text-2xl text-white shadow-glow-orange">
+            P
+          </div>
+          <h2 class="text-2xl font-black font-display text-white">ברוכים הבאים ל-PULSEAI</h2>
+          <p class="text-xs text-purple-300 mt-1">הירשם כדי שה-AI ינתח וישמור את המיקסים וההעדפות שלך בענן.</p>
+        </div>
+
+        <form id="authForm" onsubmit="event.preventDefault(); goToGenreStep();" class="space-y-3 pt-2">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-purple-300 mb-1 font-semibold">שם פרטי</label>
+              <input type="text" id="firstName" required placeholder="שם פרטי" class="w-full py-2 px-3 rounded-xl bg-black/40 border border-purple-900/50 text-white text-sm focus:outline-none focus:border-sunset">
+            </div>
+            <div>
+              <label class="block text-[11px] text-purple-300 mb-1 font-semibold">שם משפחה</label>
+              <input type="text" id="lastName" required placeholder="שם משפחה" class="w-full py-2 px-3 rounded-xl bg-black/40 border border-purple-900/50 text-white text-sm focus:outline-none focus:border-sunset">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] text-purple-300 mb-1 font-semibold">מספר טלפון</label>
+            <input type="tel" id="phoneNumber" required placeholder="050-0000000" class="w-full py-2 px-3 rounded-xl bg-black/40 border border-purple-900/50 text-white text-sm focus:outline-none focus:border-sunset">
+          </div>
+          <div>
+            <label class="block text-[11px] text-purple-300 mb-1 font-semibold">כתובת מייל</label>
+            <input type="email" id="email" required placeholder="name@example.com" class="w-full py-2 px-3 rounded-xl bg-black/40 border border-purple-900/50 text-white text-sm focus:outline-none focus:border-sunset">
+          </div>
+          <div>
+            <label class="block text-[11px] text-purple-300 mb-1 font-semibold">סיסמה (לפחות 6 תווים)</label>
+            <input type="password" id="password" required minlength="6" placeholder="••••••••" class="w-full py-2 px-3 rounded-xl bg-black/40 border border-purple-900/50 text-white text-sm focus:outline-none focus:border-sunset">
+          </div>
+
+          <button type="submit" class="w-full py-3 mt-3 rounded-xl bg-gradient-to-r from-sunset via-pink-500 to-ultraviolet text-white font-bold text-sm shadow-glow-orange hover:opacity-95 transition-all">
+            המשך לבחירת סגנון מוזיקה ➔
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 2: Music Questionnaire -->
+      <div id="modalStep2" class="space-y-5 hidden">
+        <div class="text-center">
+          <span class="text-xs font-bold text-sunset uppercase tracking-wider bg-sunset/10 px-3 py-1 rounded-full border border-sunset/30">שלב 2 מתוך 2</span>
+          <h2 class="text-xl font-black font-display text-white mt-2">מה הטעם המוזיקלי שלך?</h2>
+          <p class="text-xs text-purple-300 mt-1">ה-AI ישתמש בהעדפותיך כדי להתאים את המעברים וההמלצות.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <label class="flex items-center gap-2.5 p-3 rounded-xl bg-black/30 border border-purple-900/40 cursor-pointer hover:border-sunset transition-all">
+            <input type="checkbox" name="genre" value="Pop / Synthwave" class="accent-sunset w-4 h-4" checked>
+            <span class="text-xs font-semibold text-white">Pop & Synthwave 🌟</span>
+          </label>
+          <label class="flex items-center gap-2.5 p-3 rounded-xl bg-black/30 border border-purple-900/40 cursor-pointer hover:border-sunset transition-all">
+            <input type="checkbox" name="genre" value="House & EDM" class="accent-sunset w-4 h-4" checked>
+            <span class="text-xs font-semibold text-white">House & EDM 🎧</span>
+          </label>
+          <label class="flex items-center gap-2.5 p-3 rounded-xl bg-black/30 border border-purple-900/40 cursor-pointer hover:border-sunset transition-all">
+            <input type="checkbox" name="genre" value="Hip-Hop & Trap" class="accent-sunset w-4 h-4">
+            <span class="text-xs font-semibold text-white">Hip-Hop & Trap 🔥</span>
+          </label>
+          <label class="flex items-center gap-2.5 p-3 rounded-xl bg-black/30 border border-purple-900/40 cursor-pointer hover:border-sunset transition-all">
+            <input type="checkbox" name="genre" value="Rock & Indie" class="accent-sunset w-4 h-4">
+            <span class="text-xs font-semibold text-white">Rock & Indie 🎸</span>
+          </label>
+          <label class="flex items-center gap-2.5 p-3 rounded-xl bg-black/30 border border-purple-900/40 cursor-pointer hover:border-sunset transition-all">
+            <input type="checkbox" name="genre" value="Disco & Funk" class="accent-sunset w-4 h-4">
+            <span class="text-xs font-semibold text-white">Disco & Funk 🪩</span>
+          </label>
+          <label class="flex items-center gap-2.5 p-3 rounded-xl bg-black/30 border border-purple-900/40 cursor-pointer hover:border-sunset transition-all">
+            <input type="checkbox" name="genre" value="Chill & Focus" class="accent-sunset w-4 h-4">
+            <span class="text-xs font-semibold text-white">Chill & Focus 🌌</span>
+          </label>
+        </div>
+
+        <div>
+          <label class="block text-[11px] text-purple-300 mb-1 font-semibold">אמנים אהובים במיוחד</label>
+          <input type="text" id="favoriteArtists" placeholder="לדוגמה: The Weeknd, Dua Lipa, Fred Again" class="w-full py-2 px-3 rounded-xl bg-black/40 border border-purple-900/50 text-white text-xs focus:outline-none focus:border-sunset">
+        </div>
+
+        <button type="button" id="submitBtn" onclick="handleFirebaseRegister()" class="w-full py-3 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-extrabold text-sm shadow-glow-lime hover:opacity-95 transition-all">
+          🚀 יצירת חשבון והפעלת AI
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Header & Brand -->
+  <header class="w-full max-w-6xl flex justify-between items-center mb-6 pb-4 border-b border-purple-900/40">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sunset via-ultraviolet to-electricCyan flex items-center justify-center shadow-glow-orange font-display font-black text-xl text-white">
+        P
+      </div>
+      <div>
+        <h1 class="text-2xl font-black font-display tracking-wide bg-gradient-to-r from-sunset via-pink-400 to-ultraviolet bg-clip-text text-transparent">
+          PULSEAI
+        </h1>
+        <p class="text-xs text-purple-300 font-medium">Harmonic AI Mixing & Real Waveform Engine</p>
+      </div>
+    </div>
+
+    <!-- User Profile Badge & Actions -->
+    <div class="flex items-center gap-3">
+      <div id="userProfileBadge" class="hidden items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800/50 text-xs shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-glowLime animate-pulse"></span>
+        <span id="userNameDisplay" class="font-bold text-white">מחובר</span>
+        <button onclick="handleLogout()" class="text-[10px] text-sunset hover:underline mr-2 font-semibold">התנתק</button>
+      </div>
+      <button id="loginBtn" onclick="openLoginModal()" class="px-4 py-1.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-bold text-xs shadow-glow-orange">
+        התחבר / הרשם
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Mixer Section -->
+  <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Left & Center: Dual Decks & Crossfader -->
+    <section class="lg:col-span-2 space-y-6">
+
+      <!-- DECK A (Outgoing Track) -->
+      <div id="deckAContainer" class="glass-panel p-5 rounded-2xl active-deck relative overflow-hidden transition-all">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-sunset px-2 py-0.5 rounded bg-sunset/10 border border-sunset/30">Deck A</span>
+              <label class="cursor-pointer text-[11px] text-purple-300 hover:text-white bg-purple-900/40 hover:bg-purple-800/60 px-2.5 py-0.5 rounded-lg border border-purple-700/40 transition-all">
+                📂 העלה קובץ MP3
+                <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'A')">
+              </label>
+            </div>
+            <h2 class="text-base md:text-lg font-bold text-white mt-1.5 truncate max-w-sm" id="trackATitle">גרור קובץ שיר או בחר MP3 להשמעה</h2>
+            <div class="flex gap-3 text-xs text-purple-300 mt-1">
+              <span>סטטוס: <strong id="trackAStatus" class="text-electricCyan">ממתין לקובץ...</strong></span>
+              <span>אורך: <strong id="trackADuration" class="text-white">00:00</strong></span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-purple-300">נקודת חיתוך (Cue Out):</span>
+            <div class="text-sm font-mono font-bold text-glowLime" id="trackACueText">--:--</div>
+          </div>
+        </div>
+
+        <!-- Waveform Container A (Drop Zone) -->
+        <div id="dropZoneA" class="relative h-24 bg-black/50 rounded-xl overflow-hidden cursor-pointer border drop-zone flex items-center justify-center"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'A')" onclick="seekDeck(event, 'A')">
+          <canvas id="waveformA" class="w-full h-full"></canvas>
+          <div id="playheadA" class="playhead"></div>
+          <div id="cueMarkerA" class="cue-marker hidden" title="נקודת מעבר מומלצת"></div>
+          <div id="dropPromptA" class="absolute pointer-events-none text-xs text-purple-300/80 flex items-center gap-1.5 font-medium">
+            <span>🎵 גרור קובץ MP3 ל-Deck A</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-2.5 text-xs text-purple-400 font-mono">
+          <span id="trackACurrentTime">00:00</span>
+          <span id="cueOutInfoA" class="text-glowLime text-[11px] hidden">⚡ נקודת חיתוך מומלצת</span>
+          <span id="trackATotalTime">00:00</span>
+        </div>
+      </div>
+
+      <!-- MASTER PLAY & AI CROSSFADER HUB -->
+      <div class="glass-panel p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 border border-sunset/30 bg-gradient-to-r from-purple-950/40 via-night/80 to-purple-950/40">
+        <div class="flex items-center gap-3">
+          <button id="playBtn" onclick="toggleMasterPlay()" class="w-12 h-12 rounded-full bg-gradient-to-r from-sunset to-pink-500 flex items-center justify-center text-white font-bold shadow-glow-orange hover:scale-105 active:scale-95 transition-transform text-lg">
+            ▶
+          </button>
+          <div>
+            <div class="text-xs font-semibold text-white" id="masterPlayStatus">השמעת מיקס</div>
+            <div class="text-[11px] text-purple-300" id="transitionStatus">טען שני שירים כדי לבצע מעבר חכם</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="triggerTransitionBtn" onclick="triggerSmartCrossfade()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-ultraviolet to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white font-bold text-xs shadow-glow-purple transition-all flex items-center gap-1.5">
+            <span>✨ בצע מעבר חכם (Crossfade)</span>
+          </button>
+          <button onclick="saveCurrentMixToCloud()" class="px-3.5 py-2.5 rounded-xl bg-glowLime/15 border border-glowLime/40 hover:bg-glowLime/30 text-glowLime font-bold text-xs flex items-center gap-1.5 transition-all">
+            💾 שמור לענן
+          </button>
+        </div>
+
+        <div class="text-right hidden sm:block">
+          <span class="text-[11px] text-purple-300">אורך המעבר</span>
+          <div class="text-xs font-bold text-electricCyan">4.0 שניות</div>
+        </div>
+      </div>
+
+      <!-- DECK B (Incoming Track) -->
+      <div id="deckBContainer" class="glass-panel p-5 rounded-2xl relative overflow-hidden transition-all">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-glowLime px-2 py-0.5 rounded bg-glowLime/10 border border-glowLime/30">Deck B</span>
+              <label class="cursor-pointer text-[11px] text-purple-300 hover:text-white bg-purple-900/40 hover:bg-purple-800/60 px-2.5 py-0.5 rounded-lg border border-purple-700/40 transition-all">
+                📂 העלה קובץ MP3
+                <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'B')">
+              </label>
+            </div>
+            <h2 class="text-base md:text-lg font-bold text-white mt-1.5 truncate max-w-sm" id="trackBTitle">גרור קובץ שיר או בחר MP3 להשמעה</h2>
+            <div class="flex gap-3 text-xs text-purple-300 mt-1">
+              <span>סטטוס: <strong id="trackBStatus" class="text-electricCyan">ממתין לקובץ...</strong></span>
+              <span>אורך: <strong id="trackBDuration" class="text-white">00:00</strong></span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-purple-300">נקודת כניסה (Cue In):</span>
+            <div class="text-sm font-mono font-bold text-glowLime" id="trackBCueText">--:--</div>
+          </div>
+        </div>
+
+        <!-- Waveform Container B (Drop Zone) -->
+        <div id="dropZoneB" class="relative h-24 bg-black/50 rounded-xl overflow-hidden cursor-pointer border drop-zone flex items-center justify-center"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'B')" onclick="seekDeck(event, 'B')">
+          <canvas id="waveformB" class="w-full h-full"></canvas>
+          <div id="playheadB" class="playhead"></div>
+          <div id="cueMarkerB" class="cue-marker hidden" title="נקודת כניסה מומלצת"></div>
+          <div id="dropPromptB" class="absolute pointer-events-none text-xs text-purple-300/80 flex items-center gap-1.5 font-medium">
+            <span>🎵 גרור קובץ MP3 ל-Deck B</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-2.5 text-xs text-purple-400 font-mono">
+          <span id="trackBCurrentTime">00:00</span>
+          <span id="cueInInfoB" class="text-glowLime text-[11px] hidden">⚡ כניסה חלקה (Intro / Drop)</span>
+          <span id="trackBTotalTime">00:00</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Sidebar: Saved Mixes & AI Features -->
+    <aside class="space-y-5">
+      
+      <!-- AI Engine Recommendation Panel -->
+      <div class="glass-panel p-4 rounded-2xl border border-ultraviolet/40 bg-gradient-to-br from-ultraviolet/10 to-transparent">
+        <h3 class="text-xs font-bold text-white mb-2 flex items-center gap-1.5">
+          <span>🎯</span> ניתוח והמלצות ה-AI
+        </h3>
+        <p class="text-[11px] text-purple-200 leading-relaxed mb-3">
+          טען שני שירים. ה-AI יסרוק את הספקטרום, יחשב את נקודות המעבר האופטימליות, ויבצע Equal-Power Crossfade חלק.
+        </p>
+        <div class="space-y-2 text-[11px] text-purple-200">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked class="accent-sunset rounded">
+            <span>סנכרון נקודות חיתוך אוטומטי (Auto-Cue)</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked class="accent-glowLime rounded">
+            <span>עקומת Crossfade אקספוננציאלית (Equal Power)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Cloud Saved Mixes Section -->
+      <div class="glass-panel p-4 rounded-2xl border border-purple-800/40">
+        <h4 class="text-xs font-bold text-white mb-2.5 flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><span>☁️</span> המיקסים השמורים שלי</span>
+          <span id="savedCount" class="text-[10px] text-purple-400">0 מיקסים</span>
+        </h4>
+        <div id="savedMixesList" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1">
+          <div class="text-[11px] text-purple-400 italic text-center py-3">התחבר כדי לשמור מיקסים בענן</div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- FIREBASE INTEGRATION MODULE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      setDoc, 
+      getDoc, 
+      collection, 
+      addDoc, 
+      query, 
+      where, 
+      onSnapshot, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNu7VjHRX5NVUOVYCV_xOY3_pkri0zF5U",
+      authDomain: "pulseai-91aa4.firebaseapp.com",
+      projectId: "pulseai-91aa4",
+      storageBucket: "pulseai-91aa4.firebasestorage.app",
+      messagingSenderId: "1029501359655",
+      appId: "1:1029501359655:web:43e80854541fdd50cd2002",
+      measurementId: "G-TPJSH7T6SY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let unsubscribeMixes = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('loginBtn').classList.add('hidden');
+        document.getElementById('userProfileBadge').classList.remove('hidden');
+        document.getElementById('userProfileBadge').classList.add('flex');
+        document.getElementById('onboardingModal').classList.add('hidden');
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          document.getElementById('userNameDisplay').textContent = `${data.firstName || 'משתמש'}`;
+        }
+        listenToSavedMixes(user.uid);
+      } else {
+        currentUser = null;
+        document.getElementById('loginBtn').classList.remove('hidden');
+        document.getElementById('userProfileBadge').classList.add('hidden');
+        document.getElementById('userProfileBadge').classList.remove('flex');
+        if (unsubscribeMixes) unsubscribeMixes();
+        document.getElementById('savedMixesList').innerHTML = '<div class="text-[11px] text-purple-400 italic text-center py-2">התחבר כדי לשמור מיקסים</div>';
+        document.getElementById('savedCount').textContent = '0 מיקסים';
+      }
+    });
+
+    window.handleFirebaseRegister = async function() {
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'יוצר חשבון ב-Firebase...';
+      btn.disabled = true;
+
+      const fName = document.getElementById('firstName').value.trim();
+      const lName = document.getElementById('lastName').value.trim();
+      const phone = document.getElementById('phoneNumber').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const genres = Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value);
+      const artists = document.getElementById('favoriteArtists').value.trim();
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+          firstName: fName,
+          lastName: lName,
+          phone: phone,
+          email: email,
+          genres: genres,
+          favoriteArtists: artists,
+          createdAt: serverTimestamp()
+        });
+
+        document.getElementById('onboardingModal').classList.add('hidden');
+      } catch (err) {
+        alert('שגיאה: ' + err.message);
+      } finally {
+        btn.textContent = '🚀 יצירת חשבון והפעלת AI';
+        btn.disabled = false;
+      }
+    };
+
+    window.saveCurrentMixToCloud = async function() {
+      if (!currentUser) {
+        alert('יש להתחבר כדי לשמור מיקסים בענן.');
+        document.getElementById('onboardingModal').classList.remove('hidden');
+        return;
+      }
+
+      const trackA = document.getElementById('trackATitle').textContent;
+      const trackB = document.getElementById('trackBTitle').textContent;
+      const cueA = document.getElementById('trackACueText').textContent;
+      const cueB = document.getElementById('trackBCueText').textContent;
+
+      if (cueA === '--:--' || cueB === '--:--') {
+        alert('אנא טען שני שירים לפני שמירת המיקס.');
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "mixes"), {
+          userId: currentUser.uid,
+          trackA: trackA,
+          trackB: trackB,
+          cueA: cueA,
+          cueB: cueB,
+          createdAt: serverTimestamp()
+        });
+        alert('המיקס נשמר בהצלחה לחשבון שלך!');
+      } catch (err) {
+        alert('שגיאה בשמירה: ' + err.message);
+      }
+    };
+
+    function listenToSavedMixes(uid) {
+      const q = query(collection(db, "mixes"), where("userId", "==", uid));
+      unsubscribeMixes = onSnapshot(q, (snapshot) => {
+        const list = document.getElementById('savedMixesList');
+        document.getElementById('savedCount').textContent = `${snapshot.size} מיקסים`;
+        if (snapshot.empty) {
+          list.innerHTML = '<div class="text-[11px] text-purple-400 italic text-center py-2">אין עדיין מיקסים שמורים</div>';
+          return;
+        }
+        list.innerHTML = '';
+        snapshot.forEach((doc) => {
+          const mix = doc.data();
+          list.innerHTML += `
+            <div class="p-2 rounded-lg bg-black/40 border border-purple-900/30 flex justify-between items-center text-[11px]">
+              <span class="truncate text-purple-200 max-w-[150px]">${mix.trackA} ➔ ${mix.trackB}</span>
+              <span class="text-glowLime font-mono font-bold">${mix.cueA}</span>
+            </div>
+          `;
+        });
+      });
+    }
+
+    window.handleLogout = () => signOut(auth);
+    window.openLoginModal = () => document.getElementById('onboardingModal').classList.remove('hidden');
+    window.goToGenreStep = () => {
+      document.getElementById('modalStep1').classList.add('hidden');
+      document.getElementById('modalStep2').classList.remove('hidden');
+    };
+  </script>
+
+  <!-- REAL AUDIO ENGINE & WAVEFORM SCRIPT (Web Audio API) -->
+  <script>
+    let audioCtx = null;
+
+    const decks = {
+      A: {
+        buffer: null,
+        source: null,
+        gainNode: null,
+        isPlaying: false,
+        startTime: 0,
+        pauseOffset: 0,
+        cueTime: 0,
+        peaks: [],
+        colors: { c1: '#FF5E36', c2: '#8F00FF' }
+      },
+      B: {
+        buffer: null,
+        source: null,
+        gainNode: null,
+        isPlaying: false,
+        startTime: 0,
+        pauseOffset: 0,
+        cueTime: 0,
+        peaks: [],
+        colors: { c1: '#10E773', c2: '#00F0FF' }
+      }
+    };
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        decks.A.gainNode = audioCtx.createGain();
+        decks.B.gainNode = audioCtx.createGain();
+
+        decks.A.gainNode.gain.value = 1.0;
+        decks.B.gainNode.gain.value = 0.0;
+
+        decks.A.gainNode.connect(audioCtx.destination);
+        decks.B.gainNode.connect(audioCtx.destination);
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Format seconds to mm:ss
+    function formatTime(sec) {
+      if (isNaN(sec) || sec < 0) return "00:00";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // Drag & Drop Handlers
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('dragover');
+    }
+    function handleDrop(e, deckId) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) processAudioFile(files[0], deckId);
+    }
+    function handleFileInput(e, deckId) {
+      const files = e.target.files;
+      if (files.length > 0) processAudioFile(files[0], deckId);
+    }
+
+    // Process & Decode Audio File
+    async function processAudioFile(file, deckId) {
+      initAudioContext();
+      const statusEl = document.getElementById(`track${deckId}Status`);
+      statusEl.textContent = 'מפענח אודיו ומייצר גל קול...';
+
+      document.getElementById(`track${deckId}Title`).textContent = file.name.replace(/\.[^/.]+$/, "");
+      document.getElementById(`dropPrompt${deckId}`).classList.add('hidden');
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        
+        decks[deckId].buffer = decodedBuffer;
+        decks[deckId].pauseOffset = 0;
+        
+        // Calculate smart Cue point (e.g. Outro at 75% for A, Intro/Drop at 15% for B)
+        const duration = decodedBuffer.duration;
+        decks[deckId].cueTime = deckId === 'A' ? duration * 0.75 : duration * 0.15;
+
+        // Update UI Info
+        document.getElementById(`track${deckId}Duration`).textContent = formatTime(duration);
+        document.getElementById(`track${deckId}TotalTime`).textContent = formatTime(duration);
+        document.getElementById(`track${deckId}CueText`).textContent = formatTime(decks[deckId].cueTime);
+        document.getElementById(`cueMarker${deckId}`).style.left = `${(decks[deckId].cueTime / duration) * 100}%`;
+        document.getElementById(`cueMarker${deckId}`).classList.remove('hidden');
+        document.getElementById(deckId === 'A' ? 'cueOutInfoA' : 'cueInInfoB').classList.remove('hidden');
+        statusEl.textContent = 'מוכן להשמעה ✓';
+
+        // Extract peaks & draw waveform
+        extractPeaks(decodedBuffer, deckId);
+        drawWaveform(deckId);
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'שגיאה בפענוח הקובץ';
+      }
+    }
+
+    // Extract Peaks from Real PCM Data
+    function extractPeaks(buffer, deckId) {
+      const channelData = buffer.getChannelData(0); // Left / Mono channel
+      const canvas = document.getElementById(`waveform${deckId}`);
+      const width = canvas.parentElement.offsetWidth;
+      const numBars = Math.floor(width / 3.5);
+      const step = Math.floor(channelData.length / numBars);
+      const peaks = [];
+
+      for (let i = 0; i < numBars; i++) {
+        let max = 0;
+        const start = i * step;
+        for (let j = 0; j < step; j += 10) {
+          const val = Math.abs(channelData[start + j] || 0);
+          if (val > max) max = val;
+        }
+        peaks.push(max);
+      }
+      decks[deckId].peaks = peaks;
+    }
+
+    // Draw Real Waveform on Canvas
+    function drawWaveform(deckId) {
+      const canvas = document.getElementById(`waveform${deckId}`);
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width = canvas.parentElement.offsetWidth;
+      const height = canvas.height = canvas.parentElement.offsetHeight;
+      const peaks = decks[deckId].peaks;
+
+      if (!peaks || peaks.length === 0) return;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const barWidth = width / peaks.length;
+      for (let i = 0; i < peaks.length; i++) {
+        const barHeight = Math.max(4, peaks[i] * (height * 0.85));
+        const x = i * barWidth;
+        const y = (height - barHeight) / 2;
+
+        const grad = ctx.createLinearGradient(0, y, 0, y + barHeight);
+        grad.addColorStop(0, decks[deckId].colors.c1);
+        grad.addColorStop(1, decks[deckId].colors.c2);
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barWidth - 1, barHeight);
+      }
+    }
+
+    // Playback Logic
+    function startDeck(deckId, offset = 0) {
+      const d = decks[deckId];
+      if (!d.buffer) return;
+
+      if (d.source) {
+        try { d.source.stop(); } catch(e){}
+        d.source.disconnect();
+      }
+
+      d.source = audioCtx.createBufferSource();
+      d.source.buffer = d.buffer;
+      d.source.connect(d.gainNode);
+
+      d.startTime = audioCtx.currentTime - offset;
+      d.source.start(0, offset);
+      d.isPlaying = true;
+    }
+
+    function stopDeck(deckId) {
+      const d = decks[deckId];
+      if (d.source && d.isPlaying) {
+        d.pauseOffset = audioCtx.currentTime - d.startTime;
+        try { d.source.stop(); } catch(e){}
+        d.isPlaying = false;
+      }
+    }
+
+    function toggleMasterPlay() {
+      initAudioContext();
+      const playBtn = document.getElementById('playBtn');
+
+      if (!decks.A.isPlaying && !decks.B.isPlaying) {
+        if (decks.A.buffer) {
+          startDeck('A', decks.A.pauseOffset);
+          playBtn.textContent = '⏸';
+          document.getElementById('masterPlayStatus').textContent = 'מנגן (Deck A)';
+        } else {
+          alert('נא לטעון קובץ MP3 ל-Deck A תחילה.');
+        }
+      } else {
+        stopDeck('A');
+        stopDeck('B');
+        playBtn.textContent = '▶';
+        document.getElementById('masterPlayStatus').textContent = 'מושהה';
+      }
+    }
+
+    // Seek on Click
+    function seekDeck(e, deckId) {
+      const d = decks[deckId];
+      if (!d.buffer) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = clickX / rect.width;
+      const targetTime = ratio * d.buffer.duration;
+
+      d.pauseOffset = targetTime;
+      if (d.isPlaying) {
+        startDeck(deckId, targetTime);
+      } else {
+        document.getElementById(`playhead${deckId}`).style.left = `${ratio * 100}%`;
+        document.getElementById(`track${deckId}CurrentTime`).textContent = formatTime(targetTime);
+      }
+    }
+
+    // Smart Crossfade Transition
+    function triggerSmartCrossfade(duration = 4.0) {
+      initAudioContext();
+      if (!decks.A.buffer || !decks.B.buffer) {
+        alert('יש לטעון קבצי MP3 לשני ה-Decks כדי לבצע מעבר.');
+        return;
+      }
+
+      const now = audioCtx.currentTime;
+      const statusEl = document.getElementById('transitionStatus');
+      statusEl.innerHTML = '<span class="text-sunset animate-pulse">🔥 מבצע מעבר Equal-Power ל-Deck B...</span>';
+
+      // Start Deck B from its Cue In point if not playing
+      if (!decks.B.isPlaying) {
+        startDeck('B', decks.B.cueTime);
+      }
+
+      // Equal Power Crossfade Curve
+      decks.A.gainNode.gain.setValueAtTime(decks.A.gainNode.gain.value, now);
+      decks.A.gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      decks.B.gainNode.gain.setValueAtTime(0.001, now);
+      decks.B.gainNode.gain.exponentialRampToValueAtTime(1.0, now + duration);
+
+      setTimeout(() => {
+        stopDeck('A');
+        decks.A.gainNode.gain.value = 1.0; // Reset for next time
+        statusEl.innerHTML = '<span class="text-glowLime">✓ מעבר הושלם! Deck B פעיל כעת</span>';
+        document.getElementById('masterPlayStatus').textContent = 'מנגן (Deck B)';
+      }, duration * 1000);
+    }
+
+    // Animation Loop for Smooth Playheads & Timer
+    function renderLoop() {
+      ['A', 'B'].forEach(deckId => {
+        const d = decks[deckId];
+        if (d.isPlaying && d.buffer) {
+          const current = (audioCtx.currentTime - d.startTime);
+          if (current <= d.buffer.duration) {
+            const ratio = current / d.buffer.duration;
+            document.getElementById(`playhead${deckId}`).style.left = `${ratio * 100}%`;
+            document.getElementById(`track${deckId}CurrentTime`).textContent = formatTime(current);
+          } else {
+            d.isPlaying = false;
+          }
+        }
+      });
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+    window.addEventListener('resize', () => {
+      if (decks.A.buffer) { extractPeaks(decks.A.buffer, 'A'); drawWaveform('A'); }
+      if (decks.B.buffer) { extractPeaks(decks.B.buffer, 'B'); drawWaveform('B'); }
+    });
+  </script>
+</body>
+</html>
