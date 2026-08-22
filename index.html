@@ -430,14 +430,19 @@
     }
 
     // --- ASYNC NON-BLOCKING MP3 ENCODER ---
-    async function encodeMp3Async(renderedBuffer, onProgress) {
+    async function encodeMp3Async(audioBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
-      const left = renderedBuffer.getChannelData(0);
-      const right = renderedBuffer.numberOfChannels > 1 ? renderedBuffer.getChannelData(1) : left;
-      const mp3encoder = new lamejs.Mp3Encoder(2, renderedBuffer.sampleRate, 192);
+      const buf = (audioBuffer && audioBuffer.renderedBuffer) ? audioBuffer.renderedBuffer : audioBuffer;
+      if (!buf || typeof buf.getChannelData !== 'function') {
+        throw new Error('שגיאה בעיבוד האודיו (AudioBuffer לא תקין)');
+      }
+
+      const left = buf.getChannelData(0);
+      const right = buf.numberOfChannels > 1 ? buf.getChannelData(1) : left;
+      const mp3encoder = new lamejs.Mp3Encoder(2, buf.sampleRate, 192);
       const mp3Data = [];
       const block = 1152;
-      const totalLen = renderedBuffer.length;
+      const totalLen = buf.length;
       let i = 0;
       const CHUNK_STEP = block * 25;
 
@@ -451,8 +456,8 @@
             lChunk[j] = Math.max(-32768, Math.min(32767, left[i + j] * 32767));
             rChunk[j] = Math.max(-32768, Math.min(32767, right[i + j] * 32767));
           }
-          const buf = mp3encoder.encodeBuffer(lChunk, rChunk);
-          if (buf.length > 0) mp3Data.push(new Int8Array(buf));
+          const encoded = mp3encoder.encodeBuffer(lChunk, rChunk);
+          if (encoded.length > 0) mp3Data.push(new Int8Array(encoded));
           i += len;
         }
         if (onProgress) onProgress(Math.round((i / totalLen) * 100));
@@ -464,9 +469,9 @@
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     }
 
-    // --- STEP-WISE EQUAL POWER CROSSFADE SCHEDULE (100% Stable) ---
+    // --- STEP-WISE EQUAL POWER CROSSFADE SCHEDULE ---
     function scheduleEqualPowerFade(gainParam, t0, duration, isFadeIn, maxGain = 1.0) {
-      const steps = 12;
+      const steps = 10;
       const stepDur = duration / steps;
       for (let s = 0; s <= steps; s++) {
         const p = s / steps;
@@ -474,7 +479,7 @@
         const val = isFadeIn
           ? maxGain * Math.sin(p * 0.5 * Math.PI)
           : maxGain * Math.cos(p * 0.5 * Math.PI);
-        gainParam.setValueAtTime(Math.max(0.0001, val), t);
+        gainParam.setValueAtTime(Math.max(0.0001, Math.min(2.0, val)), t);
       }
     }
 
@@ -496,12 +501,15 @@
     // --- SPECTRAL RGB WAVEFORM VISUALIZER ---
     function drawRGBWaveform(canvas, audioBuffer) {
       if (!canvas || !audioBuffer) return;
+      const buf = audioBuffer.renderedBuffer || audioBuffer;
+      if (typeof buf.getChannelData !== 'function') return;
+
       const ctx = canvas.getContext('2d');
       const width = canvas.width = 900;
       const height = canvas.height = 160;
       ctx.clearRect(0, 0, width, height);
 
-      const data = audioBuffer.getChannelData(0);
+      const data = buf.getChannelData(0);
       const samplesPerPixel = Math.max(1, Math.floor(data.length / width));
       let prevSample = 0, lowState = 0;
       const lowAlpha = 0.06;
@@ -650,7 +658,22 @@
         }
       }
 
-      return await offlineCtx.startRendering();
+      // Safe cross-browser render resolving
+      let renderedAudioBuffer;
+      const renderPromise = offlineCtx.startRendering();
+      if (renderPromise && typeof renderPromise.then === 'function') {
+        renderedAudioBuffer = await renderPromise;
+      } else {
+        renderedAudioBuffer = await new Promise(res => {
+          offlineCtx.oncomplete = e => res(e.renderedBuffer);
+        });
+      }
+
+      if (renderedAudioBuffer && renderedAudioBuffer.renderedBuffer) {
+        renderedAudioBuffer = renderedAudioBuffer.renderedBuffer;
+      }
+
+      return renderedAudioBuffer;
     }
 
     // --- PRO CUSTOM MIX ---
