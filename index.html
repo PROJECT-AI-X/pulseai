@@ -233,7 +233,7 @@
       renderProSongSlots();
     };
 
-    // --- SMART SEARCH WITH QUERY SANITIZATION & FALLBACK ---
+    // --- SMART SEARCH WITH QUERY SANITIZATION & US FALLBACK ---
     function cleanSearchQuery(query) {
       return query
         .replace(/\b(של|את|עם|by|feat|ft|featuring)\b/gi, ' ')
@@ -250,7 +250,6 @@
       for (const t of termsToTry) {
         if (!t || t.length < 2) continue;
         
-        // Try Israel store first
         try {
           const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=8&country=IL`);
           const data = await res.json();
@@ -258,7 +257,6 @@
           if (results.length > 0) return results;
         } catch (e) {}
 
-        // Fallback to US store
         try {
           const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=8&country=US`);
           const data = await res.json();
@@ -283,7 +281,7 @@
         const results = await searchItunesApi(query);
 
         if (results.length === 0) {
-          dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים (נסה לחפש ללא מילת "של")</div>';
+          dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         } else {
           dropdown.innerHTML = results.map((item, rIdx) => {
             const title = `${item.artistName} — ${item.trackName}`;
@@ -368,7 +366,7 @@
       return await ctx.decodeAudioData(arrayBuffer);
     }
 
-    // --- SMART SILENCE TRIMMING & STRUCTURAL ANALYSIS ---
+    // --- STRUCTURAL BOUNDS & SILENCE TRIMMING ---
     function analyzeSmartBounds(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
@@ -466,22 +464,18 @@
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     }
 
-    function getEqualPowerFadeOutCurve(maxGain, length = 32) {
-      const curve = new Float32Array(length);
-      for (let i = 0; i < length; i++) {
-        const p = i / (length - 1);
-        curve[i] = Math.max(0.0001, maxGain * Math.cos(p * 0.5 * Math.PI));
+    // --- STEP-WISE EQUAL POWER CROSSFADE SCHEDULE (100% Stable) ---
+    function scheduleEqualPowerFade(gainParam, t0, duration, isFadeIn, maxGain = 1.0) {
+      const steps = 12;
+      const stepDur = duration / steps;
+      for (let s = 0; s <= steps; s++) {
+        const p = s / steps;
+        const t = t0 + s * stepDur;
+        const val = isFadeIn
+          ? maxGain * Math.sin(p * 0.5 * Math.PI)
+          : maxGain * Math.cos(p * 0.5 * Math.PI);
+        gainParam.setValueAtTime(Math.max(0.0001, val), t);
       }
-      return curve;
-    }
-
-    function getEqualPowerFadeInCurve(maxGain, length = 32) {
-      const curve = new Float32Array(length);
-      for (let i = 0; i < length; i++) {
-        const p = i / (length - 1);
-        curve[i] = Math.max(0.0001, maxGain * Math.sin(p * 0.5 * Math.PI));
-      }
-      return curve;
     }
 
     function decideSmartTransition(trackA, trackB, structB, clashEnabled) {
@@ -551,7 +545,7 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    // --- MAIN AUDIO RENDERING ENGINE (Returns raw AudioBuffer) ---
+    // --- MAIN AUDIO RENDERING ENGINE (Pure AudioBuffer Output) ---
     async function renderDjSetToAudioBuffer(buffers, tracksMeta, targetDurationSec, clashEnabled) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
@@ -621,13 +615,11 @@
         const startTime = trackOffsets[i];
         if (startTime >= totalRenderLen) break;
 
-        const outCurve = getEqualPowerFadeOutCurve(autoGain);
-        const inCurve = getEqualPowerFadeInCurve(autoGain);
-
         if (i === 0) {
           fadeGain.gain.setValueAtTime(0.0001, 0);
           fadeGain.gain.exponentialRampToValueAtTime(autoGain, 0.8);
-          fadeGain.gain.setValueCurveAtTime(outCurve, cueOut, tDur);
+          fadeGain.gain.setValueAtTime(autoGain, cueOut);
+          scheduleEqualPowerFade(fadeGain.gain, cueOut, tDur, false, autoGain);
 
           lowEq.gain.setValueAtTime(0, cueOut);
           lowEq.gain.linearRampToValueAtTime(-6, cueOut + tDur);
@@ -635,8 +627,10 @@
           const playDur = Math.max(0.1, Math.min(cueOut + tDur, buffers[i].duration - startTrim));
           src.start(0, startTrim, playDur);
         } else if (i < buffers.length - 1) {
-          fadeGain.gain.setValueCurveAtTime(inCurve, startTime, tDur);
-          fadeGain.gain.setValueCurveAtTime(outCurve, startTime + cueOut, tDur);
+          fadeGain.gain.setValueAtTime(0.0001, startTime);
+          scheduleEqualPowerFade(fadeGain.gain, startTime, tDur, true, autoGain);
+          fadeGain.gain.setValueAtTime(autoGain, startTime + cueOut);
+          scheduleEqualPowerFade(fadeGain.gain, startTime + cueOut, tDur, false, autoGain);
 
           lowEq.gain.setValueAtTime(-6, startTime);
           lowEq.gain.linearRampToValueAtTime(0, startTime + tDur * 0.7);
@@ -646,7 +640,8 @@
           const playDur = Math.max(0.1, Math.min(cueOut + tDur, buffers[i].duration - startTrim));
           src.start(startTime, startTrim, playDur);
         } else {
-          fadeGain.gain.setValueCurveAtTime(inCurve, startTime, tDur);
+          fadeGain.gain.setValueAtTime(0.0001, startTime);
+          scheduleEqualPowerFade(fadeGain.gain, startTime, tDur, true, autoGain);
           lowEq.gain.setValueAtTime(-6, startTime);
           lowEq.gain.linearRampToValueAtTime(0, startTime + tDur * 0.7);
 
@@ -669,7 +664,7 @@
       }
 
       const clashEnabled = document.getElementById('clashDropToggle')?.checked || false;
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס עם Smart Crossfade (Equal Power S-Curve)...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס חכם (Smart Crossfade)...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
