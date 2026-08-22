@@ -101,7 +101,7 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
       <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת מיקס 10 דקות אוטומטי</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — ה-AI יפיק עבורך רצף מוזיקלי באורך 10 דקות עם Smart Crossfade טבעי ללא נפילות ווליום.</p>
+      <p class="text-xs text-purple-300 mt-1">בחר עד 2 שירים וז'אנר (אופציונלי), או בחר רק ז'אנר — ה-AI יפיק עבורך רצף מוזיקלי באורך 10 דקות מלאות עם Smart Crossfade טבעי ללא נפילות ווליום.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 relative" style="overflow: visible;">
@@ -233,7 +233,6 @@
       renderProSongSlots();
     };
 
-    // --- SMART SEARCH WITH QUERY SANITIZATION & US FALLBACK ---
     function cleanSearchQuery(query) {
       return query
         .replace(/\b(של|את|עם|by|feat|ft|featuring)\b/gi, ' ')
@@ -251,14 +250,14 @@
         if (!t || t.length < 2) continue;
         
         try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=8&country=IL`);
+          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=15&country=IL`);
           const data = await res.json();
           results = (data.results || []).filter(item => item.previewUrl);
           if (results.length > 0) return results;
         } catch (e) {}
 
         try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=8&country=US`);
+          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=15&country=US`);
           const data = await res.json();
           results = (data.results || []).filter(item => item.previewUrl);
           if (results.length > 0) return results;
@@ -360,10 +359,14 @@
       return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
+    // --- ROBUST AUDIO FETCH & DECODE HELPER ---
     async function fetchAudioBuffer(url, ctx) {
       const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
-      return await ctx.decodeAudioData(arrayBuffer);
+      return await new Promise((resolve, reject) => {
+        ctx.decodeAudioData(arrayBuffer, resolve, reject);
+      });
     }
 
     // --- STRUCTURAL BOUNDS & SILENCE TRIMMING ---
@@ -469,7 +472,6 @@
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     }
 
-    // --- STEP-WISE EQUAL POWER CROSSFADE SCHEDULE ---
     function scheduleEqualPowerFade(gainParam, t0, duration, isFadeIn, maxGain = 1.0) {
       const steps = 10;
       const stepDur = duration / steps;
@@ -498,7 +500,6 @@
       return { type: "smartFlow", duration: 6.0 };
     }
 
-    // --- SPECTRAL RGB WAVEFORM VISUALIZER ---
     function drawRGBWaveform(canvas, audioBuffer) {
       if (!canvas || !audioBuffer) return;
       const buf = audioBuffer.renderedBuffer || audioBuffer;
@@ -658,22 +659,31 @@
         }
       }
 
-      // Safe cross-browser render resolving
-      let renderedAudioBuffer;
-      const renderPromise = offlineCtx.startRendering();
-      if (renderPromise && typeof renderPromise.then === 'function') {
-        renderedAudioBuffer = await renderPromise;
-      } else {
-        renderedAudioBuffer = await new Promise(res => {
-          offlineCtx.oncomplete = e => res(e.renderedBuffer);
-        });
-      }
+      // Safe dual-mode render resolving (Handles both Promise & oncomplete callback)
+      return new Promise((resolve, reject) => {
+        let isResolved = false;
+        offlineCtx.oncomplete = (e) => {
+          if (!isResolved) {
+            isResolved = true;
+            resolve(e.renderedBuffer);
+          }
+        };
 
-      if (renderedAudioBuffer && renderedAudioBuffer.renderedBuffer) {
-        renderedAudioBuffer = renderedAudioBuffer.renderedBuffer;
-      }
-
-      return renderedAudioBuffer;
+        const renderPromise = offlineCtx.startRendering();
+        if (renderPromise && typeof renderPromise.then === 'function') {
+          renderPromise.then((buf) => {
+            if (!isResolved) {
+              isResolved = true;
+              resolve(buf);
+            }
+          }).catch(err => {
+            if (!isResolved) {
+              isResolved = true;
+              reject(err);
+            }
+          });
+        }
+      });
     }
 
     // --- PRO CUSTOM MIX ---
@@ -687,14 +697,31 @@
       }
 
       const clashEnabled = document.getElementById('clashDropToggle')?.checked || false;
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס חכם (Smart Crossfade)...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעי שמע לזיכרון...';
 
       try {
-        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const buffers = await Promise.all(chosenTracks.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
-        tempCtx.close?.();
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        const tempCtx = new AudioCtxClass();
+        const loadedBuffers = [];
+        const validTracks = [];
 
-        const renderedAudioBuffer = await renderDjSetToAudioBuffer(buffers, chosenTracks, null, clashEnabled);
+        for (const t of chosenTracks) {
+          try {
+            const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
+            loadedBuffers.push(buf);
+            validTracks.push(t);
+          } catch(e) {
+            console.warn('שגיאה בטעינת קובץ:', t.title, e);
+          }
+        }
+        if (tempCtx.close) await tempCtx.close();
+
+        if (loadedBuffers.length < 2) {
+          throw new Error('לא ניתן היה לטעון לפחות 2 שירים. אנא בחר שירים אחרים.');
+        }
+
+        status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד מיקס חכם (Smart Crossfade)...';
+        const renderedAudioBuffer = await renderDjSetToAudioBuffer(loadedBuffers, validTracks, null, clashEnabled);
         
         status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מקודד MP3 באיכות סטודיו...';
         const blob = await encodeMp3Async(renderedAudioBuffer, pct => {
@@ -714,43 +741,76 @@
       }
     };
 
-    // --- QUICK MIX (10-Minute Full Mix) ---
+    // --- QUICK MIX (10-Minute Full Mix with Automatic Loop Sequencing) ---
     window.generateQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
       const genre = document.getElementById('quickGenGenre').value;
       status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מכין רשימת שירים למיקס 10 דקות...';
 
       try {
-        let tracksToUse = [];
-        if (selectedQuickTrack1) tracksToUse.push(selectedQuickTrack1);
-        if (selectedQuickTrack2) tracksToUse.push(selectedQuickTrack2);
+        let baseTracks = [];
+        if (selectedQuickTrack1) baseTracks.push(selectedQuickTrack1);
+        if (selectedQuickTrack2) baseTracks.push(selectedQuickTrack2);
 
-        if (tracksToUse.length === 0) {
+        if (baseTracks.length < 5) {
           status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר להיטים מובילים בז'אנר ${genre}...`;
           const results = await searchItunesApi(`${genre} hits`);
-          tracksToUse = results.map((i, idx) => ({
+          const fetchedTracks = results.map((i, idx) => ({
             title: `${i.artistName} — ${i.trackName}`,
             previewUrl: i.previewUrl,
             bpm: 120 + ((i.trackId || idx) % 10),
             key: ['8A', '8B', '9A', '7A', '11B', '4A', '12A'][(i.trackId || idx) % 7]
           }));
+          baseTracks = [...baseTracks, ...fetchedTracks];
         }
 
-        if (tracksToUse.length === 0) {
-          tracksToUse = [
-            { title: 'Electronic Pulse', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', bpm: 124, key: '8A' },
-            { title: 'Future Action', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', bpm: 126, key: '8A' }
-          ];
+        if (baseTracks.length === 0) {
+          throw new Error('לא נמצאו שירים תקינים להפקה. נסה לחפש שיר אחר.');
+        }
+
+        // Fetch distinct unique buffers with resilient error catching
+        status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעי אודיו...';
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        const tempCtx = new AudioCtxClass();
+        const loadedBuffers = [];
+        const validTracks = [];
+
+        for (const t of baseTracks) {
+          try {
+            const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
+            loadedBuffers.push(buf);
+            validTracks.push(t);
+            if (loadedBuffers.length >= 8) break;
+          } catch(e) {
+            console.warn('דילוג על שיר שלא נטען:', t.title);
+          }
+        }
+        if (tempCtx.close) await tempCtx.close();
+
+        if (loadedBuffers.length === 0) {
+          throw new Error('לא הצלחנו לטעון את קבצי השמע. נסה שירים אחרים.');
+        }
+
+        // Expand sequence in a loop until we reach at least 600 seconds
+        const TARGET_DURATION = 600;
+        let extendedBuffers = [];
+        let extendedTracks = [];
+        let accumulatedTime = 0;
+        let loopIdx = 0;
+
+        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 50) {
+          const trackIdx = loopIdx % loadedBuffers.length;
+          const buf = loadedBuffers[trackIdx];
+          extendedBuffers.push(buf);
+          extendedTracks.push(validTracks[trackIdx]);
+          accumulatedTime += Math.max(12, buf.duration - 6);
+          loopIdx++;
         }
 
         status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מעבד Smart Crossfade למיקס 10 דקות...';
-        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const buffers = await Promise.all(tracksToUse.map(t => fetchAudioBuffer(t.previewUrl, tempCtx)));
-        tempCtx.close?.();
-        
-        const renderedAudioBuffer = await renderDjSetToAudioBuffer(buffers, tracksToUse, 600, false);
+        const renderedAudioBuffer = await renderDjSetToAudioBuffer(extendedBuffers, extendedTracks, TARGET_DURATION, false);
 
-        status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מקודד MP3...';
+        status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מקודד MP3 (10 דקות מלאות)...';
         const blob = await encodeMp3Async(renderedAudioBuffer, pct => {
           status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3: ${pct}%...`;
         });
@@ -761,7 +821,7 @@
         drawRGBWaveform(document.getElementById('quickWaveformCanvas'), renderedAudioBuffer);
         wrap?.classList.remove('hidden');
 
-        status.textContent = '🎉 המיקס הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס 10 דקות מלא נוצר והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
