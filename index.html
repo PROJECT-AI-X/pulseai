@@ -2,12 +2,13 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>PULSEAI — AI Master DJ Studio</title>
   
   <meta name="theme-color" content="#080512">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -48,12 +49,14 @@
       min-height: 100vh;
       color: #F3F4F6;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: env(safe-area-inset-bottom, 1rem);
     }
     .glass-panel {
-      background: rgba(23, 16, 43, 0.75);
+      background: rgba(23, 16, 43, 0.8);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(143, 0, 255, 0.2);
+      border: 1px solid rgba(143, 0, 255, 0.22);
       overflow: visible !important;
     }
     .mode-tab { transition: all .2s ease; }
@@ -64,75 +67,133 @@
       box-shadow: 0 0 18px rgba(16,231,115,.12);
     }
     .quick-search-card { box-shadow: inset 0 0 30px rgba(143,0,255,.06); overflow: visible !important; }
+    
+    @media (max-width: 768px) {
+      input, select {
+        font-size: 16px !important;
+      }
+    }
   </style>
 </head>
 
-<body class="p-3 md:p-8 flex flex-col items-center">
+<body class="p-3 sm:p-5 md:p-8 flex flex-col items-center">
 
   <!-- Header -->
-  <header class="w-full max-w-5xl flex justify-between items-center mb-5 pb-3 border-b border-purple-900/30">
-    <div class="flex items-center gap-2.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
+  <header class="w-full max-w-5xl flex justify-between items-center mb-4 sm:mb-5 pb-3 border-b border-purple-900/30">
+    <div class="flex items-center gap-2.5 sm:gap-3">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg sm:text-xl text-white shadow-glow-orange shrink-0">P</div>
       <div>
-        <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ אוטומטי — Pro Isolator EQ · Bass Swap · Downbeat Lock</p>
+        <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
+        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Downbeat Lock · Bass Swap · Equal Power</p>
       </div>
     </div>
+    <button onclick="openGuidePrompt()" class="px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-cyan-300 hover:bg-purple-900/60 active:scale-95 transition-transform flex items-center gap-1.5">
+      <span>🗺️ מפת דרכים</span>
+    </button>
   </header>
+
+  <!-- GUIDED LEARNING MODAL OVERLAY -->
+  <div id="guideOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
+    
+    <!-- Initial Prompt Card -->
+    <div id="guideWelcomeCard" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-purple-600/50 shadow-2xl text-center">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-sunset to-glowLime flex items-center justify-center text-2xl shadow-glow-orange">🎧</div>
+      <h2 class="text-2xl font-black text-white mb-2">ברוכים הבאים ל-PULSEAI!</h2>
+      <p class="text-xs sm:text-sm text-purple-300 mb-6 leading-relaxed">האולפן החכם שיוצר עבורך מיקסים מקצועיים בלחיצת כפתור. האם תרצה סיור קצר של 5 שלבים כדי להכיר את כל הפיצ'רים באתר?</p>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="startRoadmap()" class="py-3 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs sm:text-sm shadow-glow-lime active:scale-95 transition-transform">
+          כן, בוא נתחיל! 🚀
+        </button>
+        <button onclick="closeGuideModal()" class="py-3 rounded-xl bg-purple-950/60 border border-purple-800 text-purple-300 font-bold text-xs sm:text-sm hover:bg-purple-900/60 active:scale-95 transition-transform">
+          לא, אני מכיר 👍
+        </button>
+      </div>
+    </div>
+
+    <!-- 5-Step Roadmap Card -->
+    <div id="guideStepsCard" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-lg w-full border border-electricCyan/50 shadow-2xl hidden text-right">
+      
+      <!-- Top Progress Bar -->
+      <div class="flex items-center justify-between mb-4 pb-2 border-b border-purple-800/40">
+        <span id="stepCounterBadge" class="text-xs font-black px-2.5 py-1 rounded-lg bg-electricCyan/15 text-electricCyan border border-electricCyan/40 font-mono">שלב 1/5</span>
+        <button onclick="closeGuideModal()" class="text-purple-400 hover:text-white text-xs font-bold">✕ סגור</button>
+      </div>
+
+      <div class="w-full bg-black/40 h-1.5 rounded-full mb-5 overflow-hidden">
+        <div id="stepProgressBar" class="bg-gradient-to-r from-glowLime to-electricCyan h-full transition-all duration-300" style="width: 20%;"></div>
+      </div>
+
+      <!-- Step Dynamic Content -->
+      <div id="stepContentArea" class="min-h-[160px] flex flex-col justify-center">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex items-center justify-between mt-6 pt-3 border-t border-purple-800/40 gap-3">
+        <button id="prevStepBtn" onclick="navigateStep(-1)" class="px-4 py-2 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-purple-300 disabled:opacity-30 disabled:pointer-events-none active:scale-95">
+          ← הקודם
+        </button>
+        <button id="nextStepBtn" onclick="navigateStep(1)" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs shadow-glow-lime active:scale-95">
+          הבא →
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- QUICK MIX / PRO MODE TOGGLE SWITCH -->
   <section class="w-full max-w-5xl mb-4">
-    <div class="glass-panel p-2 rounded-2xl flex items-center justify-between gap-2 border border-purple-800/40">
-      <div class="flex items-center gap-2 px-2">
-        <span class="text-sm">🎛️</span>
+    <div class="glass-panel p-2 sm:p-2.5 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border border-purple-800/40">
+      <div class="flex items-center gap-2 px-1 sm:px-2">
+        <span class="text-base sm:text-lg">🎛️</span>
         <div>
-          <div class="text-xs font-black text-white">מצב עבודה</div>
-          <div class="text-[9px] text-purple-400">בחר בין יצירה מהירה לעבודה מתקדמת</div>
+          <div class="text-xs sm:text-sm font-black text-white">מצב עבודה</div>
+          <div class="text-[10px] text-purple-400">בחר בין יצירה מהירה של 10 דקות לעבודה מותאמת</div>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-1.5 w-64">
-        <button id="quickModeBtn" onclick="setUIMode('quick')" class="mode-tab active py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200">QUICK MIX</button>
-        <button id="proModeBtn" onclick="setUIMode('pro')" class="mode-tab py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200">PRO MODE</button>
+      <div class="grid grid-cols-2 gap-1.5 w-full sm:w-64">
+        <button id="quickModeBtn" onclick="setUIMode('quick')" class="mode-tab active py-2.5 sm:py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200 text-center select-none active:scale-95 transition-transform">QUICK MIX</button>
+        <button id="proModeBtn" onclick="setUIMode('pro')" class="mode-tab py-2.5 sm:py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200 text-center select-none active:scale-95 transition-transform">PRO MODE</button>
       </div>
     </div>
   </section>
 
   <!-- QUICK MIX PANEL -->
-  <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
+  <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
-      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים אהובים. מנוע ה-AI יאתר להיטים תואמים ויפיק סט מלא של 10 דקות עם מעברי DJ מקצועיים (Downbeat Lock & Bass Swap).</p>
+      <h2 class="text-base sm:text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
+      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם והסגנון שלהם, יאתר להיטים תואמים ויפיק סט רציף של 10 דקות.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 relative" style="overflow: visible;">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 mb-5 relative" style="overflow: visible;">
       <div class="relative">
-        <label class="text-[10px] text-sunset font-bold">שיר מוביל 1 (חובה)</label>
-        <input id="quickGenInput1" type="text" oninput="debounceQuickGenSearch(this.value, 1)" placeholder="חפש שיר ראשון..." autocomplete="off" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-sunset">
-        <div id="quickGenDrop1" class="absolute top-full left-0 right-0 mt-1 bg-night border border-purple-800 rounded-lg p-1.5 z-[9999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        <label class="text-[11px] sm:text-[10px] text-sunset font-bold block mb-1">שיר מוביל 1 (חובה)</label>
+        <input id="quickGenInput1" type="text" oninput="debounceQuickGenSearch(this.value, 1)" placeholder="חפש שיר ראשון..." autocomplete="off" class="w-full py-3 px-3.5 rounded-xl bg-black/50 border border-purple-800/70 text-white placeholder-purple-500/60 text-sm focus:outline-none focus:border-sunset">
+        <div id="quickGenDrop1" class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
       <div class="relative">
-        <label class="text-[10px] text-glowLime font-bold">שיר מוביל 2 (חובה)</label>
-        <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2)" placeholder="חפש שיר שני..." autocomplete="off" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-glowLime">
-        <div id="quickGenDrop2" class="absolute top-full left-0 right-0 mt-1 bg-night border border-purple-800 rounded-lg p-1.5 z-[9999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        <label class="text-[11px] sm:text-[10px] text-glowLime font-bold block mb-1">שיר מוביל 2 (חובה)</label>
+        <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2)" placeholder="חפש שיר שני..." autocomplete="off" class="w-full py-3 px-3.5 rounded-xl bg-black/50 border border-purple-800/70 text-white placeholder-purple-500/60 text-sm focus:outline-none focus:border-glowLime">
+        <div id="quickGenDrop2" class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
     </div>
 
     <div class="text-center">
-      <button onclick="generate10MinQuickMix()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime hover:scale-105 transition-transform flex items-center justify-center gap-2 mx-auto">
+      <button onclick="generate10MinQuickMix()" class="w-full sm:w-auto px-8 py-3.5 sm:py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime active:scale-95 transition-transform flex items-center justify-center gap-2 mx-auto">
         <span>✨ צור סט 10 דקות מותאם אישית (MP3)</span>
       </button>
-      <div id="quickGenStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
+      <div id="quickGenStatus" class="mt-3 text-xs sm:text-sm text-glowLime font-mono flex items-center justify-center gap-2 min-h-[22px]"></div>
     </div>
   </section>
 
   <!-- PRO MODE PANEL -->
-  <section id="proModeContainer" class="w-full max-w-5xl mb-5 hidden glass-panel p-6 rounded-2xl border border-glowLime/50 shadow-glow-lime relative">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+  <section id="proModeContainer" class="w-full max-w-5xl mb-5 hidden glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/50 shadow-glow-lime relative">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 mb-4">
       <div>
-        <h2 class="text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים ובניית סט</h2>
+        <h2 class="text-base sm:text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים ובניית סט</h2>
         <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט (לפחות 2). מנוע ה-AI מיישם סנכרון Downbeat, החלפת בסים נקייה בשיא, ו-3-Band EQ מבודד.</p>
       </div>
-      <button onclick="addProSongField()" class="px-3.5 py-2 rounded-xl bg-glowLime/15 border border-glowLime/50 text-glowLime text-xs font-black hover:bg-glowLime/25 transition-all">
+      <button onclick="addProSongField()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-glowLime/15 border border-glowLime/50 text-glowLime text-xs font-black active:bg-glowLime/25 transition-all text-center">
         ➕ הוסף שיר
       </button>
     </div>
@@ -140,10 +201,10 @@
     <div id="proSongSlotsContainer" class="space-y-3 mb-6"></div>
 
     <div class="text-center">
-      <button onclick="executeProCustomMixDownload()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange hover:scale-105 transition-transform inline-flex items-center gap-2">
+      <button onclick="executeProCustomMixDownload()" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange active:scale-95 transition-transform inline-flex items-center justify-center gap-2">
         <span>✨ צור והורד מיקס מקצועי מהשירים שנבחרו (MP3)</span>
       </button>
-      <div id="proMixStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
+      <div id="proMixStatus" class="mt-3 text-xs sm:text-sm text-glowLime font-mono flex items-center justify-center gap-2 min-h-[22px]"></div>
     </div>
   </section>
 
@@ -152,6 +213,90 @@
     let proSongsList = [];
     let quickGenTimer1 = null, quickGenTimer2 = null;
     let selectedQuickTrack1 = null, selectedQuickTrack2 = null;
+    let currentGuideStep = 1;
+
+    const roadmapStepsData = [
+      {
+        icon: "⚡",
+        title: "מצב Quick Mix (יצירה אוטומטית)",
+        desc: "בוחרים 2 שירים אהובים בלבד. המערכת מזהה את הסגנון המוזיקלי ובונה סט רציף של 10 דקות באופן עצמאי לחלוטין."
+      },
+      {
+        icon: "🎛️",
+        title: "מצב Pro Mode (שליטה ידנית)",
+        desc: "בונים את רשימת השירים שיר-אחר-שיר לפי בחירתכם האישית. המערכת תחבר ביניהם במיקס מושלם לפי הסדר שהגדרתם."
+      },
+      {
+        icon: "🎯",
+        title: "סנכרון Downbeat Lock",
+        desc: "אלגוריתם ה-AI סורק את מכות התוף הראשונות (Transients) ונועל את כניסת השיר הבא בדיוק על הביט הראשון ללא סטייה."
+      },
+      {
+        icon: "🌊",
+        title: "החלפת בסים (Bass Swap & Isolator)",
+        desc: "מבודד את התדרים הנמוכים והגבוהים (3-Band EQ) וחותך את הבס של השיר הקודם (-70dB) ברגע כניסת ה-Drop כדי למנוע התנגשות."
+      },
+      {
+        icon: "💾",
+        title: "הורדת MP3 מהירה באיכות סטודיו",
+        desc: "המיקס מעובד ישירות בדפדפן ויורד כקובץ MP3 איכותי (192kbps) ללא צורך בהרשמה או בשרת חיצוני."
+      }
+    ];
+
+    // --- GUIDED LEARNING CONTROLS ---
+    function openGuidePrompt() {
+      document.getElementById('guideOverlay')?.classList.remove('hidden');
+      document.getElementById('guideWelcomeCard')?.classList.remove('hidden');
+      document.getElementById('guideStepsCard')?.classList.add('hidden');
+    }
+
+    function closeGuideModal() {
+      document.getElementById('guideOverlay')?.classList.add('hidden');
+      localStorage.setItem('pulseai_guide_seen', 'true');
+    }
+
+    function startRoadmap() {
+      document.getElementById('guideWelcomeCard')?.classList.add('hidden');
+      document.getElementById('guideStepsCard')?.classList.remove('hidden');
+      currentGuideStep = 1;
+      renderGuideStep();
+    }
+
+    function renderGuideStep() {
+      const data = roadmapStepsData[currentGuideStep - 1];
+      const badge = document.getElementById('stepCounterBadge');
+      const bar = document.getElementById('stepProgressBar');
+      const area = document.getElementById('stepContentArea');
+      const prevBtn = document.getElementById('prevStepBtn');
+      const nextBtn = document.getElementById('nextStepBtn');
+
+      if (badge) badge.textContent = `שלב ${currentGuideStep}/5`;
+      if (bar) bar.style.width = `${(currentGuideStep / 5) * 100}%`;
+
+      if (area) {
+        area.innerHTML = `
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl sm:text-3xl">${data.icon}</span>
+            <h3 class="text-base sm:text-lg font-black text-glowLime">${data.title}</h3>
+          </div>
+          <p class="text-xs sm:text-sm text-purple-200 leading-relaxed">${data.desc}</p>
+        `;
+      }
+
+      if (prevBtn) prevBtn.disabled = (currentGuideStep === 1);
+      if (nextBtn) {
+        nextBtn.textContent = (currentGuideStep === 5) ? 'סיום והתחלת יצירה 🎉' : 'הבא →';
+      }
+    }
+
+    function navigateStep(direction) {
+      currentGuideStep += direction;
+      if (currentGuideStep > 5) {
+        closeGuideModal();
+      } else if (currentGuideStep >= 1) {
+        renderGuideStep();
+      }
+    }
 
     window.setUIMode = function(mode) {
       const isQuick = (mode === 'quick');
@@ -171,20 +316,25 @@
       if (!container) return;
 
       container.innerHTML = proSongsList.map((song, index) => `
-        <div class="relative p-3 rounded-xl bg-black/40 border border-purple-800/60 flex items-center gap-3">
-          <span class="text-xs font-bold text-glowLime w-12">שיר ${index + 1}</span>
+        <div class="relative p-3 sm:p-3.5 rounded-xl bg-black/45 border border-purple-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+          <div class="flex items-center justify-between sm:justify-start gap-2">
+            <span class="text-xs font-bold text-glowLime sm:w-12 shrink-0">שיר ${index + 1}</span>
+            ${song.title ? `<span class="sm:hidden text-[10px] bg-purple-900/80 px-2 py-0.5 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
+          </div>
           <div class="relative flex-1">
             <input id="proSongInput_${index}" type="text"
               value="${escapeHtml(song.title)}"
               oninput="debounceProSearch(this.value, ${index})"
               placeholder="חפש שיר..."
               autocomplete="off"
-              class="w-full py-2.5 px-3 rounded-lg bg-purple-950/40 border border-purple-800 text-white placeholder-purple-400/50 text-xs focus:outline-none focus:border-glowLime">
+              class="w-full py-2.5 sm:py-2 px-3.5 rounded-lg bg-purple-950/40 border border-purple-800 text-white placeholder-purple-400/50 text-sm focus:outline-none focus:border-glowLime">
             <div id="proSongDrop_${index}"
-              class="absolute top-full left-0 right-0 mt-1 bg-night border border-purple-800 rounded-lg p-1.5 z-[9999] hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+              class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
           </div>
-          ${song.title ? `<span class="text-[10px] bg-purple-900/60 px-2 py-1 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
-          ${proSongsList.length > 2 ? `<button onclick="removeProSongField(${index})" class="px-2.5 py-1.5 rounded-lg bg-sunset/15 border border-sunset/40 text-sunset text-xs font-bold">הסר</button>` : ''}
+          <div class="flex items-center justify-end gap-2 shrink-0">
+            ${song.title ? `<span class="hidden sm:inline-block text-[10px] bg-purple-900/60 px-2 py-1 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
+            ${proSongsList.length > 2 ? `<button onclick="removeProSongField(${index})" class="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-sunset/15 border border-sunset/40 text-sunset text-xs font-bold active:bg-sunset/25">הסר</button>` : ''}
+          </div>
         </div>
       `).join('');
     }
@@ -242,7 +392,7 @@
       try {
         const results = await searchItunesApi(query, 8);
         if (results.length === 0) {
-          dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
+          dropdown.innerHTML = '<div class="p-3 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         } else {
           dropdown.innerHTML = results.map((item, rIdx) => {
             const title = `${item.artistName} — ${item.trackName}`;
@@ -259,23 +409,23 @@
               genre: item.primaryGenreName || 'Dance'
             };
             return `
-              <div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center justify-between cursor-pointer text-xs text-white"
+              <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center justify-between cursor-pointer text-xs text-white"
                    onclick="selectProTrack(${index}, ${rIdx})">
-                <div class="flex items-center gap-2 truncate">
-                  <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt="">
+                <div class="flex items-center gap-2.5 truncate">
+                  <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
                   <div class="truncate">
-                    <div class="font-bold truncate">${escapeHtml(item.trackName)}</div>
-                    <div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div>
+                    <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
+                    <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div>
                   </div>
                 </div>
-                <span class="text-[10px] text-glowLime font-mono mr-2">${simulatedBpm} BPM | ${simulatedKey}</span>
+                <span class="text-[10px] text-glowLime font-mono mr-2 shrink-0">${simulatedBpm} BPM | ${simulatedKey}</span>
               </div>
             `;
           }).join('');
         }
         dropdown.classList.remove('hidden');
       } catch (e) {
-        dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">שגיאת חיפוש</div>';
+        dropdown.innerHTML = '<div class="p-3 text-xs text-purple-400 text-center">שגיאת חיפוש</div>';
         dropdown.classList.add('hidden');
       }
     }
@@ -305,8 +455,16 @@
           const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
           const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
           const genre = item.primaryGenreName || 'Dance';
-          return `<div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2 cursor-pointer text-xs text-white" onclick="selectQuickGenTrack(${num}, '${escapeHtml(title).replace(/'/g, "\\'")}', '${item.previewUrl}', ${simulatedBpm}, '${simulatedKey}', '${escapeHtml(item.artistName).replace(/'/g, "\\'")}', '${escapeHtml(genre).replace(/'/g, "\\'")}')"><img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-8 h-8 rounded object-cover" alt=""><div class="truncate"><div class="font-bold truncate">${escapeHtml(item.trackName)}</div><div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • ${escapeHtml(genre)}</div></div></div>`;
-        }).join('') || '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
+          return `
+            <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white" onclick="selectQuickGenTrack(${num}, '${escapeHtml(title).replace(/'/g, "\\'")}', '${item.previewUrl}', ${simulatedBpm}, '${simulatedKey}', '${escapeHtml(item.artistName).replace(/'/g, "\\'")}', '${escapeHtml(genre).replace(/'/g, "\\'")}')">
+              <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
+              <div class="truncate">
+                <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
+                <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • ${escapeHtml(genre)}</div>
+              </div>
+            </div>
+          `;
+        }).join('') || '<div class="p-3 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         dropdown.classList.remove('hidden');
       } catch(e) {}
     }
@@ -337,7 +495,6 @@
       });
     }
 
-    // --- ACCURATE TRANSIENT & DOWNBEAT DETECTION ---
     function findFirstDownbeatOffset(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
@@ -391,7 +548,6 @@
       return Math.sqrt(sum / count) || 0.12;
     }
 
-    // --- NON-BLOCKING FAST MP3 ENCODER ---
     async function encodeMp3Async(renderedBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
       const left = renderedBuffer.getChannelData(0);
@@ -455,7 +611,6 @@
       return { type: "bassSwap", duration: 6.5, dropPoint: 3.2 };
     }
 
-    // --- PRO AUDIO MIXING ENGINE WITH SMOOTH HARMONIC BLEND ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
@@ -683,7 +838,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ עם סנכרון Downbeat ו-Bass Swap הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
@@ -746,7 +901,7 @@
 
         curatedTracks.sort((a, b) => a.bpm - b.bpm);
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים במקביל ומסנכרן ביטים...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים ומסנכרן ביטים...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         const fetchPromises = curatedTracks.map(async t => {
@@ -805,6 +960,13 @@
     window.addEventListener('DOMContentLoaded', () => {
       initProSongSlots();
       setUIMode('quick');
+
+      // הצגת סיור מודרך אוטומטית בכניסה ראשונה
+      if (!localStorage.getItem('pulseai_guide_seen')) {
+        openGuidePrompt();
+      } else {
+        document.getElementById('guideOverlay')?.classList.add('hidden');
+      }
     });
   </script>
 </body>
