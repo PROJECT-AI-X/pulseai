@@ -97,7 +97,8 @@
     }
     .preset-card.active-preset, .playlist-tab.active-genre {
       border-color: #10E773 !important;
-      background: rgba(16, 231, 115, 0.1) !important;
+      background: rgba(16, 231, 115, 0.15) !important;
+      box-shadow: 0 0 15px rgba(16, 231, 115, 0.3);
     }
     @keyframes radarScan {
       0% { transform: rotate(0deg); }
@@ -114,7 +115,7 @@
   <!-- TOAST NOTIFICATIONS -->
   <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- EXPORT / DOWNLOAD MODAL -->
+  <!-- EXPORT MODAL -->
   <div id="exportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
     <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden">
       <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">📥</div>
@@ -149,13 +150,13 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
       <div>
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ מקצועי, Auto-DJ ופלייליסטים</p>
+        <p class="text-[11px] text-purple-300">אולפן DJ מקצועי ומנטור אוטומטי</p>
       </div>
     </div>
   </header>
 
   <!-- ======================================================== -->
-  <!-- MAKE ME A PLAYLIST STUDIO (העמודה החדשה ליצירת פלייליסטים) -->
+  <!-- MAKE ME A PLAYLIST STUDIO (עם צביעה בירוק וחיפוש שירים חי) -->
   <!-- ======================================================== -->
   <section class="w-full max-w-5xl mb-6 glass-panel p-6 rounded-3xl border border-electricCyan/40 shadow-glow-purple relative overflow-hidden">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
@@ -166,11 +167,11 @@
       <span class="text-xs text-purple-300 font-mono">⚡ זרימת אנרגיה (Energy Ramp) מותאמת אישית</span>
     </div>
 
-    <!-- Step 1: Genre Selection -->
+    <!-- Step 1: Genre Selection (פעיל בירוק) -->
     <div class="space-y-3 mb-5">
       <label class="block text-xs font-bold text-purple-200">1. בחר את הז'אנר או סגנון האירוע:</label>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-        <div id="plGenreParty" onclick="selectPlaylistGenre('מסיבה ישראלית')" class="playlist-tab glass-panel p-3 rounded-xl border border-electricCyan/50 bg-electricCyan/10 cursor-pointer active-genre text-center">
+        <div id="plGenreParty" onclick="selectPlaylistGenre('מסיבה ישראלית')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 cursor-pointer active-genre text-center">
           <span class="text-base">🎉</span>
           <div class="text-xs font-bold text-white mt-1">מסיבה ישראלית</div>
         </div>
@@ -189,15 +190,36 @@
       </div>
     </div>
 
-    <!-- Step 2: 5 Favorite Songs Inputs -->
+    <!-- Step 2: 5 Favorite Songs Inputs with Live Search -->
     <div class="space-y-3 mb-5">
-      <label class="block text-xs font-bold text-purple-200">2. הזן 5 שירים אהובים שתרצה שיהוו בסיס לפלייליסט:</label>
+      <label class="block text-xs font-bold text-purple-200">2. הזן 5 שירים אהובים (עם מנוע חיפוש חי):</label>
       <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
-        <input type="text" id="favSong1" placeholder="שיר 1 (למשל: שני משוגעים)" class="py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-        <input type="text" id="favSong2" placeholder="שיר 2 (למשל: יוניקורן)" class="py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-        <input type="text" id="favSong3" placeholder="שיר 3 (למשל: אהבה חולה)" class="py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-        <input type="text" id="favSong4" placeholder="שיר 4 (למשל: Blinding Lights)" class="py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-        <input type="text" id="favSong5" placeholder="שיר 5 (למשל: Physical)" class="py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+        
+        <div class="relative">
+          <input type="text" id="favSong1" oninput="debouncePlaylistSearch(this.value, 1)" placeholder="שיר 1..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown1" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+        </div>
+
+        <div class="relative">
+          <input type="text" id="favSong2" oninput="debouncePlaylistSearch(this.value, 2)" placeholder="שיר 2..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown2" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+        </div>
+
+        <div class="relative">
+          <input type="text" id="favSong3" oninput="debouncePlaylistSearch(this.value, 3)" placeholder="שיר 3..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown3" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+        </div>
+
+        <div class="relative">
+          <input type="text" id="favSong4" oninput="debouncePlaylistSearch(this.value, 4)" placeholder="שיר 4..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown4" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+        </div>
+
+        <div class="relative">
+          <input type="text" id="favSong5" oninput="debouncePlaylistSearch(this.value, 5)" placeholder="שיר 5..." class="w-full py-2 px-3 text-xs rounded-xl bg-black/50 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown5" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-50 hidden max-h-40 overflow-y-auto shadow-xl"></div>
+        </div>
+
       </div>
     </div>
 
@@ -208,7 +230,7 @@
       </button>
     </div>
 
-    <!-- Playlist Output Result Box (Initially Hidden) -->
+    <!-- Playlist Output Result Box -->
     <div id="playlistResultContainer" class="hidden mt-6 pt-5 border-t border-purple-800/40 space-y-4 animate-in fade-in duration-300">
       <div class="flex justify-between items-center">
         <h3 class="text-xs font-bold text-electricCyan flex items-center gap-1.5">
@@ -217,10 +239,8 @@
         <span id="playlistGenreLabel" class="text-[10px] text-purple-300 font-mono">מסיבה ישראלית</span>
       </div>
 
-      <!-- Generated Songs List -->
       <div id="generatedPlaylistTracks" class="space-y-2"></div>
 
-      <!-- Export Actions for Full Playlist -->
       <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
         <button onclick="openExportModal()" class="px-4 py-2 rounded-xl bg-glowLime text-night font-bold text-xs shadow-glow-lime flex items-center gap-1.5">
           <span>📥 הורד כפלייליסט MP3</span>
@@ -235,10 +255,10 @@
     </div>
   </section>
 
-  <!-- DJ VIBE PRESETS (האישויות הקיימות) -->
+  <!-- DJ VIBE PRESETS -->
   <section class="w-full max-w-5xl mb-5">
     <div class="flex items-center justify-between mb-2">
-      <h3 class="text-xs font-black uppercase tracking-wider text-purple-200">או בחר אישיות סאונד ישירה לנגן:</h3>
+      <h3 class="text-xs font-black uppercase tracking-wider text-purple-200">בחר אישיות סאונד (DJ Vibe & EQ Profile):</h3>
       <span class="text-[10px] text-glowLime font-mono" id="activeVibeTitleIndicator">🎉 מסיבה ישראלית (Bass Swap + Phrasing)</span>
     </div>
 
@@ -355,6 +375,7 @@
   <script>
     let currentPlaylistGenre = 'מסיבה ישראלית';
     let currentVibe = { name: 'מסיבה ישראלית', transitionDuration: 3.0, bassSwap: true, energyBoost: 1.25 };
+    let playlistSearchTimers = {};
 
     const audioA = new Audio();
     const audioB = new Audio();
@@ -373,14 +394,56 @@
       }
     }
 
-    // --- Make me a playlist logic ---
+    // --- Make me a playlist logic with Live Search & Active Green Tab ---
     window.selectPlaylistGenre = function(genre) {
       currentPlaylistGenre = genre;
       document.querySelectorAll('.playlist-tab').forEach(t => t.classList.remove('active-genre'));
+      
       if (genre === 'מסיבה ישראלית') document.getElementById('plGenreParty').classList.add('active-genre');
       else if (genre === 'אימון ואנרגיה') document.getElementById('plGenreWorkout').classList.add('active-genre');
       else if (genre === 'נסיעה וצ'יל') document.getElementById('plGenreChill').classList.add('active-genre');
       else document.getElementById('plGenreDance').classList.add('active-genre');
+    };
+
+    window.debouncePlaylistSearch = function(query, index) {
+      clearTimeout(playlistSearchTimers[index]);
+      playlistSearchTimers[index] = setTimeout(() => executePlaylistSearch(query, index), 350);
+    };
+
+    async function executePlaylistSearch(query, index) {
+      const dropdown = document.getElementById(`plDropdown${index}`);
+      if (!query || query.trim().length < 2) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      try {
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=5&country=IL`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.results || data.results.length === 0) {
+          dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
+        } else {
+          dropdown.innerHTML = data.results.map(item => {
+            const title = `${item.artistName} — ${item.trackName}`;
+            const clean = title.replace(/'/g, "\\'");
+            return `
+              <div class="p-2 hover:bg-purple-900/60 rounded cursor-pointer text-xs text-white flex items-center gap-2"
+                   onclick="selectPlaylistSongInput('${clean}', ${index})">
+                <img src="${item.artworkUrl60 || ''}" class="w-6 h-6 rounded object-cover">
+                <div class="truncate">${item.trackName} <span class="text-[10px] text-purple-300">(${item.artistName})</span></div>
+              </div>
+            `;
+          }).join('');
+        }
+        dropdown.classList.remove('hidden');
+      } catch(e) {}
+    }
+
+    window.selectPlaylistSongInput = function(title, index) {
+      document.getElementById(`favSong${index}`).value = title;
+      document.getElementById(`plDropdown${index}`).classList.add('hidden');
     };
 
     window.generateCustomAiPlaylist = function() {
@@ -391,7 +454,6 @@
       const s5 = document.getElementById('favSong5').value.trim() || 'שיר אהוב 5';
 
       const userSongs = [s1, s2, s3, s4, s5];
-      
       document.getElementById('playlistGenreLabel').textContent = `ז'אנר: ${currentPlaylistGenre} (נבנה על ידי AI)`;
 
       const container = document.getElementById('generatedPlaylistTracks');
@@ -405,7 +467,6 @@
         </div>
       `).join('');
 
-      // Set links for Apple Music and YouTube search
       const searchQuery = encodeURIComponent(`${currentPlaylistGenre} ${s1} playlist`);
       document.getElementById('appleMusicExportBtn').href = `https://music.apple.com/il/search?term=${searchQuery}`;
       document.getElementById('youtubeExportBtn').href = `https://www.youtube.com/results?search_query=${searchQuery}`;
@@ -477,12 +538,6 @@
         closeExportModal();
       }, 2000);
     };
-
-    window.shareMixToWhatsApp = function() {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('שמע את הפלייליסט שיצרתי ב-PULSEAI!')}`, '_blank');
-    };
-
-    window.scrollToMainWorkspace = () => document.getElementById('mainWorkspaceSection').scrollIntoView({ behavior: 'smooth' });
 
     window.showToast = function(msg, type = 'info') {
       const container = document.getElementById('toastContainer');
