@@ -75,7 +75,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg text-white shadow-glow-orange">P</div>
       <div>
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[11px] text-purple-300">אולפן DJ אוטומטי מהיר — Turbo Engine · AI Curation · Downbeat Lock</p>
+        <p class="text-[11px] text-purple-300">אולפן DJ אוטומטי — AI Similarity Matcher · Harmonic BPM Match · Downbeat Lock</p>
       </div>
     </div>
   </header>
@@ -100,8 +100,8 @@
   <!-- QUICK MIX PANEL -->
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
-      <h2 class="text-lg font-black text-white">⚡ Quick Mix — סט 10 דקות מהיר לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים. מנוע ה-AI יאתר להיטים תואמים מקבילים ויפיק סט מלא של 10 דקות במהירות שיא.</p>
+      <h2 class="text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
+      <p class="text-xs text-purple-300 mt-1">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם המוזיקלי והסגנון שלהם, יאתר שירים תואמים נוספים, ויפיק סט רציף של 10 דקות.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 relative" style="overflow: visible;">
@@ -119,7 +119,7 @@
 
     <div class="text-center">
       <button onclick="generate10MinQuickMix()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime hover:scale-105 transition-transform flex items-center justify-center gap-2 mx-auto">
-        <span>✨ צור סט 10 דקות (מהיר)</span>
+        <span>✨ צור סט 10 דקות מותאם אישית (MP3)</span>
       </button>
       <div id="quickGenStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
     </div>
@@ -141,7 +141,7 @@
 
     <div class="text-center">
       <button onclick="executeProCustomMixDownload()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange hover:scale-105 transition-transform inline-flex items-center gap-2">
-        <span>✨ צור והורד מיקס מקצועי (MP3)</span>
+        <span>✨ צור והורד מיקס מקצועי מהשירים שנבחרו (MP3)</span>
       </button>
       <div id="proMixStatus" class="mt-3 text-xs text-glowLime font-mono flex items-center justify-center gap-2 min-h-[20px]"></div>
     </div>
@@ -207,7 +207,7 @@
         .trim();
     }
 
-    async function searchItunesApi(term, limit = 10) {
+    async function searchItunesApi(term, limit = 12) {
       const cleaned = cleanSearchQuery(term);
       const termsToTry = [cleaned, term];
       for (const t of termsToTry) {
@@ -390,7 +390,6 @@
       return Math.sqrt(sum / count) || 0.12;
     }
 
-    // --- TURBO FAST MP3 ENCODER ---
     async function encodeMp3Async(renderedBuffer, onProgress) {
       if (!window.lamejs) throw new Error('MP3 encoder unavailable');
       const left = renderedBuffer.getChannelData(0);
@@ -688,7 +687,7 @@
       }
     };
 
-    // --- QUICK MIX (10 MINUTES ULTRA-FAST PARALLEL CURATION) ---
+    // --- QUICK MIX (10 MINUTES AI HARMONIC CURATION BASED ON 2 SEED SONGS) ---
     window.generate10MinQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
 
@@ -697,7 +696,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM ומאתר להיטים תואמים במקביל...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מפענח BPM, סולם הרמוני וסגנון משני השירים שנבחרו...';
 
       try {
         const seed1 = selectedQuickTrack1;
@@ -708,18 +707,22 @@
 
         let curatedTracks = [seed1, seed2];
 
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM, ${detectedGenre})...`;
+
         const searchQueries = [
           `${seed1.artistName} hits`,
           `${seed2.artistName} hits`,
+          `${seed1.artistName} ${detectedGenre}`,
+          `${seed2.artistName} ${detectedGenre}`,
           `${detectedGenre} club hits`,
           `${detectedGenre} party dance`
         ];
 
         const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
 
-        // Parallel Fetch of Search Queries
-        const searchResults = await Promise.all(searchQueries.map(q => searchItunesApi(q, 10)));
-        for (const items of searchResults) {
+        for (const query of searchQueries) {
+          if (curatedTracks.length >= 16) break;
+          const items = await searchItunesApi(query, 12);
           for (const item of items) {
             if (!curatedTracks.some(t => t.previewUrl === item.previewUrl)) {
               const itemBpm = 118 + ((item.trackId || 0) % 14);
@@ -734,9 +737,8 @@
                 });
               }
             }
-            if (curatedTracks.length >= 14) break;
+            if (curatedTracks.length >= 16) break;
           }
-          if (curatedTracks.length >= 14) break;
         }
 
         curatedTracks.sort((a, b) => a.bpm - b.bpm);
@@ -744,7 +746,6 @@
         status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים במקביל...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Parallel Audio Fetch
         const fetchPromises = curatedTracks.map(async t => {
           try {
             const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
@@ -770,7 +771,7 @@
         let accumulatedTime = 0;
         let loopIdx = 0;
 
-        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 32) {
+        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 35) {
           const idx = loopIdx % loadedBuffers.length;
           const buf = loadedBuffers[idx];
           extendedBuffers.push(buf);
@@ -779,19 +780,19 @@
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Downbeat Lock + Isolator EQ)...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PULSEAI_10Min_FastMix.mp3`;
+        a.download = `PULSEAI_10Min_AI_SmartSet.mp3`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 סט 10 דקות מלא נוצר והורד בהצלחה!';
+        status.textContent = '🎉 סט 10 דקות מלא לפי 2 השירים שנבחרו הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
