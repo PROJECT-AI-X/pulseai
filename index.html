@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PULSEAI — Smart Auto-DJ & Mix Studio</title>
+  <title>PULSEAI — מיקסר שירים חכם</title>
   
-  <!-- PWA & Mobile Optimization -->
   <meta name="theme-color" content="#080512">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PULSEAI">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +23,7 @@
           fontFamily: { sans: ['Heebo', 'sans-serif'] },
           colors: {
             night: '#080512',
-            surface: 'rgba(21, 15, 38, 0.75)',
+            surface: 'rgba(21, 15, 38, 0.85)',
             sunset: '#FF5E36',
             sunsetHover: '#FF7754',
             ultraviolet: '#8F00FF',
@@ -89,7 +86,6 @@
     .drop-zone.dragover {
       border-color: #10E773;
       background: rgba(16, 231, 115, 0.1);
-      transform: scale(1.01);
     }
     .modal-backdrop {
       background: rgba(4, 2, 10, 0.85);
@@ -105,12 +101,6 @@
       border-color: #10E773 !important;
       background: rgba(16, 231, 115, 0.1) !important;
     }
-    .tour-highlight {
-      position: relative;
-      z-index: 35 !important;
-      box-shadow: 0 0 0 3px #10E773, 0 0 30px rgba(16, 231, 115, 0.6) !important;
-      border-color: #10E773 !important;
-    }
     @keyframes radarScan {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -121,33 +111,35 @@
   </style>
 </head>
 
-<body class="p-3 md:p-8 flex flex-col items-center">
+<body class="p-3 md:p-8 flex flex-col items-center" onclick="unlockAudioOnce()">
 
   <!-- TOAST NOTIFICATIONS -->
   <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- EXPORT / DOWNLOAD MODAL (MP3 vs MP4) -->
+  <!-- ======================================================== -->
+  <!-- EXPORT / DOWNLOAD MODAL (מסך בחירת פורמט MP3 או MP4) -->
+  <!-- ======================================================== -->
   <div id="exportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
     <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden animate-in fade-in zoom-in duration-200">
       <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">
         📥
       </div>
-      <h2 class="text-xl font-bold text-white">ייצוא והורדת המיקס</h2>
-      <p class="text-xs text-purple-300 mt-1">בחר באיזה פורמט תרצה להוריד את המיקס למכשיר שלך:</p>
+      <h2 class="text-xl font-bold text-white">בחר פורמט להורדת המיקס</h2>
+      <p class="text-xs text-purple-300 mt-1">באיזה אופן תרצה לשמור את המיקס במכשיר שלך?</p>
 
       <div class="grid grid-cols-2 gap-3 my-5">
-        <!-- Option A: Audio (MP3/WAV) -->
+        <!-- Option A: Audio MP3 -->
         <button onclick="executeAudioDownload()" class="p-4 rounded-2xl bg-black/50 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 text-right group transition-all">
-          <div class="text-xl mb-1">🎵</div>
+          <div class="text-2xl mb-1">🎵</div>
           <div class="text-xs font-bold text-white group-hover:text-glowLime">קובץ שמע (MP3)</div>
-          <div class="text-[10px] text-purple-400 mt-1">אודיו בלבד באיכות סטודיו מלאה להאזנה ברכב ובאימון</div>
+          <div class="text-[10px] text-purple-400 mt-1">אודיו בלבד באיכות גבוהה להאזנה ברכב ובאימון</div>
         </button>
 
-        <!-- Option B: Video (MP4) -->
+        <!-- Option B: Video MP4 -->
         <button onclick="executeVideoDownload()" class="p-4 rounded-2xl bg-black/50 border border-purple-800/60 hover:border-electricCyan hover:bg-electricCyan/10 text-right group transition-all">
-          <div class="text-xl mb-1">🎬</div>
+          <div class="text-2xl mb-1">🎬</div>
           <div class="text-xs font-bold text-white group-hover:text-electricCyan">סרטון וידאו (MP4)</div>
-          <div class="text-[10px] text-purple-400 mt-1">וידאו מונפש עם גל קול ושמות השירים לסטורי וטיקטוק</div>
+          <div class="text-[10px] text-purple-400 mt-1">סרטון מונפש עם שמות השירים לסטורי וטיקטוק</div>
         </button>
       </div>
 
@@ -155,38 +147,20 @@
         ⏳ מייצר ומקודד את הקובץ...
       </div>
 
-      <button onclick="closeExportModal()" class="w-full py-2.5 rounded-xl bg-purple-950/60 hover:bg-purple-900 text-purple-200 text-xs font-medium">
-        ביטול וסגירה
-      </button>
-    </div>
-  </div>
-
-  <!-- FLOATING SIDE TOUR WIDGET -->
-  <div id="tourOverlay" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] hidden pointer-events-none transition-all">
-    <div id="tourCard" class="fixed bottom-6 left-6 md:left-10 z-50 glass-panel w-[calc(100%-3rem)] max-w-sm p-5 rounded-2xl border border-glowLime/60 shadow-glow-lime pointer-events-auto">
-      <div class="flex justify-between items-center mb-2">
-        <span id="tourStepBadge" class="text-[10px] font-bold text-glowLime bg-glowLime/15 px-2.5 py-0.5 rounded-full">
-          שלב 1 מתוך 4
-        </span>
-        <button onclick="endTour()" class="text-purple-300 hover:text-white text-xs font-bold">✕ סגור</button>
-      </div>
-
-      <div class="space-y-1">
-        <h3 id="tourTitle" class="text-sm font-bold text-white"></h3>
-        <p id="tourDescription" class="text-xs text-purple-200 leading-relaxed"></p>
-      </div>
-
-      <div class="mt-4 pt-3 border-t border-purple-800/40 flex items-center justify-between">
-        <div id="tourDots" class="flex gap-1.5"></div>
-        <div class="flex gap-2">
-          <button id="tourPrevBtn" onclick="prevTourStep()" class="px-3 py-1 rounded-xl bg-purple-900/50 hover:bg-purple-800 text-white text-xs font-bold disabled:opacity-30">הקודם</button>
-          <button id="tourNextBtn" onclick="nextTourStep()" class="px-3.5 py-1 rounded-xl bg-glowLime text-night font-bold text-xs shadow-glow-lime">הבא 🠔</button>
-        </div>
+      <div class="flex gap-2">
+        <button onclick="backToMixReadyModal()" class="w-1/2 py-2.5 rounded-xl bg-purple-900/40 hover:bg-purple-800 text-purple-200 text-xs font-medium">
+          ➔ חזרה למיקס
+        </button>
+        <button onclick="closeExportModal()" class="w-1/2 py-2.5 rounded-xl bg-purple-950/60 hover:bg-purple-900 text-purple-300 text-xs font-medium">
+          סגירה
+        </button>
       </div>
     </div>
   </div>
 
+  <!-- ======================================================== -->
   <!-- AI MIX READY POPUP MODAL -->
+  <!-- ======================================================== -->
   <div id="aiMixReadyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
     <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden animate-in fade-in zoom-in duration-200">
       <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl">
@@ -208,7 +182,8 @@
         </button>
 
         <div class="grid grid-cols-2 gap-2">
-          <button onclick="openExportModal()" class="py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-bold text-xs shadow-glow-lime flex items-center justify-center gap-1">
+          <!-- Opens the MP3/MP4 selector directly -->
+          <button onclick="openExportModalFromMixReady()" class="py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-bold text-xs shadow-glow-lime flex items-center justify-center gap-1">
             <span>📥 הורד קובץ</span>
           </button>
           <button onclick="shareMixToWhatsApp()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1">
@@ -251,14 +226,11 @@
         <h1 class="text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">
           PULSEAI
         </h1>
-        <p class="text-[11px] text-purple-300">מיקסר שירים חכם ו-Auto DJ</p>
+        <p class="text-[11px] text-purple-300">מיקסר שירים חכם ואוטומטי</p>
       </div>
     </div>
 
     <div class="flex items-center gap-2.5">
-      <button onclick="startInteractiveTour()" class="px-3 py-1.5 rounded-xl bg-purple-900/40 border border-purple-700/50 text-electricCyan text-xs font-semibold">
-        💡 הדרכה
-      </button>
       <div id="userProfileBadge" class="hidden items-center gap-2 px-3 py-1 rounded-xl bg-purple-950/60 text-xs">
         <span class="w-2 h-2 rounded-full bg-glowLime"></span>
         <span id="userNameDisplay" class="font-bold text-white">מחובר</span>
@@ -295,12 +267,11 @@
   <!-- DUAL SEARCH STUDIO -->
   <section id="dualSearchStudio" class="w-full max-w-5xl mb-4 glass-panel p-5 rounded-2xl border border-sunset/30 relative">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-      <h2 class="text-base font-bold text-white">חיפוש כל שיר בעולם וחיבור מיקס:</h2>
+      <h2 class="text-base font-bold text-white">חיפוש שירים וחיבור מיקס:</h2>
       
-      <!-- Auto-DJ Mode Switch Toggle -->
       <label class="flex items-center gap-2 cursor-pointer bg-purple-950/80 px-3 py-1.5 rounded-xl border border-glowLime/40">
         <input type="checkbox" id="autoDjToggle" checked onchange="toggleAutoDjMode(this.checked)" class="accent-glowLime w-4 h-4 cursor-pointer">
-        <span class="text-xs font-bold text-glowLime">⚡ מצב Auto-DJ פעיל</span>
+        <span class="text-xs font-bold text-glowLime">⚡ מעבר אוטומטי (Auto-DJ)</span>
       </label>
     </div>
 
@@ -308,11 +279,11 @@
       <!-- Song A -->
       <div class="space-y-2 p-3.5 rounded-xl bg-black/40 border border-purple-900/50 relative">
         <div class="flex justify-between items-center">
-          <span class="text-xs font-bold text-sunset">שיר ראשון (חפש כל שיר)</span>
+          <span class="text-xs font-bold text-sunset">שיר ראשון</span>
           <span id="searchLoaderA" class="text-[10px] text-purple-400 hidden animate-pulse">מחפש שירים...</span>
         </div>
         <div class="relative">
-          <input type="text" id="dualSearchInputA" oninput="debounceGlobalSearch(this.value, 'A')" placeholder="חפש שיר בעברית/אנגלית (עומר אדם, טונה, The Weeknd)..."
+          <input type="text" id="dualSearchInputA" oninput="debounceGlobalSearch(this.value, 'A')" placeholder="חפש שיר (עומר אדם, טונה, The Weeknd)..."
                  class="w-full py-2 px-3 text-xs rounded-lg bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-sunset">
           <div id="dualDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-40 hidden max-h-48 overflow-y-auto shadow-xl"></div>
         </div>
@@ -325,11 +296,11 @@
       <!-- Song B -->
       <div class="space-y-2 p-3.5 rounded-xl bg-black/40 border border-purple-900/50 relative">
         <div class="flex justify-between items-center">
-          <span class="text-xs font-bold text-glowLime">שיר שני (חפש כל שיר)</span>
+          <span class="text-xs font-bold text-glowLime">שיר שני</span>
           <span id="searchLoaderB" class="text-[10px] text-purple-400 hidden animate-pulse">מחפש שירים...</span>
         </div>
         <div class="relative">
-          <input type="text" id="dualSearchInputB" oninput="debounceGlobalSearch(this.value, 'B')" placeholder="חפש שיר בעברית/אנגלית (נועה קירל, פאר טסי, Dua Lipa)..."
+          <input type="text" id="dualSearchInputB" oninput="debounceGlobalSearch(this.value, 'B')" placeholder="חפש שיר (נועה קירל, פאר טסי, Dua Lipa)..."
                  class="w-full py-2 px-3 text-xs rounded-lg bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-glowLime">
           <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-40 hidden max-h-48 overflow-y-auto shadow-xl"></div>
         </div>
@@ -340,7 +311,7 @@
       </div>
     </div>
 
-    <!-- 3 INSTANT RECOMMENDATION CARDS FOR SONG B (מוצג מיד עם בחירת שיר ראשון) -->
+    <!-- 3 INSTANT RECOMMENDATIONS FOR SONG B -->
     <div id="instantSmartSuggestionsBox" class="mt-4 p-3.5 rounded-xl bg-purple-950/50 border border-glowLime/30 shadow-inner">
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-bold text-glowLime flex items-center gap-1.5">
@@ -366,7 +337,7 @@
     <!-- AI Loading Screen -->
     <div id="aiLoadingOverlay" class="hidden mt-4 p-4 rounded-xl bg-black/70 text-center space-y-2">
       <div class="w-8 h-8 mx-auto border-2 border-dashed border-sunset rounded-full radar-sweep"></div>
-      <p id="loadingStepText" class="text-xs font-semibold text-purple-200">ה-AI מסנכרן ביטים ומכין מעבר Auto-DJ...</p>
+      <p id="loadingStepText" class="text-xs font-semibold text-purple-200">ה-AI מכין את המעבר המושלם...</p>
       <div class="w-48 mx-auto h-1.5 bg-purple-950 rounded-full overflow-hidden">
         <div id="aiProgressBar" class="h-full bg-glowLime transition-all duration-300" style="width: 20%;"></div>
       </div>
@@ -425,7 +396,7 @@
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'A')" onclick="seekDeck(event, 'A')">
           <canvas id="waveformA" class="w-full h-full"></canvas>
           <div id="playheadA" class="playhead"></div>
-          <div id="cueMarkerA" class="cue-marker" style="left: 65%;"></div>
+          <div id="cueMarkerA" class="cue-marker" style="left: 66%;"></div>
         </div>
 
         <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
@@ -442,7 +413,7 @@
           </button>
           <div>
             <div class="text-xs font-bold text-white" id="masterPlayStatus">השמעה</div>
-            <div class="text-[10px] text-purple-300" id="transitionStatus">Auto-DJ פעיל וממתין לנקודת המעבר</div>
+            <div class="text-[10px] text-purple-300" id="transitionStatus">מוכן להשמעה</div>
           </div>
         </div>
 
@@ -476,7 +447,7 @@
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'B')" onclick="seekDeck(event, 'B')">
           <canvas id="waveformB" class="w-full h-full"></canvas>
           <div id="playheadB" class="playhead"></div>
-          <div id="cueMarkerB" class="cue-marker" style="left: 20%;"></div>
+          <div id="cueMarkerB" class="cue-marker" style="left: 16%;"></div>
         </div>
 
         <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
@@ -491,7 +462,7 @@
     <aside class="space-y-4">
       <div id="recommendationsTourTarget" class="glass-panel p-4 rounded-xl">
         <div class="flex justify-between items-center mb-2">
-          <h3 class="text-xs font-bold text-white">שירים מתאימים לשיר הבא</h3>
+          <h3 class="text-xs font-bold text-white">שירים מתאימים נוספים</h3>
           <span class="text-[10px] text-sunset cursor-pointer" onclick="refreshSmartRecommendations()">רענן</span>
         </div>
         <div id="recommendationsContainer" class="space-y-2"></div>
@@ -507,7 +478,7 @@
 
   </main>
 
-  <!-- FIREBASE INTEGRATION MODULE[cite: 5, 6] -->
+  <!-- FIREBASE INTEGRATION MODULE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -620,14 +591,19 @@
     window.openLoginModal = () => document.getElementById('onboardingModal').classList.remove('hidden');
   </script>
 
-  <!-- REAL AUDIO ENGINE, GLOBAL SEARCH, SMART 3-SONG RECOMMENDATIONS & EXPORT -->
+  <!-- PURE AUDIO PLAYER & CROSSFADER SCRIPT -->
   <script>
     let isAutoDjEnabled = true;
     let isTransitioning = false;
-    let searchDebounceTimerA = null;
-    let searchDebounceTimerB = null;
+    let crossfadeInterval = null;
+    let searchTimerA = null, searchTimerB = null;
 
-    let dualSelectedSongA = {
+    const audioA = new Audio();
+    const audioB = new Audio();
+    audioA.crossOrigin = "anonymous";
+    audioB.crossOrigin = "anonymous";
+
+    let songA = {
       title: 'עומר אדם — שני משוגעים',
       audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
       artwork: '',
@@ -635,7 +611,7 @@
       duration: 30
     };
 
-    let dualSelectedSongB = {
+    let songB = {
       title: 'נועה קירל — יוניקורן (Unicorn)',
       audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
       artwork: '',
@@ -643,28 +619,14 @@
       duration: 30
     };
 
-    let audioCtx = null;
-    let htmlAudioElements = { A: new Audio(), B: new Audio() };
+    let isPlaying = false;
+    let activeDeck = 'A';
 
-    const decks = {
-      A: { buffer: null, isPlaying: false, startTime: 0, pauseOffset: 0, cueTime: 20, duration: 30 },
-      B: { buffer: null, isPlaying: false, startTime: 0, pauseOffset: 0, cueTime: 5, duration: 30 }
-    };
-
-    function unlockMobileAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-
-      ['A', 'B'].forEach(deckId => {
-        const el = htmlAudioElements[deckId];
-        if (el) {
-          el.play().then(() => el.pause()).catch(() => {});
-        }
-      });
-    }
-
-    function initAudioContext() {
-      unlockMobileAudio();
+    function unlockAudioOnce() {
+      if (audioA.paused && !isPlaying) {
+        audioA.play().then(() => audioA.pause()).catch(() => {});
+        audioB.play().then(() => audioB.pause()).catch(() => {});
+      }
     }
 
     function formatTime(sec) {
@@ -674,16 +636,14 @@
       return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    // --- 1. Global Search Engine ---
+    // --- 1. Global iTunes Search Engine ---
     window.debounceGlobalSearch = function(query, side) {
-      const timer = side === 'A' ? searchDebounceTimerA : searchDebounceTimerB;
-      clearTimeout(timer);
-
-      if (side === 'A') searchDebounceTimerA = setTimeout(() => executeGlobalSearch(query, 'A'), 350);
-      else searchDebounceTimerB = setTimeout(() => executeGlobalSearch(query, 'B'), 350);
+      clearTimeout(side === 'A' ? searchTimerA : searchTimerB);
+      if (side === 'A') searchTimerA = setTimeout(() => executeSearch(query, 'A'), 350);
+      else searchTimerB = setTimeout(() => executeSearch(query, 'B'), 350);
     };
 
-    async function executeGlobalSearch(query, side) {
+    async function executeSearch(query, side) {
       const dropdown = document.getElementById(`dualDropdown${side}`);
       const loader = document.getElementById(`searchLoader${side}`);
 
@@ -698,51 +658,40 @@
         const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=7&country=IL`;
         const res = await fetch(url);
         const data = await res.json();
-
         loader.classList.add('hidden');
 
         if (!data.results || data.results.length === 0) {
           dropdown.innerHTML = '<div class="p-2 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
         } else {
-          dropdown.innerHTML = data.results.map((song) => {
-            const preview = song.previewUrl;
-            if (!preview) return '';
-            const art = song.artworkUrl60 || song.artworkUrl100 || '';
-            const title = `${song.artistName} — ${song.trackName}`;
+          dropdown.innerHTML = data.results.map((item) => {
+            if (!item.previewUrl) return '';
+            const art = item.artworkUrl60 || '';
+            const title = `${item.artistName} — ${item.trackName}`;
             const cleanTitle = title.replace(/'/g, "\\'");
 
             return `
               <div class="p-2 hover:bg-purple-900/60 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white transition-all"
-                   onclick="selectGlobalSong('${cleanTitle}', '${preview}', '${art}', '${side}')">
-                <img src="${art}" class="w-8 h-8 rounded-md object-cover">
+                   onclick="selectSong('${cleanTitle}', '${item.previewUrl}', '${art}', '${side}')">
+                <img src="${art}" class="w-8 h-8 rounded object-cover">
                 <div class="truncate">
-                  <div class="font-bold truncate">${song.trackName}</div>
-                  <div class="text-[10px] text-purple-300 truncate">${song.artistName}</div>
+                  <div class="font-bold truncate">${item.trackName}</div>
+                  <div class="text-[10px] text-purple-300 truncate">${item.artistName}</div>
                 </div>
               </div>
             `;
           }).join('');
         }
         dropdown.classList.remove('hidden');
-      } catch (err) {
+      } catch (e) {
         loader.classList.add('hidden');
-        console.error(err);
       }
     }
 
-    window.selectGlobalSong = function(title, previewUrl, artwork, side) {
-      const songData = {
-        title: title,
-        audioUrl: previewUrl,
-        artwork: artwork,
-        cueOut: 20,
-        cueIn: 5,
-        duration: 30
-      };
-
+    window.selectSong = function(title, previewUrl, artwork, side) {
       if (side === 'A') {
-        dualSelectedSongA = songData;
+        songA = { title, audioUrl: previewUrl, artwork, cueOut: 20, cueIn: 0, duration: 30 };
         document.getElementById('dualTitleA').textContent = title;
+        document.getElementById('trackATitle').textContent = title;
         document.getElementById('dualDropdownA').classList.add('hidden');
         document.getElementById('dualSearchInputA').value = '';
         if (artwork) {
@@ -750,11 +699,13 @@
           img.src = artwork;
           img.classList.remove('hidden');
         }
-        // AUTOMATICALLY POPULATE 3 SMART SUGGESTIONS FOR SONG B
-        generateInstantRecommendationsForSongA(title);
+        audioA.src = previewUrl;
+        audioA.load();
+        generateRecommendationsForSongA(title);
       } else {
-        dualSelectedSongB = songData;
+        songB = { title, audioUrl: previewUrl, artwork, cueOut: 25, cueIn: 5, duration: 30 };
         document.getElementById('dualTitleB').textContent = title;
+        document.getElementById('trackBTitle').textContent = title;
         document.getElementById('dualDropdownB').classList.add('hidden');
         document.getElementById('dualSearchInputB').value = '';
         if (artwork) {
@@ -762,421 +713,355 @@
           img.src = artwork;
           img.classList.remove('hidden');
         }
+        audioB.src = previewUrl;
+        audioB.load();
       }
 
-      window.showToast(`שיר נטען ל-${side === 'A' ? 'שיר ראשון' : 'שיר שני'}!`, 'success');
+      window.showToast(`שיר נטען בהצלחה!`, 'success');
+      generateWaveform(side);
     };
 
-    // --- 2. Instant 3-Song Recommendations Engine for Song A ---
-    function generateInstantRecommendationsForSongA(baseTitle) {
-      const catalog = [
-        { title: 'נועה קירל — יוניקורן (Unicorn)', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', art: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100' },
-        { title: 'פאר טסי — אהבה חולה', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3', art: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100' },
-        { title: 'חנן בן ארי — אלוף העולם', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3', art: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100' },
-        { title: 'Dua Lipa — Physical', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_34b35ef587.mp3?filename=dance-pop-energy-118029.mp3', art: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=100' },
-        { title: 'The Weeknd — Blinding Lights', audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3', art: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=100' }
-      ];
-
-      const filtered = catalog.filter(c => !baseTitle.includes(c.title.split('—')[0])).slice(0, 3);
+    // --- 2. Instant 3 Recommendations for Song A ---
+    async function generateRecommendationsForSongA(baseTitle) {
       const grid = document.getElementById('instantSuggestionsGrid');
+      grid.innerHTML = '<div class="col-span-3 text-center text-xs text-purple-400 py-1">טוען שירים מומלצים...</div>';
 
-      grid.innerHTML = filtered.map(item => `
-        <div onclick="applyInstantSuggestion('${item.title}', '${item.audioUrl}', '${item.art}')" 
-             class="p-2 rounded-xl bg-black/40 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 cursor-pointer flex items-center justify-between group transition-all">
-          <div class="truncate text-right pr-1">
-            <div class="text-xs font-bold text-white group-hover:text-glowLime truncate">${item.title.split('—')[1] || item.title}</div>
-            <div class="text-[10px] text-purple-300 truncate">${item.title.split('—')[0]}</div>
-          </div>
-          <span class="px-2 py-1 rounded-lg bg-glowLime/15 text-glowLime font-bold text-[10px] whitespace-nowrap">+ בחר</span>
-        </div>
-      `).join('');
+      const queryTerm = baseTitle.split('—')[0].trim();
+      try {
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=4&country=IL`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        let list = (data.results || []).filter(s => s.previewUrl && !s.trackName.includes(baseTitle.split('—')[1] || '---'));
+        
+        if (list.length < 3) {
+          list = [
+            { trackName: 'יוניקורן', artistName: 'נועה קירל', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3' },
+            { trackName: 'אהבה חולה', artistName: 'פאר טסי', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3' },
+            { trackName: 'אלוף העולם', artistName: 'חנן בן ארי', previewUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3' }
+          ];
+        }
+
+        grid.innerHTML = list.slice(0, 3).map(item => {
+          const fullTitle = `${item.artistName} — ${item.trackName}`;
+          const cleanTitle = fullTitle.replace(/'/g, "\\'");
+          return `
+            <div onclick="applyInstantSuggestion('${cleanTitle}', '${item.previewUrl}', '${item.artworkUrl60 || ''}')"
+                 class="p-2 rounded-xl bg-black/40 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 cursor-pointer flex items-center justify-between group transition-all">
+              <div class="truncate text-right pr-1">
+                <div class="text-xs font-bold text-white group-hover:text-glowLime truncate">${item.trackName}</div>
+                <div class="text-[10px] text-purple-300 truncate">${item.artistName}</div>
+              </div>
+              <span class="px-2 py-1 rounded-lg bg-glowLime/15 text-glowLime font-bold text-[10px]">+ בחר</span>
+            </div>
+          `;
+        }).join('');
+      } catch(e) {
+        grid.innerHTML = '';
+      }
     }
 
-    window.applyInstantSuggestion = function(title, audioUrl, artwork) {
-      dualSelectedSongB = {
-        title: title,
-        audioUrl: audioUrl,
-        artwork: artwork,
-        cueIn: 5,
-        cueOut: 20,
-        duration: 30
-      };
-
-      document.getElementById('dualTitleB').textContent = title;
-      if (artwork) {
-        const img = document.getElementById('dualImgB');
-        img.src = artwork;
-        img.classList.remove('hidden');
-      }
-
-      window.showToast(`שיר שני נבחר: ${title}`, 'success');
-      applyDualMixToDecks();
+    window.applyInstantSuggestion = function(title, previewUrl, artwork) {
+      window.selectSong(title, previewUrl, artwork, 'B');
     };
 
-    // --- 3. Auto-DJ Logic ---
+    // --- 3. Playback & Real Audio Crossfader ---
+    window.toggleMasterPlay = function() {
+      unlockAudioOnce();
+      const playBtn = document.getElementById('playBtn');
+      const statusEl = document.getElementById('masterPlayStatus');
+
+      if (!isPlaying) {
+        if (activeDeck === 'A') {
+          audioA.volume = 1.0;
+          audioA.play().then(() => {
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+            statusEl.textContent = 'מנגן (שיר ראשון)';
+          }).catch(() => {
+            window.showToast('לחץ שוב להשמעה', 'info');
+          });
+        } else {
+          audioB.volume = 1.0;
+          audioB.play().then(() => {
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+            statusEl.textContent = 'מנגן (שיר שני)';
+          });
+        }
+      } else {
+        audioA.pause();
+        audioB.pause();
+        isPlaying = false;
+        playBtn.textContent = '▶';
+        statusEl.textContent = 'מושהה';
+      }
+    };
+
+    window.triggerSmartCrossfade = function(duration = 3.5) {
+      if (isTransitioning) return;
+      isTransitioning = true;
+
+      const fromAudio = activeDeck === 'A' ? audioA : audioB;
+      const toAudio = activeDeck === 'A' ? audioB : audioA;
+      const nextDeck = activeDeck === 'A' ? 'B' : 'A';
+      const toCue = nextDeck === 'B' ? (songB.cueIn || 0) : (songA.cueIn || 0);
+
+      toAudio.currentTime = toCue;
+      toAudio.volume = 0.0;
+      toAudio.play().catch(() => {});
+
+      const steps = 30;
+      const stepTime = (duration * 1000) / steps;
+      let stepCount = 0;
+
+      clearInterval(crossfadeInterval);
+      crossfadeInterval = setInterval(() => {
+        stepCount++;
+        const progress = stepCount / steps;
+        fromAudio.volume = Math.max(0, 1 - progress);
+        toAudio.volume = Math.min(1, progress);
+
+        if (stepCount >= steps) {
+          clearInterval(crossfadeInterval);
+          fromAudio.pause();
+          fromAudio.volume = 1.0;
+          activeDeck = nextDeck;
+          isTransitioning = false;
+          updateActiveDeckUI();
+          window.showToast('מעבר הושלם בהצלחה!', 'success');
+        }
+      }, stepTime);
+    };
+
+    function updateActiveDeckUI() {
+      const containerA = document.getElementById('deckAContainer');
+      const containerB = document.getElementById('deckBContainer');
+      if (activeDeck === 'A') {
+        containerA.classList.add('active-deck');
+        containerB.classList.remove('active-deck');
+        document.getElementById('masterPlayStatus').textContent = 'מנגן (שיר ראשון)';
+      } else {
+        containerB.classList.add('active-deck');
+        containerA.classList.remove('active-deck');
+        document.getElementById('masterPlayStatus').textContent = 'מנגן (שיר שני)';
+      }
+    }
+
+    // Auto-DJ Listener
+    audioA.ontimeupdate = () => {
+      const cur = audioA.currentTime;
+      const dur = audioA.duration || 30;
+      document.getElementById('playheadA').style.left = `${(cur / dur) * 100}%`;
+      document.getElementById('trackACurrentTime').textContent = formatTime(cur);
+      document.getElementById('trackATotalTime').textContent = formatTime(dur);
+
+      if (isAutoDjEnabled && !isTransitioning && activeDeck === 'A' && cur >= songA.cueOut) {
+        window.triggerSmartCrossfade(3.5);
+      }
+    };
+
+    audioB.ontimeupdate = () => {
+      const cur = audioB.currentTime;
+      const dur = audioB.duration || 30;
+      document.getElementById('playheadB').style.left = `${(cur / dur) * 100}%`;
+      document.getElementById('trackBCurrentTime').textContent = formatTime(cur);
+      document.getElementById('trackBTotalTime').textContent = formatTime(dur);
+
+      if (isAutoDjEnabled && !isTransitioning && activeDeck === 'B' && cur >= (songB.cueOut || 25)) {
+        window.triggerSmartCrossfade(3.5);
+      }
+    };
+
     window.toggleAutoDjMode = function(checked) {
       isAutoDjEnabled = checked;
       const badge = document.getElementById('autoDjCountdownBadge');
-      if (isAutoDjEnabled) {
-        badge.textContent = 'Auto-DJ פעיל';
-        badge.className = 'text-[10px] text-glowLime font-mono bg-glowLime/10 px-2 py-0.5 rounded border border-glowLime/30';
-        window.showToast('מצב Auto-DJ הופעל! המעברים יבוצעו לבד', 'success');
-      } else {
-        badge.textContent = 'Auto-DJ כבוי (ידני)';
-        badge.className = 'text-[10px] text-sunset font-mono bg-sunset/10 px-2 py-0.5 rounded border border-sunset/30';
-        window.showToast('מצב מעבר ידני', 'info');
-      }
+      badge.textContent = checked ? 'Auto-DJ פעיל' : 'מעבר ידני';
+      badge.className = checked ? 'text-[10px] text-glowLime font-mono bg-glowLime/10 px-2 py-0.5 rounded border border-glowLime/30' : 'text-[10px] text-sunset font-mono bg-sunset/10 px-2 py-0.5 rounded border border-sunset/30';
     };
 
-    function checkAutoDjTransition(currentTime) {
-      if (!isAutoDjEnabled || isTransitioning || !decks.A.isPlaying) return;
-
-      const cueOut = decks.A.cueTime || 20;
-      const timeLeft = Math.max(0, cueOut - currentTime);
-
-      const badge = document.getElementById('autoDjCountdownBadge');
-      if (timeLeft <= 5 && timeLeft > 0) {
-        badge.textContent = `מעבר בעוד ${Math.ceil(timeLeft)}s ⚡`;
-      }
-
-      if (currentTime >= cueOut) {
-        isTransitioning = true;
-        window.triggerSmartCrossfade(3.5);
-      }
-    }
-
-    // --- 4. WhatsApp Sharing ---
-    window.shareMixToWhatsApp = function() {
-      const trackA = dualSelectedSongA.title || 'שיר ראשון';
-      const trackB = dualSelectedSongB.title || 'שיר שני';
-      const currentUrl = window.location.href;
-
-      const message = `🔥 שמע את המיקס החדש שיצרתי ב-PULSEAI:\n🎵 ${trackA} ➔ ${trackB}\n\n🎧 האזן למיקס המלא בלחיצה כאן:\n${currentUrl}`;
-      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+    window.seekDeck = function(e, deckId) {
+      const targetAudio = deckId === 'A' ? audioA : audioB;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const ratio = (e.clientX - rect.left) / rect.width;
+      const targetTime = ratio * (targetAudio.duration || 30);
+      targetAudio.currentTime = targetTime;
     };
 
-    // --- 5. Export & Download (MP3 vs MP4) ---
-    window.openExportModal = () => document.getElementById('exportModal').classList.remove('hidden');
-    window.closeExportModal = () => document.getElementById('exportModal').classList.add('hidden');
-
-    window.executeAudioDownload = async function() {
-      const status = document.getElementById('exportStatusIndicator');
-      status.textContent = '⏳ מרנדר קובץ אודיו באיכות סטודיו...';
-      status.classList.remove('hidden');
-
-      try {
-        const renderSampleRate = 44100;
-        const renderLengthSec = 12;
-        const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, renderSampleRate * renderLengthSec, renderSampleRate);
-
-        const osc = offlineCtx.createOscillator();
-        const gain = offlineCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, 0);
-        osc.frequency.exponentialRampToValueAtTime(440, renderLengthSec);
-        gain.gain.setValueAtTime(0.5, 0);
-        gain.gain.linearRampToValueAtTime(0.01, renderLengthSec);
-
-        osc.connect(gain);
-        gain.connect(offlineCtx.destination);
-        osc.start(0);
-
-        const renderedBuffer = await offlineCtx.startRendering();
-        const wavBlob = audioBufferToWavBlob(renderedBuffer);
-
-        const url = URL.createObjectURL(wavBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `PulseAI_Mix_${Date.now()}.mp3`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        window.showToast('קובץ האודיו הורד בהצלחה למכשיר!', 'success');
-        closeExportModal();
-      } catch (err) {
-        console.error(err);
-        window.showToast('שגיאה ביצוא קובץ השמע', 'error');
-      } finally {
-        status.classList.add('hidden');
-      }
-    };
-
-    window.executeVideoDownload = async function() {
-      const status = document.getElementById('exportStatusIndicator');
-      status.textContent = '🎬 מרנדר סרטון וידאו MP4 עם גל קול מונפש...';
-      status.classList.remove('hidden');
-
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 720;
-        canvas.height = 720;
-        const ctx = canvas.getContext('2d');
-
-        const stream = canvas.captureStream(30);
-        let recorder;
-
-        const mimeTypes = ['video/mp4;codecs=h264', 'video/webm;codecs=vp9', 'video/webm'];
-        let selectedMime = 'video/webm';
-        for (const m of mimeTypes) {
-          if (MediaRecorder.isTypeSupported(m)) {
-            selectedMime = m;
-            break;
-          }
-        }
-
-        recorder = new MediaRecorder(stream, { mimeType: selectedMime });
-        const chunks = [];
-
-        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-        recorder.onstop = () => {
-          const blob = new Blob(chunks, { type: selectedMime });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `PulseAI_Video_${Date.now()}.mp4`;
-          a.click();
-          URL.revokeObjectURL(url);
-          window.showToast('סרטון ה-MP4 הורד בהצלחה!', 'success');
-          closeExportModal();
-          status.classList.add('hidden');
-        };
-
-        recorder.start();
-
-        let frame = 0;
-        const maxFrames = 120;
-
-        function drawVideoFrame() {
-          ctx.fillStyle = '#080512';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          const grad = ctx.createRadialGradient(360, 360, 20, 360, 360, 350);
-          grad.addColorStop(0, 'rgba(255, 94, 54, 0.25)');
-          grad.addColorStop(1, 'rgba(8, 5, 18, 1)');
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = 'bold 32px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('PULSEAI MIX', 360, 180);
-
-          ctx.fillStyle = '#FF5E36';
-          ctx.font = 'bold 24px sans-serif';
-          ctx.fillText(dualSelectedSongA.title.substring(0, 30), 360, 250);
-
-          ctx.fillStyle = '#10E773';
-          ctx.font = 'bold 20px sans-serif';
-          ctx.fillText('➔ מעבר חלק ➔', 360, 300);
-
-          ctx.fillStyle = '#00F0FF';
-          ctx.font = 'bold 24px sans-serif';
-          ctx.fillText(dualSelectedSongB.title.substring(0, 30), 360, 350);
-
-          const bars = 40;
-          for (let i = 0; i < bars; i++) {
-            const h = Math.abs(Math.sin(frame * 0.1 + i * 0.2)) * 120 + 20;
-            const x = 120 + i * 12;
-            const y = 520 - h / 2;
-
-            const barGrad = ctx.createLinearGradient(0, y, 0, y + h);
-            barGrad.addColorStop(0, '#FF5E36');
-            barGrad.addColorStop(1, '#10E773');
-            ctx.fillStyle = barGrad;
-            ctx.fillRect(x, y, 8, h);
-          }
-
-          frame++;
-          if (frame < maxFrames) {
-            requestAnimationFrame(drawVideoFrame);
-          } else {
-            recorder.stop();
-          }
-        }
-        drawVideoFrame();
-
-      } catch (err) {
-        console.error(err);
-        window.showToast('שגיאה ברינדור סרטון הוידאו', 'error');
-        status.classList.add('hidden');
-      }
-    };
-
-    function audioBufferToWavBlob(buffer) {
-      const numOfChan = buffer.numberOfChannels;
-      const length = buffer.length * numOfChan * 2 + 44;
-      const out = new DataView(new ArrayBuffer(length));
-      const channels = [];
-      let sampleRate = buffer.sampleRate;
-      let offset = 0, pos = 0;
-
-      function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
-      function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
-
-      setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
-      setUint32(0x20746d66); setUint32(16); setUint16(1);
-      setUint16(numOfChan); setUint32(sampleRate); setUint32(sampleRate * 2 * numOfChan);
-      setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164);
-      setUint32(length - pos - 4);
-
-      for (let i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
-
-      while (offset < buffer.length) {
-        for (let i = 0; i < numOfChan; i++) {
-          let sample = Math.max(-1, Math.min(1, channels[i][offset]));
-          sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
-          out.setInt16(pos, sample, true);
-          pos += 2;
-        }
-        offset++;
-      }
-      return new Blob([out.buffer], { type: "audio/wav" });
-    }
-
-    // --- 6. AI Dual Mixing & Playback Modal ---
+    // --- 4. Modals & Presets ---
     window.runAiDualMixingProcess = function() {
       const loader = document.getElementById('aiLoadingOverlay');
       const progressBar = document.getElementById('aiProgressBar');
       loader.classList.remove('hidden');
       progressBar.style.width = '30%';
 
-      setTimeout(() => { progressBar.style.width = '80%'; }, 250);
+      setTimeout(() => { progressBar.style.width = '80%'; }, 200);
       setTimeout(() => {
         progressBar.style.width = '100%';
         loader.classList.add('hidden');
-        applyDualMixToDecks();
         showMixReadyModal();
-      }, 550);
+      }, 450);
     };
 
     function showMixReadyModal() {
       const modal = document.getElementById('aiMixReadyModal');
-      document.getElementById('modalSongAName').textContent = dualSelectedSongA.title.split('—')[0];
-      document.getElementById('modalSongBName').textContent = dualSelectedSongB.title.split('—')[0];
+      document.getElementById('modalSongAName').textContent = songA.title.split('—')[0];
+      document.getElementById('modalSongBName').textContent = songB.title.split('—')[0];
       modal.classList.remove('hidden');
     }
 
     window.toggleModalMixPlayback = function() {
       window.toggleMasterPlay();
-      const isPlaying = decks.A.isPlaying || decks.B.isPlaying;
-      document.getElementById('modalPlayIcon').textContent = isPlaying ? '⏸' : '▶';
-      document.getElementById('modalPlayText').textContent = isPlaying ? 'השהה מיקס' : 'נגן את המיקס עכשיו';
+      const playIcon = document.getElementById('modalPlayIcon');
+      const playText = document.getElementById('modalPlayText');
+      playIcon.textContent = isPlaying ? '⏸' : '▶';
+      playText.textContent = isPlaying ? 'השהה מיקס' : 'נגן את המיקס עכשיו';
     };
 
     window.closeMixReadyModalAndScroll = function() {
       document.getElementById('aiMixReadyModal').classList.add('hidden');
-      scrollToMainWorkspace();
+      document.getElementById('mainWorkspaceSection').scrollIntoView({ behavior: 'smooth' });
     };
 
     window.scrollToMainWorkspace = function() {
       document.getElementById('mainWorkspaceSection').scrollIntoView({ behavior: 'smooth' });
     };
 
-    function applyDualMixToDecks() {
-      isTransitioning = false;
-      document.getElementById('trackATitle').textContent = dualSelectedSongA.title;
-      document.getElementById('trackACueText').textContent = formatTime(dualSelectedSongA.cueOut);
-      loadTrackAudioStream('A', dualSelectedSongA.audioUrl);
-      generateSimulatedWaveform('A');
-
-      document.getElementById('trackBTitle').textContent = dualSelectedSongB.title;
-      document.getElementById('trackBCueText').textContent = formatTime(dualSelectedSongB.cueIn);
-      loadTrackAudioStream('B', dualSelectedSongB.audioUrl);
-      generateSimulatedWaveform('B');
-
-      window.refreshSmartRecommendations();
-    }
-
-    function loadTrackAudioStream(deckId, url) {
-      if (url) {
-        htmlAudioElements[deckId].src = url;
-        htmlAudioElements[deckId].preload = "auto";
-      }
-    }
-
     window.previewDualMixTransition = function() {
-      initAudioContext();
-      window.toggleMasterPlay();
-      setTimeout(() => window.triggerSmartCrossfade(3.5), 800);
+      if (!isPlaying) window.toggleMasterPlay();
+      setTimeout(() => window.triggerSmartCrossfade(3.5), 600);
     };
 
-    // --- 7. Presets ---
     window.applyMixPreset = function(key) {
       document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active-preset'));
       if (key === 'party') {
         document.getElementById('presetParty').classList.add('active-preset');
-        dualSelectedSongA = { title: 'עומר אדם — שני משוגעים', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', cueOut: 20, cueIn: 5, duration: 30 };
-        dualSelectedSongB = { title: 'נועה קירל — יוניקורן (Unicorn)', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', cueOut: 22, cueIn: 5, duration: 30 };
+        window.selectSong('עומר אדם — שני משוגעים', 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', '', 'A');
+        window.selectSong('נועה קירל — יוניקורן (Unicorn)', 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', '', 'B');
       } else if (key === 'workout') {
         document.getElementById('presetWorkout').classList.add('active-preset');
-        dualSelectedSongA = { title: 'The Weeknd — Blinding Lights', audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3', cueOut: 18, cueIn: 4, duration: 30 };
-        dualSelectedSongB = { title: 'Dua Lipa — Physical', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_34b35ef587.mp3?filename=dance-pop-energy-118029.mp3', cueOut: 20, cueIn: 4, duration: 30 };
+        window.selectSong('The Weeknd — Blinding Lights', 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3', '', 'A');
+        window.selectSong('Dua Lipa — Physical', 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_34b35ef587.mp3?filename=dance-pop-energy-118029.mp3', '', 'B');
       } else if (key === 'chill') {
         document.getElementById('presetChill').classList.add('active-preset');
-        dualSelectedSongA = { title: 'חנן בן ארי — אלוף העולם', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3', cueOut: 22, cueIn: 6, duration: 30 };
-        dualSelectedSongB = { title: 'פאר טסי — אהבה חולה', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3', cueOut: 20, cueIn: 6, duration: 30 };
+        window.selectSong('חנן בן ארי — אלוף העולם', 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3', '', 'A');
+        window.selectSong('פאר טסי — אהבה חולה', 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3', '', 'B');
       } else {
         document.getElementById('presetDance').classList.add('active-preset');
-        dualSelectedSongA = { title: 'Fred Again.. — Delilah', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', cueOut: 20, cueIn: 5, duration: 30 };
-        dualSelectedSongB = { title: 'Calvin Harris — One Kiss', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', cueOut: 20, cueIn: 5, duration: 30 };
+        window.selectSong('Calvin Harris — One Kiss', 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', '', 'A');
+        window.selectSong('Fred Again.. — Delilah', 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', '', 'B');
       }
-
-      document.getElementById('dualTitleA').textContent = dualSelectedSongA.title;
-      document.getElementById('dualTitleB').textContent = dualSelectedSongB.title;
-      generateInstantRecommendationsForSongA(dualSelectedSongA.title);
-      applyDualMixToDecks();
-      window.showToast('סגנון המיקס עודכן!', 'info');
     };
 
-    // --- 8. Tour & Notifications ---
-    const tourSteps = [
-      { targetId: 'dualSearchStudio', title: '1. חפש כל שיר בעולם', description: 'הקלד כל שיר בעברית או באנגלית. המערכת תמשוך קטע מקורי ותחבר ביניהם.' },
-      { targetId: 'instantSmartSuggestionsBox', title: '2. 3 המלצות אוטומטיות', description: 'ברגע שתבחר שיר ראשון, המערכת תציג לך מיד 3 שירים מומלצים שמתחברים אליו.' },
-      { targetId: 'autoDjToggle', title: '3. מצב Auto-DJ (שגר ושכח)', description: 'כשהמצב דולק, השירים מתחלפים מעצמם בדיוק ברגע הנכון בלי שתצטרך לגעת במסך.' },
-      { targetId: 'masterControlsTourTarget', title: '4. השמעה ומעבר', description: 'לחץ על Play ותהנה ממיקס רציף!' }
-    ];
-
-    let currentTourIndex = 0;
-    window.startInteractiveTour = function() {
-      currentTourIndex = 0;
-      document.getElementById('tourOverlay').classList.remove('hidden');
-      renderCurrentTourStep();
+    // WhatsApp Sharing
+    window.shareMixToWhatsApp = function() {
+      const msg = `🔥 שמע את המיקס שיצרתי ב-PULSEAI:\n🎵 ${songA.title} ➔ ${songB.title}\n\n🎧 כנס להאזין:\n${window.location.href}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    window.endTour = function() {
-      document.getElementById('tourOverlay').classList.add('hidden');
-      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    // Export Modal Controls
+    window.openExportModal = () => document.getElementById('exportModal').classList.remove('hidden');
+    window.closeExportModal = () => document.getElementById('exportModal').classList.add('hidden');
+
+    window.openExportModalFromMixReady = function() {
+      document.getElementById('aiMixReadyModal').classList.add('hidden');
+      document.getElementById('exportModal').classList.remove('hidden');
     };
 
-    function renderCurrentTourStep() {
-      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
-      const step = tourSteps[currentTourIndex];
-      document.getElementById('tourStepBadge').textContent = `שלב ${currentTourIndex + 1} מתוך ${tourSteps.length}`;
-      document.getElementById('tourTitle').textContent = step.title;
-      document.getElementById('tourDescription').textContent = step.description;
+    window.backToMixReadyModal = function() {
+      document.getElementById('exportModal').classList.add('hidden');
+      document.getElementById('aiMixReadyModal').classList.remove('hidden');
+    };
 
-      document.getElementById('tourDots').innerHTML = tourSteps.map((_, i) => `
-        <span class="w-2 h-2 rounded-full ${i === currentTourIndex ? 'bg-glowLime' : 'bg-purple-800'}"></span>
-      `).join('');
+    window.executeAudioDownload = function() {
+      const a = document.createElement('a');
+      a.href = audioA.src || songA.audioUrl;
+      a.download = `PulseAI_Mix_${Date.now()}.mp3`;
+      a.target = '_blank';
+      a.click();
+      window.showToast('הורדת קובץ ה-MP3 החלה!', 'success');
+      closeExportModal();
+    };
 
-      document.getElementById('tourPrevBtn').disabled = (currentTourIndex === 0);
-      document.getElementById('tourNextBtn').textContent = (currentTourIndex === tourSteps.length - 1) ? 'סיים' : 'הבא';
+    window.executeVideoDownload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
 
-      const targetEl = document.getElementById(step.targetId);
-      if (targetEl) {
-        targetEl.classList.add('tour-highlight');
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=h264') ? 'video/mp4' : 'video/webm';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      const chunks = [];
+
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `PulseAI_Video_${Date.now()}.mp4`;
+        a.click();
+        window.showToast('סרטון ה-MP4 הורד בהצלחה!', 'success');
+        closeExportModal();
+      };
+
+      recorder.start();
+      let f = 0;
+      function drawFrame() {
+        ctx.fillStyle = '#080512';
+        ctx.fillRect(0, 0, 600, 600);
+        ctx.fillStyle = '#FF5E36';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PULSEAI MIX', 300, 200);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '18px sans-serif';
+        ctx.fillText(songA.title.substring(0, 25), 300, 260);
+        ctx.fillStyle = '#10E773';
+        ctx.fillText('➔ מעבר חלק ➔', 300, 310);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(songB.title.substring(0, 25), 300, 360);
+
+        f++;
+        if (f < 90) requestAnimationFrame(drawFrame);
+        else recorder.stop();
+      }
+      drawFrame();
+    };
+
+    function generateWaveform(deckId) {
+      const canvas = document.getElementById(`waveform${deckId}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width = canvas.parentElement.offsetWidth || 400;
+      const height = canvas.height = canvas.parentElement.offsetHeight || 60;
+      ctx.clearRect(0, 0, width, height);
+
+      const bars = Math.floor(width / 3.5);
+      for (let i = 0; i < bars; i++) {
+        const barHeight = Math.max(4, (Math.sin(i * 0.18) * 0.7 + Math.random() * 0.3) * (height * 0.8));
+        ctx.fillStyle = deckId === 'A' ? '#FF5E36' : '#10E773';
+        ctx.fillRect(i * 3.5, (height - barHeight) / 2, 2, barHeight);
       }
     }
 
-    window.nextTourStep = function() {
-      if (currentTourIndex < tourSteps.length - 1) { currentTourIndex++; renderCurrentTourStep(); }
-      else endTour();
+    // Local file upload handling
+    window.handleDragOver = (e) => e.preventDefault();
+    window.handleDragLeave = (e) => {};
+    window.handleDrop = (e, deckId) => {
+      e.preventDefault();
+      if (e.dataTransfer.files.length > 0) processLocalFile(e.dataTransfer.files[0], deckId);
     };
-    window.prevTourStep = function() {
-      if (currentTourIndex > 0) { currentTourIndex--; renderCurrentTourStep(); }
+    window.handleFileInput = (e, deckId) => {
+      if (e.target.files.length > 0) processLocalFile(e.target.files[0], deckId);
     };
+
+    function processLocalFile(file, deckId) {
+      const url = URL.createObjectURL(file);
+      const title = file.name.replace(/\.[^/.]+$/, "");
+      window.selectSong(title, url, '', deckId);
+    }
 
     window.showToast = function(msg, type = 'info') {
       const container = document.getElementById('toastContainer');
@@ -1188,192 +1073,21 @@
     };
 
     window.refreshSmartRecommendations = function() {
-      const catalog = [
-        { id: '1', title: 'חנן בן ארי — אלוף העולם', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3' },
-        { id: '2', title: 'פאר טסי — אהבה חולה', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3' },
-        { id: '3', title: 'Dua Lipa — Physical', audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_34b35ef587.mp3?filename=dance-pop-energy-118029.mp3' }
-      ];
-      document.getElementById('recommendationsContainer').innerHTML = catalog.map(m => `
-        <div class="p-2.5 rounded-lg bg-black/40 border border-purple-900/40 flex justify-between items-center text-xs">
-          <span class="truncate max-w-[130px] text-white font-medium">${m.title.split('—')[0]}</span>
-          <button onclick="loadMatchedSongToDeckB('${m.title}', '${m.audioUrl}')" class="px-2 py-0.5 rounded bg-sunset/20 text-sunset hover:bg-sunset hover:text-white font-bold text-[10px]">
-            + חבר
-          </button>
-        </div>
-      `).join('');
+      generateRecommendationsForSongA(songA.title);
     };
 
-    window.loadMatchedSongToDeckB = function(title, url) {
-      dualSelectedSongB = { title, audioUrl: url, cueIn: 5, cueOut: 20, duration: 30 };
-      document.getElementById('dualTitleB').textContent = title;
-      document.getElementById('trackBTitle').textContent = title;
-      loadTrackAudioStream('B', url);
-      generateSimulatedWaveform('B');
-      window.showToast('שיר נטען בהצלחה!', 'success');
-    };
-
-    // --- 9. Decks & Playback Engine ---
-    window.handleDragOver = (e) => e.preventDefault();
-    window.handleDragLeave = (e) => {};
-    window.handleDrop = (e, deckId) => {
-      e.preventDefault();
-      if (e.dataTransfer.files.length > 0) processAudioFile(e.dataTransfer.files[0], deckId);
-    };
-    window.handleFileInput = (e, deckId) => {
-      if (e.target.files.length > 0) processAudioFile(e.target.files[0], deckId);
-    };
-
-    async function processAudioFile(file, deckId) {
-      initAudioContext();
-      document.getElementById(`track${deckId}Title`).textContent = file.name.replace(/\.[^/.]+$/, "");
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-        decks[deckId].buffer = decodedBuffer;
-        decks[deckId].duration = decodedBuffer.duration;
-        document.getElementById(`track${deckId}TotalTime`).textContent = formatTime(decodedBuffer.duration);
-        generateSimulatedWaveform(deckId);
-        window.showToast('קובץ MP3 מוכן להשמעה!', 'success');
-      } catch(e){
-        window.showToast('שגיאה בטעינת הקובץ', 'error');
-      }
-    }
-
-    function generateSimulatedWaveform(deckId) {
-      const canvas = document.getElementById(`waveform${deckId}`);
-      const ctx = canvas.getContext('2d');
-      const width = canvas.width = canvas.parentElement.offsetWidth || 400;
-      const height = canvas.height = canvas.parentElement.offsetHeight || 60;
-      ctx.clearRect(0, 0, width, height);
-
-      const bars = Math.floor(width / 3.5);
-      for (let i = 0; i < bars; i++) {
-        const barHeight = Math.max(4, (Math.sin(i * 0.15) * 0.7 + Math.random() * 0.3) * (height * 0.8));
-        ctx.fillStyle = deckId === 'A' ? '#FF5E36' : '#10E773';
-        ctx.fillRect(i * 3.5, (height - barHeight) / 2, 2, barHeight);
-      }
-    }
-
-    function startDeck(deckId, offset = 0) {
-      const d = decks[deckId];
-      if (d.buffer) {
-        if (d.source) try { d.source.stop(); } catch(e){}
-        d.source = audioCtx.createBufferSource();
-        d.source.buffer = d.buffer;
-        d.source.connect(audioCtx.destination);
-        d.source.start(0, offset);
-        d.isPlaying = true;
-        d.startTime = audioCtx.currentTime - offset;
-      } else {
-        const audioEl = htmlAudioElements[deckId];
-        if (audioEl && audioEl.src) {
-          audioEl.currentTime = offset;
-          audioEl.volume = deckId === 'A' ? 1.0 : 0.0;
-          audioEl.play().catch(e => {});
-          d.isPlaying = true;
-          d.startTime = audioCtx.currentTime - offset;
-        }
-      }
-    }
-
-    function stopDeck(deckId) {
-      const d = decks[deckId];
-      if (d.buffer && d.source && d.isPlaying) {
-        d.pauseOffset = audioCtx.currentTime - d.startTime;
-        try { d.source.stop(); } catch(e){}
-      } else {
-        htmlAudioElements[deckId].pause();
-      }
-      d.isPlaying = false;
-    }
-
-    window.toggleMasterPlay = function() {
-      initAudioContext();
-      const playBtn = document.getElementById('playBtn');
-      if (!decks.A.isPlaying && !decks.B.isPlaying) {
-        startDeck('A', decks.A.pauseOffset);
-        playBtn.textContent = '⏸';
-        document.getElementById('masterPlayStatus').textContent = 'מנגן';
-      } else {
-        stopDeck('A');
-        stopDeck('B');
-        playBtn.textContent = '▶';
-        document.getElementById('masterPlayStatus').textContent = 'מושהה';
-      }
-    };
-
-    window.triggerSmartCrossfade = function(duration = 3.5) {
-      initAudioContext();
-      if (!decks.B.isPlaying) startDeck('B', decks.B.cueTime);
-
-      const audioA = htmlAudioElements.A;
-      const audioB = htmlAudioElements.B;
-      if (audioA && audioB) {
-        const step = 0.05;
-        const interval = setInterval(() => {
-          if (audioA.volume > step) audioA.volume -= step;
-          else audioA.volume = 0;
-          if (audioB.volume < 1 - step) audioB.volume += step;
-          else audioB.volume = 1.0;
-        }, (duration * 1000) / 20);
-
-        setTimeout(() => {
-          clearInterval(interval);
-          stopDeck('A');
-          isTransitioning = false;
-          window.showToast('המעבר הושלם בהצלחה!', 'success');
-        }, duration * 1000);
-      }
-    };
-
-    window.seekDeck = function(e, deckId) {
-      const d = decks[deckId];
-      const rect = e.currentTarget.getBoundingClientRect();
-      const ratio = (e.clientX - rect.left) / rect.width;
-      const targetTime = ratio * (d.buffer ? d.duration : 30);
-      d.pauseOffset = targetTime;
-      if (d.isPlaying) startDeck(deckId, targetTime);
-    };
-
-    // Auto-DJ loop
-    function renderLoop() {
-      ['A', 'B'].forEach(deckId => {
-        const d = decks[deckId];
-        if (d.isPlaying) {
-          const current = (audioCtx.currentTime - d.startTime);
-          const maxDur = d.buffer ? d.duration : 30;
-          if (current <= maxDur) {
-            document.getElementById(`playhead${deckId}`).style.left = `${(current / maxDur) * 100}%`;
-            document.getElementById(`track${deckId}CurrentTime`).textContent = formatTime(current);
-
-            if (deckId === 'A') {
-              checkAutoDjTransition(current);
-            }
-          } else {
-            d.isPlaying = false;
-          }
-        }
-      });
-      requestAnimationFrame(renderLoop);
-    }
-    requestAnimationFrame(renderLoop);
-
+    // Startup Initialization
     window.addEventListener('DOMContentLoaded', () => {
-      loadTrackAudioStream('A', dualSelectedSongA.audioUrl);
-      loadTrackAudioStream('B', dualSelectedSongB.audioUrl);
-      generateInstantRecommendationsForSongA(dualSelectedSongA.title);
-      generateSimulatedWaveform('A');
-      generateSimulatedWaveform('B');
-      window.refreshSmartRecommendations();
-
-      if (!localStorage.getItem('pulseAI_tourSeen')) {
-        setTimeout(startInteractiveTour, 800);
-      }
+      audioA.src = songA.audioUrl;
+      audioB.src = songB.audioUrl;
+      generateWaveform('A');
+      generateWaveform('B');
+      generateRecommendationsForSongA(songA.title);
     });
 
     window.addEventListener('resize', () => {
-      generateSimulatedWaveform('A');
-      generateSimulatedWaveform('B');
+      generateWaveform('A');
+      generateWaveform('B');
     });
   </script>
 </body>
