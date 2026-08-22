@@ -190,19 +190,19 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 rounded-2xl border border-glowLime/30 relative">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
       <div>
-        <h2 class="text-base font-black text-white">⚡ Quick Mix[cite: 2]</h2>
-        <p class="text-[10px] text-purple-300">בחר שני שירים, סגנון — וה־AI יטפל בשאר[cite: 2].</p>
+        <h2 class="text-base font-black text-white">⚡ Quick Mix</h2>
+        <p class="text-[10px] text-purple-300">בחר שני שירים, סגנון — וה־AI יטפל בשאר.</p>
       </div>
       <button onclick="activatePlaylistFromQuick()" class="px-3 py-2 rounded-xl bg-glowLime/10 border border-glowLime/40 text-glowLime text-[10px] font-black">🎧 Make Me a Playlist</button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 relative">
       <div class="relative">
-        <label class="text-[9px] text-sunset font-bold">DECK A · שיר ראשון[cite: 2]</label>
+        <label class="text-[9px] text-sunset font-bold">DECK A · שיר ראשון</label>
         <input id="quickSearchA" type="text" oninput="debounceQuickSearch(this.value,'A')" placeholder="חפש שיר..." autocomplete="off" aria-label="חיפוש שיר ראשון" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-sunset">
         <div id="quickDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
       <div class="relative">
-        <label class="text-[9px] text-glowLime font-bold">DECK B · שיר שני[cite: 2]</label>
+        <label class="text-[9px] text-glowLime font-bold">DECK B · שיר שני</label>
         <input id="quickSearchB" type="text" oninput="debounceQuickSearch(this.value,'B')" placeholder="חפש שיר..." autocomplete="off" aria-label="חיפוש שיר שני" class="w-full mt-1 py-2.5 px-3 rounded-xl bg-black/40 border border-purple-800/60 text-white placeholder-purple-500/60 text-xs focus:outline-none focus:border-glowLime">
         <div id="quickDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-[999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
@@ -244,7 +244,7 @@
       <div id="presetPlaylist" onclick="applyMixPreset('playlist')" class="preset-card glass-panel p-3 rounded-xl border border-glowLime/40 hover:border-glowLime cursor-pointer text-center bg-glowLime/5">
         <span class="text-base">🎧</span>
         <div class="text-xs font-bold text-glowLime mt-1">Make me a Playlist</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">5 שירים לבחירה חופשית[cite: 1]</div>
+        <div class="text-[10px] text-purple-300 mt-0.5">5 שירים לבחירה חופשית</div>
       </div>
     </div>
 
@@ -253,7 +253,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
         <div>
           <div class="text-sm font-black text-glowLime">🎧 Make me a Playlist</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">בחר שירים לכל שדה וצור מיקס רציף מרובה-שירים[cite: 1].</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">בחר שירים לכל שדה וצור מיקס רציף מרובה-שירים.</div>
         </div>
       </div>
 
@@ -931,8 +931,6 @@
       document.getElementById(`track${cap}Bpm`)?.replaceChildren(document.createTextNode(a.bpm));
       document.getElementById(`track${cap}Key`)?.replaceChildren(document.createTextNode(a.key));
       document.getElementById(`track${cap}Energy`)?.replaceChildren(document.createTextNode(`${a.energy}%`));
-      document.getElementById(`energy${cap}Value`)?.replaceChildren(document.createTextNode(`${a.energy}%`));
-      const bar = document.getElementById(`energy${cap}Bar`); if (bar) bar.style.width = `${a.energy}%`;
       updateCopilot();
     }
 
