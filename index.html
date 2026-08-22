@@ -351,6 +351,42 @@
         .trim();
     }
 
+    // --- GENRE MATCHING ---
+    // iTunes returns a real primaryGenreName per track, but genre labels are very
+    // granular ("Dance", "House", "Deep House", "Electronic" etc. are all really
+    // "the same genre" for DJ-mix purposes). This buckets related labels together
+    // so genre matching is meaningful instead of relying on exact string equality
+    // or the old fake BPM-proximity filter.
+    const GENRE_BUCKETS = [
+      { key: 'dance-electronic', match: ['dance', 'electronic', 'house', 'techno', 'trance', 'edm', 'dubstep', 'drum and bass', 'drum & bass', 'trap', 'club', 'disco'] },
+      { key: 'hip-hop-rap', match: ['hip-hop', 'hip hop', 'rap'] },
+      { key: 'pop', match: ['pop'] },
+      { key: 'rock', match: ['rock', 'alternative', 'indie'] },
+      { key: 'israeli', match: ['israeli', 'mizrahi', 'ivrit'] },
+      { key: 'latin', match: ['latin', 'reggaeton', 'salsa'] },
+      { key: 'rnb-soul', match: ['r&b', 'r&amp;b', 'soul', 'funk'] },
+      { key: 'reggae', match: ['reggae', 'dancehall'] },
+      { key: 'country', match: ['country'] },
+      { key: 'jazz-blues', match: ['jazz', 'blues'] },
+      { key: 'classical', match: ['classical'] },
+      { key: 'metal-punk', match: ['metal', 'punk'] },
+      { key: 'world', match: ['world', 'arabic', 'french pop', 'k-pop', 'j-pop'] },
+    ];
+
+    function normalizeGenre(genre) {
+      if (!genre) return '';
+      const g = genre.toLowerCase();
+      for (const bucket of GENRE_BUCKETS) {
+        if (bucket.match.some(term => g.includes(term))) return bucket.key;
+      }
+      return g.trim(); // unrecognized genre stays its own exact bucket
+    }
+
+    function genresMatch(genreA, genreB) {
+      if (!genreA || !genreB) return false;
+      return normalizeGenre(genreA) === normalizeGenre(genreB);
+    }
+
     async function searchItunesApi(term, limit = 12) {
       const cleaned = cleanSearchQuery(term);
       const termsToTry = [cleaned, term];
@@ -375,9 +411,32 @@
 
     async function getSmartRecommendations(referenceTrack) {
       if (!referenceTrack) return [];
-      const query = `${referenceTrack.artistName || referenceTrack.genre || 'Dance'} hits`;
-      const results = await searchItunesApi(query, 6);
-      return results.filter(item => item.previewUrl && item.previewUrl !== referenceTrack.previewUrl);
+      const refGenre = referenceTrack.genre || '';
+
+      // Try a few angles to find same-genre tracks: the artist's own catalogue,
+      // the genre name itself, and genre + "hits" — then keep only results whose
+      // REAL iTunes genre bucket matches the reference track's genre bucket.
+      const queries = [
+        `${referenceTrack.artistName} hits`,
+        refGenre ? `${refGenre} hits` : null,
+        refGenre ? `top ${refGenre}` : null,
+      ].filter(Boolean);
+
+      const seen = new Set([referenceTrack.previewUrl]);
+      let matched = [];
+
+      for (const q of queries) {
+        if (matched.length >= 6) break;
+        const results = await searchItunesApi(q, 10);
+        for (const item of results) {
+          if (!item.previewUrl || seen.has(item.previewUrl)) continue;
+          if (refGenre && !genresMatch(item.primaryGenreName, refGenre)) continue;
+          seen.add(item.previewUrl);
+          matched.push(item);
+          if (matched.length >= 6) break;
+        }
+      }
+      return matched;
     }
 
     async function showQuickRecommendations(num) {
@@ -968,48 +1027,82 @@
         const seed1 = selectedQuickTrack1;
         const seed2 = selectedQuickTrack2;
 
-        const targetAvgBpm = Math.round((seed1.bpm + seed2.bpm) / 2);
-        const detectedGenre = seed1.genre || seed2.genre || 'Dance';
+        const genre1 = seed1.genre || '';
+        const genre2 = seed2.genre || '';
+        // The set of "acceptable" genre buckets is derived from the two songs
+        // the user actually entered — nothing else counts as a match.
+        const targetGenreBuckets = new Set([normalizeGenre(genre1), normalizeGenre(genre2)].filter(Boolean));
+        const genreLabel = [genre1, genre2].filter(Boolean).join(' / ') || 'Dance';
 
         let curatedTracks = [seed1, seed2];
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM, ${detectedGenre})...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מחפש שירים באותו ז'אנר בדיוק (${escapeHtml(genreLabel)})...`;
 
+        // Search from several angles — each seed artist's catalogue and the
+        // genre names themselves — then keep ONLY tracks whose real iTunes
+        // genre bucket matches one of the two seed songs' genre buckets.
         const searchQueries = [
           `${seed1.artistName} hits`,
           `${seed2.artistName} hits`,
-          `${seed1.artistName} ${detectedGenre}`,
-          `${seed2.artistName} ${detectedGenre}`,
-          `${detectedGenre} club hits`,
-          `${detectedGenre} party dance`
-        ];
+          genre1 ? `${genre1} hits` : null,
+          genre2 ? `${genre2} hits` : null,
+          genre1 ? `top ${genre1}` : null,
+          genre2 ? `top ${genre2}` : null,
+          genre1 ? `${genre1} 2025` : null,
+          genre2 ? `${genre2} 2025` : null,
+        ].filter(Boolean);
 
-        const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
+        const seenUrls = new Set([seed1.previewUrl, seed2.previewUrl]);
 
         for (const query of searchQueries) {
           if (curatedTracks.length >= 16) break;
           const items = await searchItunesApi(query, 12);
           for (const item of items) {
-            if (!curatedTracks.some(t => t.previewUrl === item.previewUrl)) {
-              const itemBpm = 118 + ((item.trackId || 0) % 14);
-              if (Math.abs(itemBpm - targetAvgBpm) <= 6) {
-                curatedTracks.push({
-                  title: `${item.artistName} — ${item.trackName}`,
-                  previewUrl: item.previewUrl,
-                  bpm: itemBpm,
-                  key: camelotKeys[(item.trackId || 0) % camelotKeys.length],
-                  artistName: item.artistName || '',
-                  genre: item.primaryGenreName || detectedGenre
-                });
-              }
-            }
             if (curatedTracks.length >= 16) break;
+            if (!item.previewUrl || seenUrls.has(item.previewUrl)) continue;
+            // Hard genre gate — this is the real filter now (uses iTunes'
+            // actual primaryGenreName), not a fake simulated BPM number.
+            if (targetGenreBuckets.size > 0 && !targetGenreBuckets.has(normalizeGenre(item.primaryGenreName))) continue;
+
+            seenUrls.add(item.previewUrl);
+            curatedTracks.push({
+              title: `${item.artistName} — ${item.trackName}`,
+              previewUrl: item.previewUrl,
+              artistName: item.artistName || '',
+              genre: item.primaryGenreName || genreLabel
+            });
           }
         }
 
-        curatedTracks.sort((a, b) => a.bpm - b.bpm);
+        // Fallback: if the strict genre gate left us with too few tracks for a
+        // decent 10-minute set, widen the search using just the genre names on
+        // their own (still genre-gated, just a broader net) before giving up.
+        if (curatedTracks.length < 6 && targetGenreBuckets.size > 0) {
+          status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מרחיב חיפוש בתוך אותו ז'אנר...`;
+          const broaderQueries = [genre1, genre2].filter(Boolean);
+          for (const query of broaderQueries) {
+            if (curatedTracks.length >= 12) break;
+            const items = await searchItunesApi(query, 20);
+            for (const item of items) {
+              if (curatedTracks.length >= 12) break;
+              if (!item.previewUrl || seenUrls.has(item.previewUrl)) continue;
+              if (!targetGenreBuckets.has(normalizeGenre(item.primaryGenreName))) continue;
+              seenUrls.add(item.previewUrl);
+              curatedTracks.push({
+                title: `${item.artistName} — ${item.trackName}`,
+                previewUrl: item.previewUrl,
+                artistName: item.artistName || '',
+                genre: item.primaryGenreName || genreLabel
+              });
+            }
+          }
+        }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים ומסנכרן ביטים...`;
+        if (curatedTracks.length < 2) {
+          throw new Error('לא נמצאו מספיק שירים באותו ז\'אנר. נסה שירים אחרים.');
+        }
+
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> נמצאו ${curatedTracks.length} שירים באותו ז'אנר (${escapeHtml(genreLabel)}) — טוען ומסנכרן ביטים...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         const fetchPromises = curatedTracks.map(async t => {
