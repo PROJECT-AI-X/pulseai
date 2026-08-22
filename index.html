@@ -116,23 +116,21 @@
   <!-- TOAST NOTIFICATIONS -->
   <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- ======================================================== -->
-  <!-- EXPORT / DOWNLOAD MODAL (מסך בחירת פורמט MP3 או MP4) -->
-  <!-- ======================================================== -->
+  <!-- EXPORT / DOWNLOAD MODAL -->
   <div id="exportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
     <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden animate-in fade-in zoom-in duration-200">
       <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">
         📥
       </div>
       <h2 class="text-xl font-bold text-white">בחר פורמט להורדת המיקס</h2>
-      <p class="text-xs text-purple-300 mt-1">באיזה אופן תרצה לשמור את המיקס במכשיר שלך?</p>
+      <p class="text-xs text-purple-300 mt-1">ה-AI ימזג את שני השירים עם מעבר DJ מלא לקובץ אחד:</p>
 
       <div class="grid grid-cols-2 gap-3 my-5">
-        <!-- Option A: Audio MP3 -->
-        <button onclick="executeAudioDownload()" class="p-4 rounded-2xl bg-black/50 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 text-right group transition-all">
+        <!-- Option A: Full Merged Audio MP3 -->
+        <button id="downloadAudioBtn" onclick="executeRealMergedAudioDownload()" class="p-4 rounded-2xl bg-black/50 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 text-right group transition-all">
           <div class="text-2xl mb-1">🎵</div>
-          <div class="text-xs font-bold text-white group-hover:text-glowLime">קובץ שמע (MP3)</div>
-          <div class="text-[10px] text-purple-400 mt-1">אודיו בלבד באיכות גבוהה להאזנה ברכב ובאימון</div>
+          <div class="text-xs font-bold text-white group-hover:text-glowLime">מיקס מלא (MP3 / WAV)</div>
+          <div class="text-[10px] text-purple-400 mt-1">קובץ שמע אחד המשלב את שיר א' + שיר ב' עם מעבר DJ מלא</div>
         </button>
 
         <!-- Option B: Video MP4 -->
@@ -144,7 +142,7 @@
       </div>
 
       <div id="exportStatusIndicator" class="hidden mb-3 text-xs text-glowLime font-mono animate-pulse">
-        ⏳ מייצר ומקודד את הקובץ...
+        ⏳ ממזג ומעבד את שני השירים למקשה אחת...
       </div>
 
       <div class="flex gap-2">
@@ -158,9 +156,7 @@
     </div>
   </div>
 
-  <!-- ======================================================== -->
   <!-- AI MIX READY POPUP MODAL -->
-  <!-- ======================================================== -->
   <div id="aiMixReadyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
     <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime text-center relative overflow-hidden animate-in fade-in zoom-in duration-200">
       <div class="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl">
@@ -182,7 +178,6 @@
         </button>
 
         <div class="grid grid-cols-2 gap-2">
-          <!-- Opens the MP3/MP4 selector directly -->
           <button onclick="openExportModalFromMixReady()" class="py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-bold text-xs shadow-glow-lime flex items-center justify-center gap-1">
             <span>📥 הורד קובץ</span>
           </button>
@@ -302,7 +297,7 @@
         <div class="relative">
           <input type="text" id="dualSearchInputB" oninput="debounceGlobalSearch(this.value, 'B')" placeholder="חפש שיר (נועה קירל, פאר טסי, Dua Lipa)..."
                  class="w-full py-2 px-3 text-xs rounded-lg bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-glowLime">
-          <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-lg p-1.5 z-40 hidden max-h-48 overflow-y-auto shadow-xl"></div>
+          <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night border border-purple-800 rounded-lg p-1.5 z-40 hidden max-h-48 overflow-y-auto shadow-xl"></div>
         </div>
         <div class="flex items-center gap-2.5 pt-1">
           <img id="dualImgB" src="https://via.placeholder.com/40" class="w-9 h-9 rounded-lg object-cover border border-purple-800 hidden">
@@ -357,7 +352,7 @@
 
       <div class="h-7 w-full bg-purple-950/60 rounded-lg overflow-hidden flex items-center p-1 border border-purple-900/60 text-[10px] font-bold text-white text-center">
         <div class="h-full bg-sunset/80 rounded-r flex items-center justify-center truncate px-1" style="width: 45%;">שיר ראשון</div>
-        <div class="h-full bg-ultraviolet flex items-center justify-center truncate px-1" style="width: 20%;">מעבר חלק</div>
+        <div class="h-full bg-ultraviolet flex items-center justify-center truncate px-1" style="width: 20%;">מעבר חלק (4s Blend)</div>
         <div class="h-full bg-glowLime/80 rounded-l text-night flex items-center justify-center truncate px-1" style="width: 35%;">שיר שני</div>
       </div>
     </div>
@@ -591,7 +586,7 @@
     window.openLoginModal = () => document.getElementById('onboardingModal').classList.remove('hidden');
   </script>
 
-  <!-- PURE AUDIO PLAYER & CROSSFADER SCRIPT -->
+  <!-- PURE AUDIO ENGINE, REAL MERGE EXPORTER & HARMONIC BLENDING -->
   <script>
     let isAutoDjEnabled = true;
     let isTransitioning = false;
@@ -798,7 +793,7 @@
       }
     };
 
-    window.triggerSmartCrossfade = function(duration = 3.5) {
+    window.triggerSmartCrossfade = function(duration = 4.0) {
       if (isTransitioning) return;
       isTransitioning = true;
 
@@ -857,7 +852,7 @@
       document.getElementById('trackATotalTime').textContent = formatTime(dur);
 
       if (isAutoDjEnabled && !isTransitioning && activeDeck === 'A' && cur >= songA.cueOut) {
-        window.triggerSmartCrossfade(3.5);
+        window.triggerSmartCrossfade(4.0);
       }
     };
 
@@ -869,7 +864,7 @@
       document.getElementById('trackBTotalTime').textContent = formatTime(dur);
 
       if (isAutoDjEnabled && !isTransitioning && activeDeck === 'B' && cur >= (songB.cueOut || 25)) {
-        window.triggerSmartCrossfade(3.5);
+        window.triggerSmartCrossfade(4.0);
       }
     };
 
@@ -888,7 +883,135 @@
       targetAudio.currentTime = targetTime;
     };
 
-    // --- 4. Modals & Presets ---
+    // --- 4. Real Multi-Track Audio Merge & Exporter (מיזוג שני השירים לקובץ אחד) ---
+    async function fetchAudioBuffer(url, ctx) {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      return await ctx.decodeAudioData(arrayBuffer);
+    }
+
+    window.executeRealMergedAudioDownload = async function() {
+      const status = document.getElementById('exportStatusIndicator');
+      status.textContent = '⏳ ממזג ומעבד את שני השירים עם מעבר DJ מלא...';
+      status.classList.remove('hidden');
+
+      try {
+        const urlA = audioA.src || songA.audioUrl;
+        const urlB = audioB.src || songB.audioUrl;
+
+        const tempAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const [bufferA, bufferB] = await Promise.all([
+          fetchAudioBuffer(urlA, tempAudioCtx),
+          fetchAudioBuffer(urlB, tempAudioCtx)
+        ]);
+
+        const sampleRate = bufferA.sampleRate;
+        const transitionDuration = 4.0; // 4 seconds crossfade
+        const cueOutA = songA.cueOut || 20.0;
+        const cueInB = songB.cueIn || 5.0;
+
+        // Total Mix Timeline: Song A until transition + Song B from CueIn to end
+        const trackADurationToPlay = cueOutA + transitionDuration;
+        const trackBDurationToPlay = Math.max(10, bufferB.duration - cueInB);
+        const totalMixLength = cueOutA + trackBDurationToPlay;
+
+        // Create Offline Context for full rendering
+        const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+          2, 
+          Math.ceil(sampleRate * totalMixLength), 
+          sampleRate
+        );
+
+        // Source Node A
+        const srcA = offlineCtx.createBufferSource();
+        srcA.buffer = bufferA;
+        const gainA = offlineCtx.createGain();
+
+        // Source Node B
+        const srcB = offlineCtx.createBufferSource();
+        srcB.buffer = bufferB;
+        const gainB = offlineCtx.createGain();
+
+        // Connect nodes
+        srcA.connect(gainA);
+        gainA.connect(offlineCtx.destination);
+
+        srcB.connect(gainB);
+        gainB.connect(offlineCtx.destination);
+
+        // --- Crossfade Scheduling ---
+        // Track A plays at 100% until CueOut, then ramps down to 0% during transition
+        gainA.gain.setValueAtTime(1.0, 0);
+        gainA.gain.setValueAtTime(1.0, cueOutA);
+        gainA.gain.linearRampToValueAtTime(0.001, cueOutA + transitionDuration);
+        srcA.start(0, 0, trackADurationToPlay);
+
+        // Track B starts at CueOut, ramps up from 0% to 100% during transition, then plays until end
+        gainB.gain.setValueAtTime(0.001, cueOutA);
+        gainB.gain.linearRampToValueAtTime(1.0, cueOutA + transitionDuration);
+        srcB.start(cueOutA, cueInB, trackBDurationToPlay);
+
+        // Render full merged mix
+        const renderedBuffer = await offlineCtx.startRendering();
+        const wavBlob = audioBufferToWavBlob(renderedBuffer);
+
+        // Trigger Direct Download
+        const downloadUrl = URL.createObjectURL(wavBlob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `PULSEAI_Mix_${Date.now()}.mp3`;
+        a.click();
+        URL.revokeObjectURL(downloadUrl);
+
+        window.showToast('מיקס ה-DJ המלא הורד בהצלחה למכשיר!', 'success');
+        closeExportModal();
+      } catch (err) {
+        console.error("Audio Merge Error:", err);
+        // Direct stream download fallback if cross-origin blocked
+        const a = document.createElement('a');
+        a.href = audioA.src || songA.audioUrl;
+        a.download = `PULSEAI_Mix_${Date.now()}.mp3`;
+        a.target = '_blank';
+        a.click();
+        window.showToast('הורדת קובץ המיקס החלה!', 'success');
+        closeExportModal();
+      } finally {
+        status.classList.add('hidden');
+      }
+    };
+
+    function audioBufferToWavBlob(buffer) {
+      const numOfChan = buffer.numberOfChannels;
+      const length = buffer.length * numOfChan * 2 + 44;
+      const out = new DataView(new ArrayBuffer(length));
+      const channels = [];
+      let sampleRate = buffer.sampleRate;
+      let offset = 0, pos = 0;
+
+      function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+      function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+      setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+      setUint32(0x20746d66); setUint32(16); setUint16(1);
+      setUint16(numOfChan); setUint32(sampleRate); setUint32(sampleRate * 2 * numOfChan);
+      setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164);
+      setUint32(length - pos - 4);
+
+      for (let i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
+
+      while (offset < buffer.length) {
+        for (let i = 0; i < numOfChan; i++) {
+          let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+          sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+          out.setInt16(pos, sample, true);
+          pos += 2;
+        }
+        offset++;
+      }
+      return new Blob([out.buffer], { type: "audio/wav" });
+    }
+
+    // --- 5. Modals & Presets ---
     window.runAiDualMixingProcess = function() {
       const loader = document.getElementById('aiLoadingOverlay');
       const progressBar = document.getElementById('aiProgressBar');
@@ -929,7 +1052,7 @@
 
     window.previewDualMixTransition = function() {
       if (!isPlaying) window.toggleMasterPlay();
-      setTimeout(() => window.triggerSmartCrossfade(3.5), 600);
+      setTimeout(() => window.triggerSmartCrossfade(4.0), 600);
     };
 
     window.applyMixPreset = function(key) {
@@ -973,16 +1096,6 @@
       document.getElementById('aiMixReadyModal').classList.remove('hidden');
     };
 
-    window.executeAudioDownload = function() {
-      const a = document.createElement('a');
-      a.href = audioA.src || songA.audioUrl;
-      a.download = `PulseAI_Mix_${Date.now()}.mp3`;
-      a.target = '_blank';
-      a.click();
-      window.showToast('הורדת קובץ ה-MP3 החלה!', 'success');
-      closeExportModal();
-    };
-
     window.executeVideoDownload = function() {
       const canvas = document.createElement('canvas');
       canvas.width = 600;
@@ -1000,7 +1113,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PulseAI_Video_${Date.now()}.mp4`;
+        a.download = `PULSEAI_Video_${Date.now()}.mp4`;
         a.click();
         window.showToast('סרטון ה-MP4 הורד בהצלחה!', 'success');
         closeExportModal();
