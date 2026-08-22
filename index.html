@@ -182,7 +182,7 @@
       <div id="presetPlaylist" onclick="applyMixPreset('playlist')" class="preset-card glass-panel p-3 rounded-xl border border-glowLime/40 hover:border-glowLime cursor-pointer text-center bg-glowLime/5">
         <span class="text-base">🎧</span>
         <div class="text-xs font-bold text-glowLime mt-1">Make me a Playlist</div>
-        <div class="text-[10px] text-purple-300 mt-0.5">ז'אנר + 5 שירים לבחירה</div>
+        <div class="text-[10px] text-purple-300 mt-0.5">5 שירים לבחירה חופשית[cite: 1]</div>
       </div>
     </div>
 
@@ -191,27 +191,16 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
         <div>
           <div class="text-sm font-black text-glowLime">🎧 Make me a Playlist</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">בחר ז'אנר והוסף עד 5 שירים. לכל שדה יש תפריט תוצאות חיפוש.</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">בחר שירים לכל שדה וצור מיקס רציף מרובה-שירים (כל שיר ינגן למשך כ-27-30 שניות)[cite: 1].</div>
         </div>
-        <select id="playlistGenre" onchange="setPlaylistGenre(this.value)"
-                class="w-full sm:w-44 py-2 px-3 rounded-xl bg-purple-950/70 border border-glowLime/60 text-xs font-bold text-glowLime focus:outline-none focus:border-glowLime">
-          <option value="Pop">Pop</option>
-          <option value="Dance">Dance</option>
-          <option value="Electronic">Electronic</option>
-          <option value="House">House</option>
-          <option value="Hip-Hop">Hip-Hop</option>
-          <option value="R&B">R&B</option>
-          <option value="Israeli">Israeli</option>
-          <option value="Rock">Rock</option>
-        </select>
       </div>
 
       <div id="playlistSearchGrid" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
 
       <div class="mt-3 flex items-center justify-between gap-2">
         <span id="playlistStatus" class="text-[10px] text-purple-400">בחר שירים מהרשימות הנפתחות.</span>
-        <button onclick="generateGenrePlaylist()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs shadow-glow-lime hover:scale-[1.02] transition-transform">
-          ✨ הצע 5 שירים
+        <button onclick="executeMultiTrackPlaylistDownload()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs shadow-glow-lime hover:scale-[1.02] transition-transform">
+          ✨ הפעל וצור מיקס פלייליסט מלא (MP3)
         </button>
       </div>
     </div>
@@ -263,7 +252,7 @@
       </div>
     </div>
 
-    <!-- 3 INSTANT RECOMMENDATIONS (הפונקציה שהכי אהבת) -->
+    <!-- 3 INSTANT RECOMMENDATIONS -->
     <div id="instantSmartSuggestionsBox" class="mt-4 p-3.5 rounded-xl bg-purple-950/50 border border-glowLime/30 shadow-inner">
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-bold text-glowLime flex items-center gap-1.5">
@@ -277,12 +266,6 @@
     <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
       <button id="generateDualMixBtn" onclick="runAiDualMixingProcess()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-bold text-xs shadow-glow-orange">
         ✨ הפעל ניתוח DJ אופטימלי
-      </button>
-      <button onclick="shareMixToWhatsApp()" class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow">
-        <span>💬 שתף בוואטסאפ</span>
-      </button>
-      <button onclick="executeRealMergedAudioDownload()" class="px-4 py-2.5 rounded-xl bg-purple-900/60 border border-purple-700 text-glowLime font-bold text-xs flex items-center gap-1.5">
-        <span>📥 הורד מיקס MP3</span>
       </button>
     </div>
 
@@ -309,7 +292,7 @@
               <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'A')">
             </label>
           </div>
-          <span class="text-[11px] text-purple-300">מעבר Phrasing ב: <strong class="text-glowLime font-mono" id="trackACueText">00:20</strong></span>
+          <span class="text-[11px] text-purple-300">מעבר Phrasing ב: <strong class="text-glowLime font-mono" id="trackACueText">00:27</strong></span>
         </div>
 
         <h3 class="text-sm font-bold text-white truncate" id="trackATitle">עומר אדם — שני משוגעים</h3>
@@ -318,7 +301,7 @@
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'A')" onclick="seekDeck(event, 'A')">
           <canvas id="waveformA" class="w-full h-full"></canvas>
           <div id="playheadA" class="playhead"></div>
-          <div id="cueMarkerA" class="cue-marker" style="left: 66%;"></div>
+          <div id="cueMarkerA" class="cue-marker" style="left: 90%;"></div>
         </div>
 
         <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
@@ -352,7 +335,7 @@
               <input type="file" accept="audio/*" class="hidden" onchange="handleFileInput(event, 'B')">
             </label>
           </div>
-          <span class="text-[11px] text-purple-300">כניסה ב-Drop ב: <strong class="text-glowLime font-mono" id="trackBCueText">00:05</strong></span>
+          <span class="text-[11px] text-purple-300">כניסה ב-Drop ב: <strong class="text-glowLime font-mono" id="trackBCueText">00:02</strong></span>
         </div>
 
         <h3 class="text-sm font-bold text-white truncate" id="trackBTitle">נועה קירל — יוניקורן (Unicorn)</h3>
@@ -361,7 +344,7 @@
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'B')" onclick="seekDeck(event, 'B')">
           <canvas id="waveformB" class="w-full h-full"></canvas>
           <div id="playheadB" class="playhead"></div>
-          <div id="cueMarkerB" class="cue-marker" style="left: 16%;"></div>
+          <div id="cueMarkerB" class="cue-marker" style="left: 6%;"></div>
         </div>
 
         <div class="flex justify-between items-center mt-1.5 text-[11px] text-purple-400 font-mono">
@@ -392,7 +375,7 @@
     </aside>
   </main>
 
-  <!-- PURE AUDIO ENGINE & DJ MASTER GUIDE SCRIPT -->
+  <!-- SCRIPT -->
   <script>
     let isAutoDjEnabled = true;
     let isTransitioning = false;
@@ -415,14 +398,14 @@
     let songA = {
       title: 'עומר אדם — שני משוגעים',
       audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
-      cueOut: 20,
+      cueOut: 26, // מוארך לכמעט סוף ה-30 שניות
       duration: 30
     };
 
     let songB = {
       title: 'נועה קירל — יוניקורן (Unicorn)',
       audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
-      cueIn: 5,
+      cueIn: 2,
       duration: 30
     };
 
@@ -496,7 +479,7 @@
 
     window.selectSong = function(title, previewUrl, artwork, side) {
       if (side === 'A') {
-        songA = { title, audioUrl: previewUrl, artwork, cueOut: 20, cueIn: 0, duration: 30 };
+        songA = { title, audioUrl: previewUrl, artwork, cueOut: 26, cueIn: 0, duration: 30 };
         document.getElementById('dualTitleA').textContent = title;
         document.getElementById('trackATitle').textContent = title;
         document.getElementById('dualDropdownA').classList.add('hidden');
@@ -510,7 +493,7 @@
         audioA.load();
         generateRecommendationsForSongA(title);
       } else {
-        songB = { title, audioUrl: previewUrl, artwork, cueOut: 25, cueIn: 5, duration: 30 };
+        songB = { title, audioUrl: previewUrl, artwork, cueOut: 28, cueIn: 2, duration: 30 };
         document.getElementById('dualTitleB').textContent = title;
         document.getElementById('trackBTitle').textContent = title;
         document.getElementById('dualDropdownB').classList.add('hidden');
@@ -526,7 +509,7 @@
       generateWaveform(side);
     };
 
-    // --- INSTANT 3 RECOMMENDATIONS (המנוע החכם) ---
+    // --- INSTANT 3 RECOMMENDATIONS ---
     async function generateRecommendationsForSongA(baseTitle) {
       const grid = document.getElementById('instantSuggestionsGrid');
       grid.innerHTML = '<div class="col-span-3 text-center text-xs text-purple-400 py-1">מנתח הרמוניה וקצב (Harmonic Mixing)...</div>';
@@ -574,16 +557,9 @@
       generateRecommendationsForSongA(songA.title);
     };
 
-    // --- MAKE ME A PLAYLIST LOGIC ---
+    // --- MAKE ME A PLAYLIST LOGIC (5 Search Fields) ---
     const playlistTracks = Array(5).fill(null);
     const playlistTimers = Array(5).fill(null);
-    let playlistGenre = 'Pop';
-
-    function setPlaylistGenre(genre) {
-      playlistGenre = genre;
-      const status = document.getElementById('playlistStatus');
-      if (status) status.textContent = `ז'אנר נבחר: ${genre} · בחר עד 5 שירים`;
-    }
 
     function escapeHtml(value) {
       return String(value ?? '')
@@ -636,8 +612,7 @@
       loader?.classList.remove('hidden');
 
       try {
-        const term = `${query.trim()} ${playlistGenre}`;
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=7&country=IL`;
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query.trim())}&entity=song&limit=7&country=IL`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -687,35 +662,133 @@
 
       const count = playlistTracks.filter(Boolean).length;
       const status = document.getElementById('playlistStatus');
-      if (status) status.textContent = `${count}/5 שירים נבחרו · ז'אנר: ${playlistGenre}`;
+      if (status) status.textContent = `${count}/5 שירים נבחרו לפלייליסט`;
     };
 
-    window.generateGenrePlaylist = async function() {
-      buildPlaylistFields();
-      const genre = document.getElementById('playlistGenre')?.value || playlistGenre;
-      playlistGenre = genre;
+    // --- Multi-Track Playlist Audio Merger & Downloader (מתעדכן לניצול מלא של כמעט 30 שניות לשיר) ---
+    async function fetchAudioBuffer(url, ctx) {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      return await ctx.decodeAudioData(arrayBuffer);
+    }
+
+    window.executeMultiTrackPlaylistDownload = async function() {
+      const activeTracks = playlistTracks.filter(Boolean);
+      if (activeTracks.length < 2) {
+        alert('אנא בחר לפחות 2 שירים בשדות הפלייליסט כדי ליצור מיקס רציף!');
+        return;
+      }
 
       const status = document.getElementById('playlistStatus');
-      if (status) status.textContent = `מחפש 5 שירים מומלצים ב-${genre}...`;
+      if (status) status.textContent = '⏳ מעבד וממזג את שירי הפלייליסט (עד סוף ה-30 שניות לכל שיר)...';
 
       try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(genre + ' hits')}&entity=song&limit=15&country=IL`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const results = (data.results || []).filter(item => item.previewUrl).slice(0, 5);
+        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const buffers = await Promise.all(
+          activeTracks.map(t => fetchAudioBuffer(t.previewUrl, tempCtx))
+        );
+        tempCtx.close?.();
 
-        results.forEach((item, index) => {
-          selectPlaylistSong(
-            index,
-            `${item.artistName} — ${item.trackName}`,
-            item.previewUrl,
-            item.artworkUrl60 || ''
-          );
-        });
+        const sampleRate = buffers[0].sampleRate;
+        const transitionDuration = currentVibe.transitionDuration;
+        
+        let sliceInfos = [];
+        for (let i = 0; i < buffers.length; i++) {
+          const buf = buffers[i];
+          // מעבר מתבצע רק לקראת סוף ה-30 שניות של הדגימה (בסביבות שניה 26-27)
+          const cueOut = Math.min(26.0, buf.duration - transitionDuration);
+          sliceInfos.push({
+            buffer: buf,
+            cueOut: cueOut > 0 ? cueOut : Math.max(5, buf.duration - transitionDuration - 1)
+          });
+        }
 
-        if (status) status.textContent = `${results.length}/5 שירים הוצעו · אפשר להחליף כל שיר בחיפוש`;
-      } catch (e) {
-        if (status) status.textContent = 'לא ניתן לטעון המלצות כרגע. אפשר לחפש ידנית בכל אחד מהשדות.';
+        let totalLen = 0;
+        let trackOffsets = [];
+        let cursor = 0;
+        for (let i = 0; i < sliceInfos.length; i++) {
+          trackOffsets.push(cursor);
+          if (i < sliceInfos.length - 1) {
+            cursor += sliceInfos[i].cueOut;
+          } else {
+            cursor += buffers[i].duration;
+          }
+        }
+        totalLen = cursor;
+
+        const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+          2, Math.ceil(sampleRate * totalLen), sampleRate
+        );
+
+        for (let i = 0; i < buffers.length; i++) {
+          const src = offlineCtx.createBufferSource();
+          src.buffer = buffers[i];
+          const gain = offlineCtx.createGain();
+          src.connect(gain);
+          gain.connect(offlineCtx.destination);
+
+          const startTime = trackOffsets[i];
+          const bBoost = currentVibe.energyBoost;
+
+          if (i === 0) {
+            gain.gain.setValueAtTime(bBoost, 0);
+            gain.gain.setValueAtTime(bBoost, sliceInfos[0].cueOut);
+            gain.gain.linearRampToValueAtTime(0.001, sliceInfos[0].cueOut + transitionDuration);
+            src.start(0, 0, sliceInfos[0].cueOut + transitionDuration);
+          } else if (i < buffers.length - 1) {
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.linearRampToValueAtTime(bBoost, startTime + transitionDuration);
+            gain.gain.setValueAtTime(bBoost, startTime + sliceInfos[i].cueOut);
+            gain.gain.linearRampToValueAtTime(0.001, startTime + sliceInfos[i].cueOut + transitionDuration);
+            src.start(startTime, 0, sliceInfos[i].cueOut + transitionDuration);
+          } else {
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.linearRampToValueAtTime(bBoost, startTime + transitionDuration);
+            src.start(startTime, 0, buffers[i].duration);
+          }
+        }
+
+        const renderedBuffer = await offlineCtx.startRendering();
+
+        if (!window.lamejs) throw new Error('MP3 encoder unavailable');
+
+        const channels = Math.min(2, renderedBuffer.numberOfChannels);
+        const left = renderedBuffer.getChannelData(0);
+        const right = channels > 1 ? renderedBuffer.getChannelData(1) : left;
+        const mp3encoder = new lamejs.Mp3Encoder(2, renderedBuffer.sampleRate, 192);
+        const mp3Data = [];
+        const sampleBlockSize = 1152;
+
+        for (let i = 0; i < renderedBuffer.length; i += sampleBlockSize) {
+          const leftChunk = new Int16Array(Math.min(sampleBlockSize, renderedBuffer.length - i));
+          const rightChunk = new Int16Array(leftChunk.length);
+
+          for (let j = 0; j < leftChunk.length; j++) {
+            leftChunk[j] = Math.max(-32768, Math.min(32767, left[i + j] * 32767));
+            rightChunk[j] = Math.max(-32768, Math.min(32767, right[i + j] * 32767));
+          }
+
+          const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+          if (mp3buf.length > 0) mp3Data.push(new Int8Array(mp3buf));
+        }
+
+        const endBuf = mp3encoder.flush();
+        if (endBuf.length > 0) mp3Data.push(new Int8Array(endBuf));
+
+        const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+        const downloadUrl = URL.createObjectURL(mp3Blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `PULSEAI_Playlist_FullMix.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+        if (status) status.textContent = 'המיקס המלא (כמעט 30 שניות לשיר) הורד בהצלחה!';
+      } catch (err) {
+        console.error('Playlist MP3 export failed:', err);
+        if (status) status.textContent = 'שגיאה ביצירת המיקס.';
       }
     };
 
@@ -825,7 +898,7 @@
       document.getElementById('trackBCurrentTime').textContent = formatTime(cur);
       document.getElementById('trackBTotalTime').textContent = formatTime(dur);
 
-      if (isAutoDjEnabled && !isTransitioning && activeDeck === 'B' && cur >= (songB.cueOut || 25)) {
+      if (isAutoDjEnabled && !isTransitioning && activeDeck === 'B' && cur >= (songB.cueOut || 28)) {
         window.triggerSmartCrossfade();
       }
     };
@@ -883,13 +956,12 @@
         document.getElementById('presetPlaylist').classList.add('active-preset');
         currentVibe = {
           name: 'פלייליסט אישי',
-          transitionDuration: 4.0,
+          transitionDuration: 3.5,
           bassSwap: true,
           energyBoost: 1.2,
           mentorTip: '"בנה רצף עם אנרגיה עולה, שמור על Phrasing של 32 תיבות ובחר שירים שמתאימים הרמונית."'
         };
         buildPlaylistFields();
-        setPlaylistGenre(document.getElementById('playlistGenre')?.value || 'Pop');
       }
 
       const icons = { party: '🎉', workout: '🏋️', dance: '🌟', playlist: '🎧' };
@@ -898,13 +970,7 @@
       document.getElementById('djMentorTipText').textContent = currentVibe.mentorTip;
     };
 
-    // --- Real MP3 Audio Exporter with LameJS ---
-    async function fetchAudioBuffer(url, ctx) {
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      return await ctx.decodeAudioData(arrayBuffer);
-    }
-
+    // --- Standard 2-Track MP3 Exporter (מנוצל עד סוף ה-30 שניות) ---
     window.executeRealMergedAudioDownload = async function() {
       try {
         const urlA = audioA.src || songA.audioUrl;
@@ -918,8 +984,8 @@
 
         const sampleRate = bufferA.sampleRate;
         const transitionDuration = currentVibe.transitionDuration;
-        const cueOutA = Math.min(songA.cueOut || 20.0, bufferA.duration);
-        const cueInB = Math.min(songB.cueIn || 5.0, Math.max(0, bufferB.duration - 0.1));
+        const cueOutA = Math.min(26.0, bufferA.duration);
+        const cueInB = Math.min(songB.cueIn || 2.0, Math.max(0, bufferB.duration - 0.1));
         const trackADur = cueOutA + transitionDuration;
         const trackBDur = Math.max(10, bufferB.duration - cueInB);
         const totalLen = cueOutA + trackBDur;
@@ -1034,11 +1100,6 @@
     window.closeMixReadyModalAndScroll = function() {
       document.getElementById('aiMixReadyModal').classList.add('hidden');
       document.getElementById('mainWorkspaceSection').scrollIntoView({ behavior: 'smooth' });
-    };
-
-    window.shareMixToWhatsApp = function() {
-      const msg = `🔥 שמע את המיקס המקצועי בסגנון ${currentVibe.name} שיצרתי ב-PULSEAI:\n🎵 ${songA.title} ➔ ${songB.title}\n\n🎧 כנס להאזין:\n${window.location.href}`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     function generateWaveform(deckId) {
