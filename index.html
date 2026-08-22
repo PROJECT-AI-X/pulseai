@@ -84,7 +84,7 @@
       <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg sm:text-xl text-white shadow-glow-orange shrink-0">P</div>
       <div>
         <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Downbeat Lock · Bass Swap · Equal Power</p>
+        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Master Phase Match · S-Curve Bass Swap · Pro Studio</p>
       </div>
     </div>
     <button onclick="openGuidePrompt()" class="px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-cyan-300 hover:bg-purple-900/60 active:scale-95 transition-transform flex items-center gap-1.5">
@@ -94,13 +94,10 @@
 
   <!-- GUIDED LEARNING MODAL OVERLAY -->
   <div id="guideOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
-    
-    <!-- Initial Prompt Card -->
     <div id="guideWelcomeCard" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-purple-600/50 shadow-2xl text-center">
       <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-sunset to-glowLime flex items-center justify-center text-2xl shadow-glow-orange">🎧</div>
       <h2 class="text-2xl font-black text-white mb-2">ברוכים הבאים ל-PULSEAI!</h2>
       <p class="text-xs sm:text-sm text-purple-300 mb-6 leading-relaxed">האולפן החכם שיוצר עבורך מיקסים מקצועיים בלחיצת כפתור. האם תרצה סיור קצר של 5 שלבים כדי להכיר את כל הפיצ'רים באתר?</p>
-      
       <div class="grid grid-cols-2 gap-3">
         <button onclick="startRoadmap()" class="py-3 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs sm:text-sm shadow-glow-lime active:scale-95 transition-transform">
           כן, בוא נתחיל! 🚀
@@ -111,25 +108,15 @@
       </div>
     </div>
 
-    <!-- 5-Step Roadmap Card -->
     <div id="guideStepsCard" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-lg w-full border border-electricCyan/50 shadow-2xl hidden text-right">
-      
-      <!-- Top Progress Bar -->
       <div class="flex items-center justify-between mb-4 pb-2 border-b border-purple-800/40">
         <span id="stepCounterBadge" class="text-xs font-black px-2.5 py-1 rounded-lg bg-electricCyan/15 text-electricCyan border border-electricCyan/40 font-mono">שלב 1/5</span>
         <button onclick="closeGuideModal()" class="text-purple-400 hover:text-white text-xs font-bold">✕ סגור</button>
       </div>
-
       <div class="w-full bg-black/40 h-1.5 rounded-full mb-5 overflow-hidden">
         <div id="stepProgressBar" class="bg-gradient-to-r from-glowLime to-electricCyan h-full transition-all duration-300" style="width: 20%;"></div>
       </div>
-
-      <!-- Step Dynamic Content -->
-      <div id="stepContentArea" class="min-h-[160px] flex flex-col justify-center">
-        <!-- Injected via JS -->
-      </div>
-
-      <!-- Navigation Buttons -->
+      <div id="stepContentArea" class="min-h-[160px] flex flex-col justify-center"></div>
       <div class="flex items-center justify-between mt-6 pt-3 border-t border-purple-800/40 gap-3">
         <button id="prevStepBtn" onclick="navigateStep(-1)" class="px-4 py-2 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-purple-300 disabled:opacity-30 disabled:pointer-events-none active:scale-95">
           ← הקודם
@@ -162,7 +149,7 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
       <h2 class="text-base sm:text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם והסגנון שלהם, יאתר להיטים תואמים ויפיק סט רציף של 10 דקות.</p>
+      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם והסגנון שלהם, יאתר להיטים תואמים ויפיק סט רציף של 10 דקות עם מעברים הרמוניים חלקים.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 mb-5 relative" style="overflow: visible;">
@@ -201,7 +188,7 @@
     <div id="proSongSlotsContainer" class="space-y-3 mb-6"></div>
 
     <div class="text-center">
-      <button onclick="executeProCustomMixDownload()" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange active:scale-95 transition-transform inline-flex items-center justify-center gap-2">
+      <button onclick="executeProCustomMixDownload()" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange active:scale-95 transition-transform inline-flex items-center gap-2">
         <span>✨ צור והורד מיקס מקצועי מהשירים שנבחרו (MP3)</span>
       </button>
       <div id="proMixStatus" class="mt-3 text-xs sm:text-sm text-glowLime font-mono flex items-center justify-center gap-2 min-h-[22px]"></div>
@@ -228,13 +215,13 @@
       },
       {
         icon: "🎯",
-        title: "סנכרון Downbeat Lock",
-        desc: "אלגוריתם ה-AI סורק את מכות התוף הראשונות (Transients) ונועל את כניסת השיר הבא בדיוק על הביט הראשון ללא סטייה."
+        title: "סנכרון Downbeat & Phase Match",
+        desc: "אלגוריתם ה-AI סורק את מכות התוף הראשונות ונועל את כניסת השיר הבא בדיוק בפאזה המוזיקלית הנכונה."
       },
       {
         icon: "🌊",
-        title: "החלפת בסים (Bass Swap & Isolator)",
-        desc: "מבודד את התדרים הנמוכים והגבוהים (3-Band EQ) וחותך את הבס של השיר הקודם (-70dB) ברגע כניסת ה-Drop כדי למנוע התנגשות."
+        title: "החלפת בסים חלקלקה (Bass Swap)",
+        desc: "מבודד את התדרים (3-Band EQ) וחותך את הבס של השיר הקודם (-70dB) בדיוק בכניסת ה-Drop של השיר החדש למניעת עיוותים."
       },
       {
         icon: "💾",
@@ -243,7 +230,6 @@
       }
     ];
 
-    // --- GUIDED LEARNING CONTROLS ---
     function openGuidePrompt() {
       document.getElementById('guideOverlay')?.classList.remove('hidden');
       document.getElementById('guideWelcomeCard')?.classList.remove('hidden');
@@ -495,6 +481,7 @@
       });
     }
 
+    // --- ADVANCED TRANSIENT & PHASE ALIGNMENT ---
     function findFirstDownbeatOffset(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
@@ -504,7 +491,7 @@
       let bestSample = 0;
       let prevEnergy = 0;
 
-      for (let i = 0; i < searchLen - windowSize; i += 128) {
+      for (let i = 0; i < searchLen - windowSize; i += 64) {
         let sum = 0;
         for (let j = 0; j < windowSize; j += 4) {
           const v = data[i + j];
@@ -512,7 +499,7 @@
         }
         const energy = Math.sqrt(sum / (windowSize / 4));
         const delta = energy - prevEnergy;
-        if (delta > maxDelta && energy > 0.05) {
+        if (delta > maxDelta && energy > 0.06) {
           maxDelta = delta;
           bestSample = i;
         }
@@ -608,9 +595,10 @@
       if (bpmDiff > 7 || (!harmonic.compatible && bpmDiff > 4)) {
         return { type: "echoOutFreeze", duration: 5.0, delayTime: 0.375, feedback: 0.70 };
       }
-      return { type: "bassSwap", duration: 6.5, dropPoint: 3.2 };
+      return { type: "bassSwap", duration: 7.0, dropPoint: 3.5 };
     }
 
+    // --- PRO AUDIO MIXING ENGINE WITH PHASE ALIGNMENT & EQUAL-POWER CROSSFADE ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
@@ -630,7 +618,7 @@
         const nextStruct = i < buffers.length - 1 ? structures[i+1] : null;
         const currentTrack = tracksMeta[i] || { bpm: 124, key: '8A' };
         
-        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 6.5, dropPoint: 3.2 };
+        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 7.0, dropPoint: 3.5 };
         const cueOut = Math.max(12.0, buf.duration - decision.duration);
 
         sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack, struct: structures[i] });
@@ -677,6 +665,7 @@
           src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
         }
 
+        // 3-Band Isolator Equalizer
         const lowEq = offlineCtx.createBiquadFilter();
         lowEq.type = 'lowshelf'; lowEq.frequency.value = 250; lowEq.gain.value = 0;
 
@@ -733,9 +722,14 @@
             delayFeedback.gain.setValueAtTime(0.70, cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
           } else {
-            const dropPt = info.decision.dropPoint || 3.2;
-            directGain.gain.setValueAtTime(autoGain * 0.95, cueOut + dropPt);
-            directGain.gain.exponentialRampToValueAtTime(0.0001, cueOut + tDur);
+            const dropPt = info.decision.dropPoint || 3.5;
+            // Equal Power S-Curve Crossfade Out
+            for (let step = 0; step <= 10; step++) {
+              const p = step / 10;
+              const t = cueOut + dropPt + p * (tDur - dropPt);
+              const val = autoGain * Math.cos(p * 0.5 * Math.PI);
+              directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
+            }
             midEq.gain.setValueAtTime(0, cueOut);
             midEq.gain.linearRampToValueAtTime(-40, cueOut + tDur);
             lowEq.gain.setValueAtTime(0, cueOut + dropPt - 0.05);
@@ -746,11 +740,17 @@
           const downbeat = info.struct.downbeatOffset || 0;
           
           directGain.gain.setValueAtTime(0.0001, startTime);
-          directGain.gain.linearRampToValueAtTime(autoGain, startTime + (isDropCut ? 0.05 : 0.3));
+          // Equal Power S-Curve Crossfade In
+          for (let step = 0; step <= 10; step++) {
+            const p = step / 10;
+            const t = startTime + p * tDur;
+            const val = autoGain * Math.sin(p * 0.5 * Math.PI);
+            directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
+          }
           directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
 
           if (!isEchoOut && !isDropCut) {
-            const dropPt = info.decision.dropPoint || 3.2;
+            const dropPt = info.decision.dropPoint || 3.5;
             lowEq.gain.setValueAtTime(-70, startTime);
             lowEq.gain.setValueAtTime(-70, startTime + dropPt - 0.05);
             lowEq.gain.linearRampToValueAtTime(0, startTime + dropPt);
@@ -770,9 +770,13 @@
             delayFeedback.gain.setValueAtTime(0.70, startTime + cueOut);
             delayFeedback.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
           } else {
-            const dropPt = info.decision.dropPoint || 3.2;
-            directGain.gain.setValueAtTime(autoGain * 0.95, startTime + cueOut + dropPt);
-            directGain.gain.exponentialRampToValueAtTime(0.0001, startTime + cueOut + tDur);
+            const dropPt = info.decision.dropPoint || 3.5;
+            for (let step = 0; step <= 10; step++) {
+              const p = step / 10;
+              const t = startTime + cueOut + dropPt + p * (tDur - dropPt);
+              const val = autoGain * Math.cos(p * 0.5 * Math.PI);
+              directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
+            }
             lowEq.gain.setValueAtTime(0, startTime + cueOut + dropPt - 0.05);
             lowEq.gain.linearRampToValueAtTime(-70, startTime + cueOut + dropPt);
             midEq.gain.setValueAtTime(0, startTime + cueOut);
@@ -838,7 +842,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ עם סנכרון Downbeat ו-Bass Swap הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
@@ -938,7 +942,7 @@
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Bass Swap + Isolator EQ)...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Phase Match + Bass Swap)...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
@@ -961,7 +965,6 @@
       initProSongSlots();
       setUIMode('quick');
 
-      // הצגת סיור מודרך אוטומטית בכניסה ראשונה
       if (!localStorage.getItem('pulseai_guide_seen')) {
         openGuidePrompt();
       } else {
