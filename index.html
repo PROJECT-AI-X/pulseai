@@ -749,11 +749,55 @@
         sum += data[i] * data[i];
       }
       const introRms = Math.sqrt(sum / (firstSecSamples / 64));
+      const isInstantChorus = introRms > 0.17;
 
       // Real BPM detected from the audio itself, not the placeholder metadata value.
       const detectedBpm = detectBpmFromBuffer(buffer);
       const downbeatOffset = findFirstDownbeatOffset(buffer, detectedBpm);
-      return { downbeatOffset, isInstantChorus: introRms > 0.17, detectedBpm };
+
+      // If the track does NOT slam in immediately (a slow/quiet build-up intro),
+      // find where it actually picks up energy so we don't mix it in mid-set and
+      // create a dead spot. We scan forward from the downbeat in beat-sized steps
+      // and enter at the first beat where energy has risen close to the track's
+      // sustained loud level.
+      let mixInOffset = downbeatOffset;
+      if (!isInstantChorus) {
+        const beatDuration = 60 / detectedBpm;
+        const beatSamples = Math.max(1, Math.round(beatDuration * sampleRate));
+        const scanLimit = Math.min(data.length, Math.floor(sampleRate * 15)); // scan up to 15s
+        // sustained loud level = RMS over a window well past the intro
+        const refStart = Math.min(data.length - beatSamples, Math.floor(sampleRate * 12));
+        let refSum = 0, refCount = 0;
+        for (let i = refStart; i < Math.min(data.length, refStart + sampleRate * 2); i += 4) {
+          refSum += data[i] * data[i]; refCount++;
+        }
+        const refRms = refCount ? Math.sqrt(refSum / refCount) : introRms;
+        const energyThreshold = Math.max(refRms * 0.75, 0.08);
+
+        let sample = Math.floor(downbeatOffset * sampleRate);
+        while (sample < scanLimit) {
+          let s = 0, c = 0;
+          for (let j = 0; j < beatSamples; j += 4) {
+            const v = data[sample + j] || 0;
+            s += v * v; c++;
+          }
+          const beatRms = c ? Math.sqrt(s / c) : 0;
+          if (beatRms >= energyThreshold) {
+            mixInOffset = sample / sampleRate;
+            break;
+          }
+          sample += beatSamples;
+        }
+      }
+
+      return { downbeatOffset, mixInOffset, isInstantChorus, detectedBpm };
+    }
+
+    // Rounds a local (playback-relative) time to the nearest whole beat so cue
+    // points land exactly on a beat instead of an arbitrary fractional second.
+    function snapToBeatGrid(localTimeSec, beatDurationSec, minBeats = 4) {
+      const beats = Math.max(minBeats, Math.round(localTimeSec / beatDurationSec));
+      return beats * beatDurationSec;
     }
 
     // Equal-power fade curve (constant perceived loudness through the crossfade,
@@ -845,17 +889,28 @@
         return Math.max(0.70, Math.min(1.45, TARGET_RMS / rms));
       });
 
+      // Once every track is time-stretched to referenceBpm, the mix's actual
+      // sounding tempo is referenceBpm for everyone — so the beat grid used for
+      // cue points should be based on that output tempo, not each track's own
+      // native tempo (which no longer matches what's actually playing).
+      const outputBeatDuration = 60 / referenceBpm;
+
       for (let i = 0; i < buffers.length; i++) {
         const buf = buffers[i];
-        const bpm = structures[i].detectedBpm || referenceBpm;
-        const beatDuration = 60 / bpm;
-        // Transition length in whole beats (half a musical phrase) rather than a
-        // fixed 3.5s, so it always lands musically regardless of tempo.
-        const transitionBeats = 8;
-        const transitionDuration = Math.max(2.5, Math.min(6, beatDuration * transitionBeats));
+        const transitionBeats = 8; // half a musical phrase
+        const rawTransitionDuration = outputBeatDuration * transitionBeats;
+        const transitionDuration = Math.max(2.5, Math.min(6, rawTransitionDuration));
         const playbackRate = playbackRates[i];
         const effectiveDuration = buf.duration / playbackRate;
-        const cueOut = Math.max(10.0, effectiveDuration - transitionDuration);
+
+        // Snap the exit point to the beat grid instead of an arbitrary
+        // "duration minus transition" fraction of a second, so every cut lands
+        // exactly on-beat.
+        const rawCueOut = Math.max(10.0, effectiveDuration - transitionDuration);
+        const cueOut = Math.min(
+          snapToBeatGrid(rawCueOut, outputBeatDuration),
+          effectiveDuration - transitionDuration * 0.5
+        );
 
         sliceInfos.push({ buffer: buf, cueOut, transitionDuration, struct: structures[i], playbackRate, effectiveDuration });
         trackOffsets.push(cursor);
@@ -885,7 +940,21 @@
       masterCompressor.ratio.setValueAtTime(2.5, 0);
       masterCompressor.attack.setValueAtTime(0.01, 0);
       masterCompressor.release.setValueAtTime(0.2, 0);
-      masterCompressor.connect(offlineCtx.destination);
+
+      // Safety limiter: during crossfade overlaps two equal-power tracks can sum
+      // to more than 0dB (especially with the RMS-normalization gain applied
+      // upstream), which would clip when encoded to MP3. A fast, high-ratio
+      // compressor right at the end of the chain catches those peaks without
+      // audibly pumping the rest of the mix.
+      const safetyLimiter = offlineCtx.createDynamicsCompressor();
+      safetyLimiter.threshold.setValueAtTime(-1, 0);
+      safetyLimiter.knee.setValueAtTime(0, 0);
+      safetyLimiter.ratio.setValueAtTime(20, 0);
+      safetyLimiter.attack.setValueAtTime(0.002, 0);
+      safetyLimiter.release.setValueAtTime(0.08, 0);
+
+      masterCompressor.connect(safetyLimiter);
+      safetyLimiter.connect(offlineCtx.destination);
 
       const lastRenderedEnd = Math.min(cursor, targetDurationSec || cursor);
 
@@ -926,7 +995,11 @@
           // duration arg is in buffer-native time, so scale by playbackRate
           src.start(0, 0, (cueOut + tDur) * info.playbackRate);
         } else if (!isLast) {
-          const downbeat = info.struct.downbeatOffset || 0;
+          // Use mixInOffset, not the raw downbeat: if this track has a slow/quiet
+          // build-up intro (isInstantChorus === false), mixInOffset skips ahead to
+          // where it actually picks up energy, still snapped to that track's own
+          // beat grid, so it doesn't create a dead spot mid-set.
+          const downbeat = info.struct.mixInOffset ?? info.struct.downbeatOffset ?? 0;
 
           // Equal-power fade-in for the incoming track, timed to its detected downbeat.
           directGain.gain.setValueCurveAtTime(fadeInCurve, startTime, Math.min(tDur, 1.5));
@@ -943,7 +1016,7 @@
 
           src.start(startTime, downbeat, (cueOut + tDur) * info.playbackRate);
         } else {
-          const downbeat = info.struct.downbeatOffset || 0;
+          const downbeat = info.struct.mixInOffset ?? info.struct.downbeatOffset ?? 0;
           directGain.gain.setValueCurveAtTime(fadeInCurve, startTime, Math.min(tDur, 1.5));
           directGain.gain.setValueAtTime(autoGain, startTime + Math.min(tDur, 1.5));
 
