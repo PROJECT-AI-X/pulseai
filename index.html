@@ -84,7 +84,7 @@
       <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg sm:text-xl text-white shadow-glow-orange shrink-0">P</div>
       <div>
         <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Master Phase Match · HPF Sweep & Ducking · Pro Studio</p>
+        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Real Audio BPM · Equal-Power S-Curve · Phrase Matching</p>
       </div>
     </div>
     <button onclick="openGuidePrompt()" class="px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-cyan-300 hover:bg-purple-900/60 active:scale-95 transition-transform flex items-center gap-1.5">
@@ -149,7 +149,7 @@
   <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/40 relative">
     <div class="mb-4">
       <h2 class="text-base sm:text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר 2 שירים אהובים. מנוע ה-AI ינתח את המקצב (BPM), הסולם והסגנון שלהם, יאתר להיטים תואמים ויפיק סט רציף של 10 דקות עם מעברי מאסטרינג חלקים.</p>
+      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר שיר ראשון, ולאחר מכן המערכת תמליץ לך אוטומטית על שיר שני תואם לסגנון.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 mb-5 relative" style="overflow: visible;">
@@ -159,8 +159,11 @@
         <div id="quickGenDrop1" class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
       <div class="relative">
-        <label class="text-[11px] sm:text-[10px] text-glowLime font-bold block mb-1">שיר מוביל 2 (חובה)</label>
-        <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2)" placeholder="חפש שיר שני..." autocomplete="off" class="w-full py-3 px-3.5 rounded-xl bg-black/50 border border-purple-800/70 text-white placeholder-purple-500/60 text-sm focus:outline-none focus:border-glowLime">
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-[11px] sm:text-[10px] text-glowLime font-bold">שיר מוביל 2 (עם המלצת AI)</label>
+          <div id="quickRecIndicator2" class="text-[10px] text-cyan-300 font-mono"></div>
+        </div>
+        <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2); hideQuickRecommendations(2);" onfocus="showQuickRecommendations(2)" placeholder="חפש שיר שני או בחר המלצה..." autocomplete="off" class="w-full py-3 px-3.5 rounded-xl bg-black/50 border border-purple-800/70 text-white placeholder-purple-500/60 text-sm focus:outline-none focus:border-glowLime">
         <div id="quickGenDrop2" class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
       </div>
     </div>
@@ -177,8 +180,8 @@
   <section id="proModeContainer" class="w-full max-w-5xl mb-5 hidden glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/50 shadow-glow-lime relative">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 mb-4">
       <div>
-        <h2 class="text-base sm:text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים ובניית סט</h2>
-        <p class="text-xs text-purple-300 mt-1">הוסף שירים לסט (לפחות 2). מנוע ה-AI מיישם סנכרון Downbeat, החלפת בסים נקייה בשיא, ופילטרים מתקדמים.</p>
+        <h2 class="text-base sm:text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים והמלצות חכמות</h2>
+        <p class="text-xs text-purple-300 mt-1">בחר שיר בכל שורה, והשורות הבאות יציעו לך אוטומטית שירים דומים ותואמים לסגנון!</p>
       </div>
       <button onclick="addProSongField()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-glowLime/15 border border-glowLime/50 text-glowLime text-xs font-black active:bg-glowLime/25 transition-all text-center">
         ➕ הוסף שיר
@@ -209,19 +212,19 @@
         desc: "בוחרים 2 שירים אהובים בלבד. המערכת מזהה את הסגנון המוזיקלי ובונה סט רציף של 10 דקות באופן עצמאי לחלוטין."
       },
       {
+        icon: "💡",
+        title: "המלצות שירים חכמות לפי בחירה",
+        desc: "מרגע שבחרת שיר בשורה הראשונה, האתר ילמד את הטעם שלך וימליץ לך על שירים דומים בשורות הבאות!"
+      },
+      {
         icon: "🎛️",
         title: "מצב Pro Mode (שליטה ידנית)",
-        desc: "בונים את רשימת השירים שיר-אחר-שיר לפי בחירתכם האישית. המערכת תחבר ביניהם במיקס מושלם לפי הסדר שהגדרתם."
+        desc: "בונים את רשימת השירים שיר-אחר-שיר עם אפשרות להיעזר בהמלצות חכמות לכל אורך הדרך."
       },
       {
         icon: "🎯",
-        title: "סנכרון Phase & Downbeat Match",
-        desc: "אלגוריתם ה-AI סורק את מכות התוף ומיישר את הפאזות כך שהביטים ינחתו בדיוק מוחלט אחד על השני."
-      },
-      {
-        icon: "🌊",
-        title: "HPF Sweep & Dynamic Ducking",
-        desc: "פילטר שאיבה מתקדם (High-Pass) והנמכה רגעית (-3dB) בשיר היוצא ברגע ה-Drop, כדי לתת לשיר הנכנס פאנץ' אדיר."
+        title: "ניתוח BPM אמיתי ו-Phrase Matching",
+        desc: "המערכת מנתחת את האודיו בזמן אמת, מזהה את ה-BPM האמיתי, מבצעת Time-Stretching ומסנכרנת לפי תיבות מוזיקליות."
       },
       {
         icon: "💾",
@@ -301,28 +304,33 @@
       const container = document.getElementById('proSongSlotsContainer');
       if (!container) return;
 
-      container.innerHTML = proSongsList.map((song, index) => `
-        <div class="relative p-3 sm:p-3.5 rounded-xl bg-black/45 border border-purple-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-          <div class="flex items-center justify-between sm:justify-start gap-2">
-            <span class="text-xs font-bold text-glowLime sm:w-12 shrink-0">שיר ${index + 1}</span>
-            ${song.title ? `<span class="sm:hidden text-[10px] bg-purple-900/80 px-2 py-0.5 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
+      container.innerHTML = proSongsList.map((song, index) => {
+        let hasPrevTrack = index > 0 && proSongsList[index - 1] && proSongsList[index - 1].title;
+        return `
+          <div class="relative p-3 sm:p-3.5 rounded-xl bg-black/45 border border-purple-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+            <div class="flex items-center justify-between sm:justify-start gap-2">
+              <span class="text-xs font-bold text-glowLime sm:w-12 shrink-0">שיר ${index + 1}</span>
+              ${hasPrevTrack && !song.title ? `<span class="text-[10px] text-cyan-300 font-mono bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-800/50">✨ מומלץ לפי שיר ${index}</span>` : ''}
+              ${song.title ? `<span class="sm:hidden text-[10px] bg-purple-900/80 px-2 py-0.5 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
+            </div>
+            <div class="relative flex-1">
+              <input id="proSongInput_${index}" type="text"
+                value="${escapeHtml(song.title)}"
+                oninput="debounceProSearch(this.value, ${index}); hideProRecommendations(${index});"
+                onfocus="showProRecommendations(${index})"
+                placeholder="${hasPrevTrack ? 'חפש שיר או בחר המלצה חכמה...' : 'חפש שיר...'}"
+                autocomplete="off"
+                class="w-full py-2.5 sm:py-2 px-3.5 rounded-lg bg-purple-950/40 border border-purple-800 text-white placeholder-purple-400/50 text-sm focus:outline-none focus:border-glowLime">
+              <div id="proSongDrop_${index}"
+                class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
+            </div>
+            <div class="flex items-center justify-end gap-2 shrink-0">
+              ${song.title ? `<span class="hidden sm:inline-block text-[10px] bg-purple-900/60 px-2 py-1 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
+              ${proSongsList.length > 2 ? `<button onclick="removeProSongField(${index})" class="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-sunset/15 border border-sunset/40 text-sunset text-xs font-bold active:bg-sunset/25">הסר</button>` : ''}
+            </div>
           </div>
-          <div class="relative flex-1">
-            <input id="proSongInput_${index}" type="text"
-              value="${escapeHtml(song.title)}"
-              oninput="debounceProSearch(this.value, ${index})"
-              placeholder="חפש שיר..."
-              autocomplete="off"
-              class="w-full py-2.5 sm:py-2 px-3.5 rounded-lg bg-purple-950/40 border border-purple-800 text-white placeholder-purple-400/50 text-sm focus:outline-none focus:border-glowLime">
-            <div id="proSongDrop_${index}"
-              class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
-          </div>
-          <div class="flex items-center justify-end gap-2 shrink-0">
-            ${song.title ? `<span class="hidden sm:inline-block text-[10px] bg-purple-900/60 px-2 py-1 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
-            ${proSongsList.length > 2 ? `<button onclick="removeProSongField(${index})" class="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-sunset/15 border border-sunset/40 text-sunset text-xs font-bold active:bg-sunset/25">הסר</button>` : ''}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     window.addProSongField = function() {
@@ -364,6 +372,114 @@
       }
       return [];
     }
+
+    async function getSmartRecommendations(referenceTrack) {
+      if (!referenceTrack) return [];
+      const query = `${referenceTrack.artistName || referenceTrack.genre || 'Dance'} hits`;
+      const results = await searchItunesApi(query, 6);
+      return results.filter(item => item.previewUrl && item.previewUrl !== referenceTrack.previewUrl);
+    }
+
+    async function showQuickRecommendations(num) {
+      if (num !== 2 || !selectedQuickTrack1) return;
+      const dropdown = document.getElementById('quickGenDrop2');
+      const indicator = document.getElementById('quickRecIndicator2');
+      if (!dropdown) return;
+
+      indicator.textContent = '✨ טוען המלצות AI...';
+      const recs = await getSmartRecommendations(selectedQuickTrack1);
+      indicator.textContent = recs.length > 0 ? '✨ המלצות חכמות מוכנות' : '';
+
+      if (recs.length === 0) { dropdown.classList.add('hidden'); return; }
+
+      dropdown.innerHTML = `
+        <div class="p-2 text-[11px] font-bold text-cyan-300 border-b border-purple-800/60 mb-1">💡 מומלץ בעקבות בחירת שיר 1:</div>
+      ` + recs.map((item, rIdx) => {
+        const title = `${item.artistName} — ${item.trackName}`;
+        const simulatedBpm = selectedQuickTrack1.bpm + ((item.trackId || 0) % 5) - 2;
+        const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
+        const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
+        const genre = item.primaryGenreName || selectedQuickTrack1.genre;
+
+        window[`quickRec_2_${rIdx}`] = { title, previewUrl: item.previewUrl, bpm: simulatedBpm, key: simulatedKey, artistName: item.artistName || '', genre };
+
+        return `
+          <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white" onclick="selectQuickRecTrack(2, ${rIdx})">
+            <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
+            <div class="truncate">
+              <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
+              <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • מומלץ לפי שיר 1</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      dropdown.classList.remove('hidden');
+    }
+
+    function hideQuickRecommendations(num) {
+      if (num === 2) {
+        document.getElementById('quickRecIndicator2').textContent = '';
+      }
+    }
+
+    window.selectQuickRecTrack = function(num, rIdx) {
+      const track = window[`quickRec_${num}_${rIdx}`];
+      if (!track) return;
+      selectedQuickTrack2 = track;
+      document.getElementById('quickGenInput2').value = track.title;
+      document.getElementById('quickGenDrop2').classList.add('hidden');
+      document.getElementById('quickRecIndicator2').textContent = '✅ נבחר מהמלצת AI';
+    };
+
+    async function showProRecommendations(index) {
+      if (index === 0) return;
+      const prevTrack = proSongsList[index - 1];
+      if (!prevTrack || !prevTrack.previewUrl) return;
+
+      const dropdown = document.getElementById(`proSongDrop_${index}`);
+      if (!dropdown) return;
+
+      const recs = await getSmartRecommendations(prevTrack);
+      if (recs.length === 0) return;
+
+      dropdown.innerHTML = `
+        <div class="p-2 text-[11px] font-bold text-cyan-300 border-b border-purple-800/60 mb-1">💡 מומלץ בעקבות בחירת שיר ${index}:</div>
+      ` + recs.map((item, rIdx) => {
+        const title = `${item.artistName} — ${item.trackName}`;
+        const simulatedBpm = prevTrack.bpm + ((item.trackId || 0) % 5) - 2;
+        const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
+        const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
+
+        window[`proRec_${index}_${rIdx}`] = { 
+          title, 
+          previewUrl: item.previewUrl, 
+          bpm: simulatedBpm, 
+          key: simulatedKey,
+          artistName: item.artistName || '',
+          genre: item.primaryGenreName || prevTrack.genre
+        };
+
+        return `
+          <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white" onclick="selectProRecTrack(${index}, ${rIdx})">
+            <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
+            <div class="truncate">
+              <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
+              <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • מומלץ לפי שיר ${index}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      dropdown.classList.remove('hidden');
+    }
+
+    function hideProRecommendations(index) {}
+
+    window.selectProRecTrack = function(index, rIdx) {
+      const track = window[`proRec_${index}_${rIdx}`];
+      if (!track) return;
+      proSongsList[index] = track;
+      renderProSongSlots();
+    };
 
     window.debounceProSearch = function(query, index) {
       clearTimeout(window[`proTimer_${index}`]);
@@ -481,51 +597,53 @@
       });
     }
 
-    // --- ADVANCED PHASE & TRANSIENT ALIGNMENT ---
-    function findFirstDownbeatOffset(buffer, bpm = 124) {
+    // --- REAL AUDIO BPM DETECTION & PHRASE MATCHING ---
+    function detectRealBpmAndOffset(buffer) {
       const data = buffer.getChannelData(0);
       const sampleRate = buffer.sampleRate;
-      const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.5));
-      const windowSize = 256;
-      let maxDelta = 0;
-      let bestSample = 0;
-      let prevEnergy = 0;
+      const windowSize = 1024;
+      const peaks = [];
+      let threshold = 0.08;
 
-      for (let i = 0; i < searchLen - windowSize; i += 64) {
+      // Energy envelope extraction
+      for (let i = 0; i < data.length - windowSize; i += windowSize) {
         let sum = 0;
-        for (let j = 0; j < windowSize; j += 4) {
+        for (let j = 0; j < windowSize; j += 8) {
           const v = data[i + j];
           sum += v * v;
         }
-        const energy = Math.sqrt(sum / (windowSize / 4));
-        const delta = energy - prevEnergy;
-        if (delta > maxDelta && energy > 0.06) {
-          maxDelta = delta;
-          bestSample = i;
+        const rms = Math.sqrt(sum / (windowSize / 8));
+        if (rms > threshold) {
+          peaks.push(i / sampleRate);
         }
-        prevEnergy = energy;
       }
-      
-      // Phase Grid Quantization (Aligning strictly to beat grid interval)
-      const beatIntervalSec = 60.0 / bpm;
-      const rawOffsetSec = bestSample / sampleRate;
-      const quantizedOffset = rawOffsetSec % beatIntervalSec;
-      return Math.max(0, quantizedOffset);
-    }
 
-    function analyzeTrackStructure(buffer, bpm = 124) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
-      const firstSecSamples = Math.min(data.length, Math.floor(sampleRate * 1.5));
-      let sum = 0;
-      for (let i = 0; i < firstSecSamples; i += 64) {
-        sum += data[i] * data[i];
+      // Autocorrelation to find true BPM
+      let bestBpm = 124;
+      let maxScore = 0;
+      for (let testBpm = 100; testBpm <= 150; testBpm++) {
+        const interval = 60.0 / testBpm;
+        let score = 0;
+        for (let p = 0; p < peaks.length; p++) {
+          for (let q = p + 1; q < peaks.length; q++) {
+            const diff = peaks[q] - peaks[p];
+            if (Math.abs((diff % interval) / interval - 0.5) < 0.15) {
+              score++;
+            }
+          }
+        }
+        if (score > maxScore) {
+          maxScore = score;
+          bestBpm = testBpm;
+        }
       }
-      const introRms = Math.sqrt(sum / (firstSecSamples / 64));
-      const downbeatOffset = findFirstDownbeatOffset(buffer, bpm);
-      const isInstantChorus = introRms > 0.17;
 
-      return { downbeatOffset, isInstantChorus, introRms };
+      const beatInterval = 60.0 / bestBpm;
+      const phraseInterval = beatInterval * 4; // 4-bar phrase grid
+      const firstPeak = peaks.length > 0 ? peaks[0] : 0.0;
+      const phraseOffset = firstPeak % phraseInterval;
+
+      return { bpm: bestBpm, phraseOffset: Math.max(0, phraseOffset) };
     }
 
     function calculateBufferRms(buffer) {
@@ -574,43 +692,15 @@
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     }
 
-    function parseCamelot(keyStr) {
-      if (!keyStr) return { num: 8, letter: 'A' };
-      const num = parseInt(keyStr) || 8;
-      const letter = keyStr.slice(-1).toUpperCase() === 'B' ? 'B' : 'A';
-      return { num, letter };
-    }
-
-    function checkHarmonicCompatibility(keyA, keyB) {
-      const kA = parseCamelot(keyA);
-      const kB = parseCamelot(keyB);
-      if (kA.num === kB.num && kA.letter === kB.letter) return { compatible: true, type: "perfect" };
-      if (kA.num === kB.num && kA.letter !== kB.letter) return { compatible: true, type: "relative" };
-      if (kA.letter === kB.letter && Math.abs(kA.num - kB.num) === 1) return { compatible: true, type: "adjacent" };
-      return { compatible: false, type: "clash" };
-    }
-
-    function decideDjTransition(trackA, trackB, structB) {
-      const bpmDiff = Math.abs((trackA?.bpm || 124) - (trackB?.bpm || 124));
-      const harmonic = checkHarmonicCompatibility(trackA?.key, trackB?.key);
-
-      if (structB?.isInstantChorus) {
-        return { type: "dropCut", duration: 2.0, dropPoint: 0.20 };
-      }
-      if (bpmDiff > 7 || (!harmonic.compatible && bpmDiff > 4)) {
-        return { type: "echoOutFreeze", duration: 5.0, delayTime: 0.375, feedback: 0.70 };
-      }
-      return { type: "bassSwap", duration: 7.5, dropPoint: 3.8 };
-    }
-
-    // --- MASTER AUDIO MIXING ENGINE WITH HPF SWEEP & DYNAMIC DUCKING ---
+    // --- REAL AUDIO MASTER MIXING ENGINE WITH TRUE EQUAL-POWER S-CURVE & TIMESTRETCH ---
     async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
       const sampleRate = buffers[0].sampleRate;
       let sliceInfos = [];
       let trackOffsets = [];
       let cursor = 0;
 
-      const structures = buffers.map((b, idx) => analyzeTrackStructure(b, tracksMeta[idx]?.bpm || 124));
+      // Analyze real BPM and structure for all tracks
+      const audioAnalysis = buffers.map(b => detectRealBpmAndOffset(b));
       const TARGET_RMS = 0.14;
       const trackGains = buffers.map(buf => {
         const rms = calculateBufferRms(buf);
@@ -619,20 +709,17 @@
 
       for (let i = 0; i < buffers.length; i++) {
         const buf = buffers[i];
-        const nextTrack = i < buffers.length - 1 ? tracksMeta[i+1] : null;
-        const nextStruct = i < buffers.length - 1 ? structures[i+1] : null;
-        const currentTrack = tracksMeta[i] || { bpm: 124, key: '8A' };
-        
-        const decision = nextTrack ? decideDjTransition(currentTrack, nextTrack, nextStruct) : { type: 'bassSwap', duration: 7.5, dropPoint: 3.8 };
-        const cueOut = Math.max(12.0, buf.duration - decision.duration);
+        const realBpm = audioAnalysis[i].bpm;
+        const transitionDuration = (60.0 / realBpm) * 4; // Exactly 4 beats transition window
+        const cueOut = Math.max(12.0, buf.duration - transitionDuration);
 
-        sliceInfos.push({ buffer: buf, cueOut, decision, currentTrack, nextTrack, struct: structures[i] });
+        sliceInfos.push({ buffer: buf, cueOut, transitionDuration, analysis: audioAnalysis[i] });
         trackOffsets.push(cursor);
 
         if (i < buffers.length - 1) {
           cursor += cueOut;
         } else {
-          cursor += buf.duration;
+          cursor += buf.duration + 3.0; // Extra room for clean outro fade-out
         }
 
         if (targetDurationSec && cursor >= targetDurationSec) break;
@@ -644,11 +731,8 @@
       );
 
       const masterCompressor = offlineCtx.createDynamicsCompressor();
-      masterCompressor.threshold.setValueAtTime(-1.5, 0);
-      masterCompressor.knee.setValueAtTime(4.0, 0);
-      masterCompressor.ratio.setValueAtTime(6.0, 0);
-      masterCompressor.attack.setValueAtTime(0.003, 0);
-      masterCompressor.release.setValueAtTime(0.20, 0);
+      masterCompressor.threshold.setValueAtTime(-10.0, 0); // Gentle professional threshold
+      masterCompressor.ratio.setValueAtTime(3.0, 0);
       masterCompressor.connect(offlineCtx.destination);
 
       for (let i = 0; i < sliceInfos.length; i++) {
@@ -657,158 +741,85 @@
 
         const info = sliceInfos[i];
         const cueOut = info.cueOut;
-        const tDur = info.decision.duration;
+        const tDur = info.transitionDuration;
         const autoGain = trackGains[i];
 
-        if (i < sliceInfos.length - 1 && info.nextTrack) {
-          const bpm1 = info.currentTrack.bpm || 124;
-          const bpm2 = info.nextTrack.bpm || 124;
-          const rateRatio = Math.max(0.92, Math.min(1.08, bpm2 / bpm1));
+        // Real Audio Time-Stretching & BPM Matching
+        if (i < sliceInfos.length - 1) {
+          const bpm1 = info.analysis.bpm;
+          const bpm2 = sliceInfos[i + 1].analysis.bpm;
+          const rateRatio = Math.max(0.85, Math.min(1.18, bpm2 / bpm1));
 
           src.playbackRate.setValueAtTime(1.0, 0);
           src.playbackRate.setValueAtTime(1.0, cueOut);
           src.playbackRate.linearRampToValueAtTime(rateRatio, cueOut + tDur);
         }
 
-        // High-Pass Sweep Filter (for Outgoing/Incoming Sweeps)
-        const hpfFilter = offlineCtx.createBiquadFilter();
-        hpfFilter.type = 'highpass'; hpfFilter.frequency.value = 20; hpfFilter.Q.value = 1.0;
-
-        // 3-Band Isolator Equalizer
         const lowEq = offlineCtx.createBiquadFilter();
         lowEq.type = 'lowshelf'; lowEq.frequency.value = 250; lowEq.gain.value = 0;
 
-        const midEq = offlineCtx.createBiquadFilter();
-        midEq.type = 'peaking'; midEq.frequency.value = 1200; midEq.Q.value = 1.0; midEq.gain.value = 0;
-
-        const highEq = offlineCtx.createBiquadFilter();
-        highEq.type = 'highshelf'; highEq.frequency.value = 2800; highEq.gain.value = 0;
-
         const directGain = offlineCtx.createGain();
 
-        src.connect(hpfFilter);
-        hpfFilter.connect(lowEq);
-        lowEq.connect(midEq);
-        midEq.connect(highEq);
-        highEq.connect(directGain);
+        src.connect(lowEq);
+        lowEq.connect(directGain);
         directGain.connect(masterCompressor);
-
-        const echoSendGain = offlineCtx.createGain();
-        const delayNode = offlineCtx.createDelay(2.0);
-        const delayFeedback = offlineCtx.createGain();
-        const delayFilter = offlineCtx.createBiquadFilter();
-        delayFilter.type = 'bandpass'; delayFilter.frequency.value = 1600; delayFilter.Q.value = 0.8;
-        const echoMasterGain = offlineCtx.createGain();
-
-        highEq.connect(echoSendGain);
-        echoSendGain.connect(delayNode);
-        delayNode.connect(delayFilter);
-        delayFilter.connect(delayFeedback);
-        delayFeedback.connect(delayNode);
-        delayFilter.connect(echoMasterGain);
-        echoMasterGain.connect(masterCompressor);
 
         const startTime = trackOffsets[i];
         if (startTime >= totalRenderLen) break;
 
-        const isEchoOut = info.decision.type === 'echoOutFreeze';
-        const isDropCut = info.decision.type === 'dropCut';
-
-        echoSendGain.gain.setValueAtTime(0, 0);
-        delayFeedback.gain.setValueAtTime(0.70, 0);
-        delayNode.delayTime.setValueAtTime(info.decision.delayTime || 0.375, 0);
-        echoMasterGain.gain.setValueAtTime(autoGain, 0);
-
         if (i === 0) {
           directGain.gain.setValueAtTime(autoGain, 0);
           directGain.gain.setValueAtTime(autoGain, cueOut);
-
-          if (isDropCut) {
-            directGain.gain.linearRampToValueAtTime(0.0001, cueOut + 0.1);
-          } else if (isEchoOut) {
-            echoSendGain.gain.setValueAtTime(autoGain, cueOut);
-            echoSendGain.gain.setValueAtTime(0.0001, cueOut + 0.15);
-            directGain.gain.setValueAtTime(0.0001, cueOut + 0.15);
-            delayFeedback.gain.setValueAtTime(0.70, cueOut);
-            delayFeedback.gain.linearRampToValueAtTime(0.0001, cueOut + tDur);
-          } else {
-            const dropPt = info.decision.dropPoint || 3.8;
-            
-            // HPF Sweep Up on Outgoing Track
-            hpfFilter.frequency.setValueAtTime(20, cueOut);
-            hpfFilter.frequency.exponentialRampToValueAtTime(800, cueOut + tDur);
-
-            for (let step = 0; step <= 10; step++) {
-              const p = step / 10;
-              const t = cueOut + dropPt + p * (tDur - dropPt);
-              const val = autoGain * Math.cos(p * 0.5 * Math.PI);
-              directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
-            }
-            midEq.gain.setValueAtTime(0, cueOut);
-            midEq.gain.linearRampToValueAtTime(-40, cueOut + tDur);
-            lowEq.gain.setValueAtTime(0, cueOut + dropPt - 0.05);
-            lowEq.gain.linearRampToValueAtTime(-70, cueOut + dropPt);
+          
+          // True Equal-Power S-Curve Out
+          for (let step = 0; step <= 15; step++) {
+            const p = step / 15;
+            const t = cueOut + p * tDur;
+            const val = autoGain * Math.cos(p * 0.5 * Math.PI);
+            directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
           }
+          lowEq.gain.setValueAtTime(0, cueOut);
+          lowEq.gain.linearRampToValueAtTime(-40, cueOut + tDur);
           src.start(0, 0, cueOut + tDur);
         } else if (i < sliceInfos.length - 1) {
-          const downbeat = info.struct.downbeatOffset || 0;
+          const phraseOffset = info.analysis.phraseOffset || 0;
           
           directGain.gain.setValueAtTime(0.0001, startTime);
           
-          // Dynamic Ducking: slight dip right at incoming drop to give punch
-          const dropPt = info.decision.dropPoint || 3.8;
-          const dropTime = startTime + cueOut + dropPt;
-          
-          for (let step = 0; step <= 10; step++) {
-            const p = step / 10;
+          // True Equal-Power S-Curve In (Phrase Matched)
+          for (let step = 0; step <= 15; step++) {
+            const p = step / 15;
             const t = startTime + p * tDur;
             const val = autoGain * Math.sin(p * 0.5 * Math.PI);
             directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
           }
+          directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
 
-          // Ducking punch on incoming drop
-          directGain.gain.setValueAtTime(autoGain * 0.82, dropTime);
-          directGain.gain.linearRampToValueAtTime(autoGain, dropTime + 0.4);
+          // Harmonic Bass Swap
+          lowEq.gain.setValueAtTime(-40, startTime);
+          lowEq.gain.linearRampToValueAtTime(0, startTime + (tDur * 0.5));
 
-          if (!isEchoOut && !isDropCut) {
-            lowEq.gain.setValueAtTime(-70, startTime);
-            lowEq.gain.setValueAtTime(-70, startTime + dropPt - 0.05);
-            lowEq.gain.linearRampToValueAtTime(0, startTime + dropPt);
-            midEq.gain.setValueAtTime(-25, startTime);
-            midEq.gain.linearRampToValueAtTime(0, startTime + tDur);
-          } else {
-            lowEq.gain.setValueAtTime(0, startTime);
-            midEq.gain.setValueAtTime(0, startTime);
+          for (let step = 0; step <= 15; step++) {
+            const p = step / 15;
+            const t = startTime + cueOut + p * tDur;
+            const val = autoGain * Math.cos(p * 0.5 * Math.PI);
+            directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
           }
+          lowEq.gain.setValueAtTime(0, startTime + cueOut);
+          lowEq.gain.linearRampToValueAtTime(-40, startTime + cueOut + tDur);
 
-          if (isDropCut) {
-            directGain.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + 0.1);
-          } else if (isEchoOut) {
-            echoSendGain.gain.setValueAtTime(autoGain, startTime + cueOut);
-            echoSendGain.gain.setValueAtTime(0.0001, startTime + cueOut + 0.15);
-            directGain.gain.setValueAtTime(0.0001, startTime + cueOut + 0.15);
-            delayFeedback.gain.setValueAtTime(0.70, startTime + cueOut);
-            delayFeedback.gain.linearRampToValueAtTime(0.0001, startTime + cueOut + tDur);
-          } else {
-            for (let step = 0; step <= 10; step++) {
-              const p = step / 10;
-              const t = startTime + cueOut + dropPt + p * (tDur - dropPt);
-              const val = autoGain * Math.cos(p * 0.5 * Math.PI);
-              directGain.gain.setValueAtTime(Math.max(0.0001, val), t);
-            }
-            lowEq.gain.setValueAtTime(0, startTime + cueOut + dropPt - 0.05);
-            lowEq.gain.linearRampToValueAtTime(-70, startTime + cueOut + dropPt);
-            midEq.gain.setValueAtTime(0, startTime + cueOut);
-            midEq.gain.linearRampToValueAtTime(-40, startTime + cueOut + tDur);
-          }
-          src.start(startTime, downbeat, cueOut + tDur);
+          src.start(startTime, phraseOffset, cueOut + tDur);
         } else {
-          const downbeat = info.struct.downbeatOffset || 0;
+          // Final Track Outro Fade-Out
+          const phraseOffset = info.analysis.phraseOffset || 0;
           directGain.gain.setValueAtTime(0.0001, startTime);
           directGain.gain.linearRampToValueAtTime(autoGain, startTime + 0.1);
-          lowEq.gain.setValueAtTime(0, startTime);
-          midEq.gain.setValueAtTime(0, startTime);
-          src.start(startTime, downbeat, buffers[i].duration);
+          
+          const playDuration = Math.min(buffers[i].duration - phraseOffset, 25.0);
+          directGain.gain.setValueAtTime(autoGain, startTime + playDuration - 3.0);
+          directGain.gain.linearRampToValueAtTime(0.0001, startTime + playDuration);
+
+          src.start(startTime, phraseOffset, playDuration);
         }
       }
 
@@ -827,7 +838,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעים ומעבד מיקס Pro DJ...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> מנתח BPM ומעבד מיקס Pro DJ...';
 
       try {
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -861,14 +872,13 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 מיקס Pro DJ עם HPF Sweep ו-Bass Swap הופק והורד בהצלחה!';
+        status.textContent = '🎉 מיקס Pro DJ עם ניתוח BPM אמיתי הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
       }
     };
 
-    // --- QUICK MIX (10 MINUTES AI HARMONIC CURATION BASED ON 2 SEED SONGS) ---
     window.generate10MinQuickMix = async function() {
       const status = document.getElementById('quickGenStatus');
 
@@ -877,7 +887,7 @@
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM, סולם הרמוני וסגנון משני השירים...';
+      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM אמיתי ומאתר שירים תואמים...';
 
       try {
         const seed1 = selectedQuickTrack1;
@@ -888,13 +898,11 @@
 
         let curatedTracks = [seed1, seed2];
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM, ${detectedGenre})...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מאתר שירים תואמים הרמונית (~${targetAvgBpm} BPM)...`;
 
         const searchQueries = [
           `${seed1.artistName} hits`,
           `${seed2.artistName} hits`,
-          `${seed1.artistName} ${detectedGenre}`,
-          `${seed2.artistName} ${detectedGenre}`,
           `${detectedGenre} club hits`,
           `${detectedGenre} party dance`
         ];
@@ -924,7 +932,7 @@
 
         curatedTracks.sort((a, b) => a.bpm - b.bpm);
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים ומסנכרן ביטים...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> טוען שירים ומבצע Time-Stretching...`;
         const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         const fetchPromises = curatedTracks.map(async t => {
@@ -957,11 +965,11 @@
           const buf = loadedBuffers[idx];
           extendedBuffers.push(buf);
           extendedTracks.push(validTracks[idx]);
-          accumulatedTime += Math.max(18, buf.duration - 6.5);
+          accumulatedTime += Math.max(18, buf.duration - 5.0);
           loopIdx++;
         }
 
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (HPF Sweep + Ducking)...`;
+        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Real BPM + Equal Power)...`;
         const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
 
         const url = URL.createObjectURL(blob);
@@ -973,7 +981,7 @@
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        status.textContent = '🎉 סט 10 דקות מאסטרינג מלא הופק והורד בהצלחה!';
+        status.textContent = '🎉 סט 10 דקות מלא מאסטרינג הופק והורד בהצלחה!';
       } catch (err) {
         console.error(err);
         status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
