@@ -105,7 +105,7 @@
         <h1 class="text-xl md:text-2xl font-black bg-gradient-to-r from-sunset via-pink-400 to-electricCyan bg-clip-text text-transparent">
           PULSEAI
         </h1>
-        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • Real-Time Stream Engine • Smart Mix</p>
+        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • Infinite Stream Engine • Smart Mix</p>
       </div>
     </div>
 
@@ -378,7 +378,7 @@
         <span class="text-xl">📜</span>
         <div>
           <h2 class="text-sm font-black text-white">היסטוריית המיקסים והפלייליסטים שלך</h2>
-          <p class="text-[11px] text-purple-300">המיקסים שלך מסונכרנים ומוכנים להשמעה מיידית:</p>
+          <p class="text-[11px] text-purple-300">המיקסים שלך מסונחרנים ומוכנים להשמעה מיידית:</p>
         </div>
       </div>
       <button onclick="clearUserMixHistory()" class="text-[11px] text-purple-400 hover:text-sunset cursor-pointer">נקה היסטוריה</button>
@@ -498,7 +498,7 @@
     };
   </script>
 
-  <!-- DJ Audio Engine & AI Track Expander -->
+  <!-- DJ Audio Engine & Infinite Dynamic Track Generator -->
   <script>
     function escapeHtml(str) {
       if (!str) return '';
@@ -592,10 +592,9 @@
       return fallbackUrl;
     }
 
-    // AI Smart Track Expander: Builds a robust set based on target duration (approx 2.5 mins per track)
+    // AI Smart Track Expander: Calculates required track count based on target duration (approx 2.5 mins per track)
     async function expandSeedTracks(seeds, targetMinutes = 10) {
-      // Calculate how many tracks we need based on duration (~3 min per track, min 4 tracks)
-      const targetCount = Math.max(4, Math.ceil(targetMinutes / 2.5));
+      const targetCount = Math.max(5, Math.ceil(targetMinutes / 2.2));
       const expanded = [...seeds];
       const searchQueries = [];
 
@@ -629,11 +628,11 @@
 
       while (expanded.length < targetCount) {
         const idx = expanded.length;
-        const baseTitle = searchQueries[idx % searchQueries.length] || 'מיקס ישראלי';
+        const baseArtist = searchQueries[idx % searchQueries.length] || 'מיקס ישראלי';
         expanded.push(normalizeTrackObject({
           trackId: Date.now() + idx,
-          title: `${baseTitle} — להיט מסיבה ${idx + 1}`,
-          url: getFallbackAudioUrl(baseTitle, idx)
+          title: `${baseArtist} — רצועת מסיבה זורמת ${idx + 1}`,
+          url: getFallbackAudioUrl(baseArtist, idx)
         }, idx));
       }
 
@@ -807,33 +806,6 @@
       }
     }
 
-    window.generateAndPlayCustomPlaylistLive = async function() {
-      const songs = [];
-      for (let i = 1; i <= 5; i++) {
-        const input = document.getElementById(`favSong${i}`);
-        const isSelected = input.dataset.selected === 'true';
-        const metaStr = input.dataset.songData;
-        
-        if (isSelected && metaStr) {
-          const item = JSON.parse(metaStr);
-          songs.push(normalizeTrackObject(item, i));
-        } else if (input.value.trim()) {
-          const t = input.value.trim();
-          songs.push(normalizeTrackObject({ trackId: Date.now() + i, title: t, url: getFallbackAudioUrl(t, i) }, i));
-        }
-      }
-
-      const expandedSet = await expandSeedTracks(songs, selectedDurationMinutes);
-      activePlaylistQueue = expandedSet;
-      currentTrackIndex = 0;
-
-      const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
-      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, expandedSet);
-
-      startMasterPlayback(0, selectedDurationMinutes, true);
-      document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
-    };
-
     window.runQuickDualDeckPlay = async function() {
       const elA = document.getElementById('dualTitleA');
       const elB = document.getElementById('dualTitleB');
@@ -861,6 +833,33 @@
       saveMixToArchive(`מיקס 2 שירים (${selectedDualDurationMinutes} דק׳)`, 'Dual Mix', `${selectedDualDurationMinutes} דקות`, fullSet);
 
       startMasterPlayback(0, selectedDualDurationMinutes, true);
+      document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.generateAndPlayCustomPlaylistLive = async function() {
+      const songs = [];
+      for (let i = 1; i <= 5; i++) {
+        const input = document.getElementById(`favSong${i}`);
+        const isSelected = input.dataset.selected === 'true';
+        const metaStr = input.dataset.songData;
+        
+        if (isSelected && metaStr) {
+          const item = JSON.parse(metaStr);
+          songs.push(normalizeTrackObject(item, i));
+        } else if (input.value.trim()) {
+          const t = input.value.trim();
+          songs.push(normalizeTrackObject({ trackId: Date.now() + i, title: t, url: getFallbackAudioUrl(t, i) }, i));
+        }
+      }
+
+      const expandedSet = await expandSeedTracks(songs, selectedDurationMinutes);
+      activePlaylistQueue = expandedSet;
+      currentTrackIndex = 0;
+
+      const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
+      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, expandedSet);
+
+      startMasterPlayback(0, selectedDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
