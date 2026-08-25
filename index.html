@@ -8,6 +8,11 @@
   <meta name="theme-color" content="#080512">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PULSEAI">
+
+  <!-- Inline PWA Manifest Data URI -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"PULSEAI - Autonomous AI DJ","short_name":"PULSEAI","start_url":".","display":"standalone","background_color":"%23080512","theme_color":"%23080512","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3844/3844724.png","sizes":"512x512","type":"image/png"}]}'>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -79,21 +84,19 @@
       box-shadow: 0 0 15px rgba(0, 240, 255, 0.4) !important;
       color: #FFFFFF !important;
     }
-    .sound-bar {
-      animation: soundwave 1.1s ease-in-out infinite;
-    }
-    .sound-bar:nth-child(2) { animation-delay: 0.2s; }
-    .sound-bar:nth-child(3) { animation-delay: 0.4s; }
-    .sound-bar:nth-child(4) { animation-delay: 0.1s; }
-    .sound-bar:nth-child(5) { animation-delay: 0.3s; }
-    @keyframes soundwave {
-      0%, 100% { height: 6px; }
-      50% { height: 26px; }
+    input[type=range]::-webkit-slider-thumb {
+      height: 14px;
+      width: 14px;
+      border-radius: 50%;
+      background: #10E773;
+      cursor: pointer;
+      -webkit-appearance: none;
+      box-shadow: 0 0 8px #10E773;
     }
   </style>
 </head>
 
-<body class="p-3 md:p-8 flex flex-col items-center">
+<body class="p-3 md:p-8 flex flex-col items-center pb-24">
 
   <!-- Header -->
   <header class="w-full max-w-5xl flex flex-wrap justify-between items-center gap-3 mb-6 pb-4 border-b border-purple-900/40">
@@ -135,7 +138,7 @@
   <!-- Live DJ Master Player -->
   <section id="liveWebMixPlayerSection" class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime relative overflow-hidden">
     
-    <!-- Top Bar -->
+    <!-- Top Bar with Real Canvas Visualizer & Score -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 pb-3 border-b border-purple-800/40">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">
@@ -146,20 +149,15 @@
         </div>
       </div>
 
-      <!-- Compatibility Score & Visualizer -->
+      <!-- Live Canvas Equalizer & Compatibility Score -->
       <div class="flex items-center gap-3">
         <div class="px-3.5 py-1.5 rounded-xl bg-black/60 border border-glowLime/40 text-xs font-bold text-glowLime flex items-center gap-1.5 shadow" id="transitionScoreIndicator">
           <span>✨ ציון התאמה:</span>
           <span id="transitionScoreValue" class="text-white font-mono font-black">96%</span>
         </div>
 
-        <div id="soundbarsVisualizer" class="hidden items-end gap-1 h-7">
-          <div class="sound-bar w-1 bg-glowLime rounded-full"></div>
-          <div class="sound-bar w-1 bg-electricCyan rounded-full"></div>
-          <div class="sound-bar w-1 bg-sunset rounded-full"></div>
-          <div class="sound-bar w-1 bg-pink-500 rounded-full"></div>
-          <div class="sound-bar w-1 bg-ultraviolet rounded-full"></div>
-        </div>
+        <!-- Canvas Spectrum Visualizer -->
+        <canvas id="djCanvasVisualizer" width="90" height="28" class="rounded-lg bg-black/40 border border-purple-900/60"></canvas>
       </div>
     </div>
 
@@ -203,13 +201,19 @@
       </div>
     </div>
 
-    <!-- Player Controls -->
+    <!-- Player Controls & Volume Slider -->
     <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-      <div class="flex items-center">
+      <div class="flex items-center gap-3">
         <button id="masterMixPlayBtn" onclick="toggleMasterLiveMixPlayback()" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-glowLime to-electricCyan hover:opacity-95 text-night font-bold text-xs md:text-sm shadow flex items-center gap-1.5 cursor-pointer transition-all">
           <span id="masterPlayBtnIcon" class="text-xs">▶</span>
           <span id="masterPlayBtnText">נגן את המיקס עכשיו</span>
         </button>
+
+        <!-- Volume Control -->
+        <div class="flex items-center gap-2 bg-black/50 px-3 py-2 rounded-2xl border border-purple-800/50">
+          <button id="volMuteBtn" onclick="toggleVolumeMute()" class="text-xs text-purple-300 hover:text-glowLime cursor-pointer">🔊</button>
+          <input type="range" id="masterVolumeSlider" min="0" max="1" step="0.05" value="1" oninput="changeMasterVolume(this.value)" class="w-20 md:w-28 h-1.5 bg-purple-900/80 rounded-lg appearance-none cursor-pointer accent-glowLime">
+        </div>
       </div>
 
       <div class="flex items-center gap-2">
@@ -378,7 +382,7 @@
         <span class="text-xl">📜</span>
         <div>
           <h2 class="text-sm font-black text-white">היסטוריית המיקסים והפלייליסטים שלך</h2>
-          <p class="text-[11px] text-purple-300">המיקסים שלך מסונחרנים ומוכנים להשמעה מיידית:</p>
+          <p class="text-[11px] text-purple-300">המיקסים שלך מסונכרנים ומוכנים להשמעה מיידית:</p>
         </div>
       </div>
       <button onclick="clearUserMixHistory()" class="text-[11px] text-purple-400 hover:text-sunset cursor-pointer">נקה היסטוריה</button>
@@ -386,6 +390,21 @@
 
     <div id="mixHistoryListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
   </section>
+
+  <!-- PWA Install Banner -->
+  <div id="pwaInstallBanner" class="fixed bottom-3 left-3 right-3 max-w-md mx-auto p-3.5 rounded-2xl glass-panel border border-glowLime/60 shadow-glow-lime flex items-center justify-between gap-3 z-50 hidden">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sunset to-glowLime flex items-center justify-center font-black text-xs text-white">P</div>
+      <div class="text-right">
+        <div class="text-xs font-bold text-white">התקן את PULSEAI</div>
+        <div class="text-[10px] text-purple-300">הוסף למסך הבית להשמעה מהירה</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="pwaInstallActionBtn" class="px-3 py-1.5 rounded-xl bg-glowLime text-night font-black text-xs cursor-pointer">התקן</button>
+      <button onclick="dismissPwaBanner()" class="text-purple-400 text-xs px-1 cursor-pointer">✕</button>
+    </div>
+  </div>
 
   <!-- Firebase Integration -->
   <script type="module">
@@ -498,7 +517,7 @@
     };
   </script>
 
-  <!-- DJ Audio Engine & Long-Set Generator -->
+  <!-- DJ Audio Engine & Advanced Features -->
   <script>
     function escapeHtml(str) {
       if (!str) return '';
@@ -557,6 +576,26 @@
         artwork: track.artwork || '',
         duration: track.duration || 30
       };
+    }
+
+    // Audio Preload & Blob Cache
+    const preloadedBlobCache = new Map();
+    async function preloadTrackAudioBlob(url) {
+      if (!url || preloadedBlobCache.has(url) || url.startsWith('blob:')) return;
+      try {
+        const response = await fetch(url, { mode: 'cors' });
+        if (response.ok) {
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          preloadedBlobCache.set(url, blobUrl);
+        }
+      } catch (e) {
+        // Fallback silently if CORS blocked
+      }
+    }
+
+    function getResolvedAudioSrc(url) {
+      return preloadedBlobCache.get(url) || url;
     }
 
     async function ensureTrackAudioUrl(track, idx = 0) {
@@ -676,6 +715,9 @@
     let transitionTokenId = 0;
     let sessionTokenId = 0;
 
+    let masterGainVolume = 1.0;
+    let isVolumeMuted = false;
+
     let sessionStartTimeStamp = 0;
     let totalPausedDuration = 0;
     let pausedAtTimeStamp = 0;
@@ -685,6 +727,80 @@
     let activePlaylistQueue = [...CURATED_SETS.party];
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
+
+    // Master Volume Controls
+    window.changeMasterVolume = function(val) {
+      masterGainVolume = parseFloat(val);
+      isVolumeMuted = (masterGainVolume === 0);
+      updateVolumeUI();
+      applyVolumeToActiveDecks();
+    };
+
+    window.toggleVolumeMute = function() {
+      isVolumeMuted = !isVolumeMuted;
+      if (isVolumeMuted) {
+        document.getElementById('masterVolumeSlider').value = 0;
+      } else {
+        masterGainVolume = (masterGainVolume === 0) ? 0.8 : masterGainVolume;
+        document.getElementById('masterVolumeSlider').value = masterGainVolume;
+      }
+      updateVolumeUI();
+      applyVolumeToActiveDecks();
+    };
+
+    function updateVolumeUI() {
+      const btn = document.getElementById('volMuteBtn');
+      if (!btn) return;
+      if (isVolumeMuted || masterGainVolume === 0) {
+        btn.textContent = '🔇';
+      } else if (masterGainVolume < 0.5) {
+        btn.textContent = '🔉';
+      } else {
+        btn.textContent = '🔊';
+      }
+    }
+
+    function applyVolumeToActiveDecks() {
+      const effectiveVol = isVolumeMuted ? 0 : masterGainVolume;
+      if (!isCrossfading) {
+        if (activeDeckName === 'A') {
+          deckA.audio.volume = effectiveVol;
+          deckB.audio.volume = 0;
+        } else {
+          deckB.audio.volume = effectiveVol;
+          deckA.audio.volume = 0;
+        }
+      }
+    }
+
+    // Canvas Equalizer Animation
+    let canvasVisualizerAnimId = null;
+    function initCanvasVisualizer() {
+      const canvas = document.getElementById('djCanvasVisualizer');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const numBars = 16;
+
+      function renderFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const barWidth = (canvas.width / numBars) - 1.5;
+
+        for (let i = 0; i < numBars; i++) {
+          let height = isMasterPlaying ? Math.sin(Date.now() * 0.008 + i * 0.6) * 10 + 14 : 2;
+          height = Math.max(2, Math.min(canvas.height, height));
+
+          const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+          grad.addColorStop(0, '#10E773');
+          grad.addColorStop(0.5, '#00F0FF');
+          grad.addColorStop(1, '#FF5E36');
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(i * (barWidth + 1.5), canvas.height - height, barWidth, height);
+        }
+        canvasVisualizerAnimId = requestAnimationFrame(renderFrame);
+      }
+      renderFrame();
+    }
 
     window.selectPlaylistGenre = function(genreKey) {
       if (!GENRE_MAP[genreKey]) return;
@@ -868,7 +984,7 @@
       clearInterval(crossfadeTimer);
     }
 
-    // Direct Synchronous Playback
+    // Direct Playback with Active Volume and Preload
     function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
       cancelActiveTransition();
 
@@ -902,15 +1018,18 @@
       deckB.track = nextTrack;
       updateDeckUIElements(deckA, deckB);
 
-      // Primary Deck
-      deckA.audio.src = currentTrack.url;
-      deckA.audio.currentTime = 0;
-      deckA.audio.volume = 1.0;
+      const effectiveGain = isVolumeMuted ? 0 : masterGainVolume;
 
-      // Standby Preload
-      deckB.audio.src = nextTrack.url;
+      // Primary Deck Setup
+      deckA.audio.src = getResolvedAudioSrc(currentTrack.url);
+      deckA.audio.currentTime = 0;
+      deckA.audio.volume = effectiveGain;
+
+      // Standby Preload and Blob Trigger
+      deckB.audio.src = getResolvedAudioSrc(nextTrack.url);
       deckB.audio.preload = "auto";
       deckB.audio.volume = 0.0;
+      preloadTrackAudioBlob(nextTrack.url);
 
       const playPromise = deckA.audio.play();
       if (playPromise !== undefined) {
@@ -988,14 +1107,16 @@
       activePlaylistQueue[currentTrackIndex] = nextTrack;
 
       toDeck.track = nextTrack;
-      if (toDeck.audio.src !== nextTrack.url) {
-        toDeck.audio.src = nextTrack.url;
+      const resolvedSrc = getResolvedAudioSrc(nextTrack.url);
+      if (toDeck.audio.src !== resolvedSrc) {
+        toDeck.audio.src = resolvedSrc;
       }
       try { toDeck.audio.currentTime = 0; } catch(e) {}
       toDeck.audio.volume = 0.0;
 
       toDeck.audio.play().catch(e => console.warn("Standby play notice:", e));
 
+      const effectiveGain = isVolumeMuted ? 0 : masterGainVolume;
       const duration = 3500;
       const steps = 25;
       const interval = duration / steps;
@@ -1009,15 +1130,15 @@
         step++;
         const progress = step / steps;
         
-        fromDeck.audio.volume = Math.max(0, 1 - progress);
-        toDeck.audio.volume = Math.min(1, progress);
+        fromDeck.audio.volume = Math.max(0, (1 - progress) * effectiveGain);
+        toDeck.audio.volume = Math.min(effectiveGain, progress * effectiveGain);
 
         if (step >= steps) {
           clearInterval(fadeInterval);
           fromDeck.audio.pause();
           try { fromDeck.audio.currentTime = 0; } catch(e) {}
           fromDeck.audio.volume = 0.0;
-          toDeck.audio.volume = 1.0;
+          toDeck.audio.volume = effectiveGain;
 
           activeDeckName = activeDeckName === 'A' ? 'B' : 'A';
           updateDeckUIElements(toDeck, fromDeck);
@@ -1025,9 +1146,10 @@
           const afterNext = normalizeTrackObject(activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length], (currentTrackIndex + 1) % activePlaylistQueue.length);
           if (afterNext) {
             fromDeck.track = afterNext;
-            fromDeck.audio.src = afterNext.url;
+            fromDeck.audio.src = getResolvedAudioSrc(afterNext.url);
             fromDeck.audio.preload = "auto";
             fromDeck.audio.volume = 0.0;
+            preloadTrackAudioBlob(afterNext.url);
           }
 
           isCrossfading = false;
@@ -1114,17 +1236,6 @@
       const text = document.getElementById('masterPlayBtnText');
       if (icon) icon.textContent = playing ? '⏸' : '▶';
       if (text) text.textContent = playing ? 'השהה השמעה' : 'נגן את המיקס עכשיו';
-      
-      const visualizer = document.getElementById('soundbarsVisualizer');
-      if (visualizer) {
-        if (playing) {
-          visualizer.classList.remove('hidden');
-          visualizer.classList.add('flex');
-        } else {
-          visualizer.classList.add('hidden');
-          visualizer.classList.remove('flex');
-        }
-      }
     }
 
     window.seekLiveMix = function(e) {
@@ -1159,8 +1270,8 @@
       deckA.audio.pause();
       deckB.audio.pause();
 
-      if (deckA.audio.src !== currentTrack.url) {
-        deckA.audio.src = currentTrack.url;
+      if (deckA.audio.src !== getResolvedAudioSrc(currentTrack.url)) {
+        deckA.audio.src = getResolvedAudioSrc(currentTrack.url);
       }
 
       try {
@@ -1173,11 +1284,13 @@
         deckA.audio.addEventListener('loadedmetadata', onLoaded);
       }
 
-      deckA.audio.volume = 1.0;
+      const effectiveGain = isVolumeMuted ? 0 : masterGainVolume;
+      deckA.audio.volume = effectiveGain;
 
-      deckB.audio.src = nextTrack.url;
+      deckB.audio.src = getResolvedAudioSrc(nextTrack.url);
       deckB.audio.volume = 0.0;
       deckB.audio.preload = "auto";
+      preloadTrackAudioBlob(nextTrack.url);
 
       if (isMasterPlaying) {
         deckA.audio.play().then(() => {
@@ -1243,7 +1356,6 @@
           return;
         }
 
-        // Check if history track count is too low for the duration, and expand if needed
         const targetDurationMins = parseInt(String(item.duration).replace(/\D/g, '')) || 10;
         let normalized = item.tracks.map((t, idx) => normalizeTrackObject(t, idx));
         
@@ -1288,21 +1400,41 @@
 
     window.shareCurrentMixToWhatsApp = function() {
       const currentTrack = activePlaylistQueue[currentTrackIndex]?.title || 'מיקס DJ חי';
-      const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI:\n🎵 ${currentTrack}\n\n🎧 כנס להאזין ישירות:\nhttps://reemkayzer-spec.github.io/pulseai/`;
+      const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI:\n\n🎧 כנס להאזין ישירות:\nhttps://PROJECT-AI-X.github.io/pulseai/`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    // PWA Install Event Handler
+    let deferredPwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPwaPrompt = e;
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner && !localStorage.getItem('pwa_banner_dismissed')) {
+        banner.classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('pwaInstallActionBtn')?.addEventListener('click', async () => {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        const { outcome } = await deferredPwaPrompt.userChoice;
+        if (outcome === 'accepted') {
+          dismissPwaBanner();
+        }
+        deferredPwaPrompt = null;
+      }
+    });
+
+    window.dismissPwaBanner = function() {
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.classList.add('hidden');
+      localStorage.setItem('pwa_banner_dismissed', 'true');
     };
 
     // Initial Render
     window.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('[role="button"][tabindex]').forEach(el => {
-        el.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            el.click();
-          }
-        });
-      });
-
+      initCanvasVisualizer();
       renderMixHistoryList();
     });
   </script>
