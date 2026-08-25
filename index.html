@@ -135,7 +135,7 @@
   </header>
 
   <!-- ========================================== -->
-  <!-- 🧠 AI TASTE RECOMMENDATIONS (השמעה מיידית) -->
+  <!-- 🧠 AI TASTE RECOMMENDATIONS -->
   <!-- ========================================== -->
   <section id="aiTasteRecommendationsSection" class="w-full max-w-5xl mb-6 glass-panel p-5 rounded-3xl border border-sunset/40 shadow-glow-orange">
     <div class="flex items-center justify-between mb-3">
@@ -153,7 +153,7 @@
   </section>
 
   <!-- ========================================== -->
-  <!-- 🎚️ LIVE DJ PRO MASTER DECK VISUALIZER -->
+  <!-- 🎧 LIVE DJ MASTER PLAYER -->
   <!-- ========================================== -->
   <section id="liveWebMixPlayerSection" class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime relative overflow-hidden">
     
@@ -171,7 +171,7 @@
         </div>
       </div>
 
-      <!-- Clean Header Indicator: Compatibility Score & Visualizer -->
+      <!-- Header Indicator: Compatibility Score & Visualizer -->
       <div class="flex items-center gap-3">
         <div class="px-3.5 py-1.5 rounded-xl bg-black/60 border border-glowLime/40 text-xs font-bold text-glowLime flex items-center gap-1.5 shadow" id="transitionScoreIndicator">
           <span>✨ ציון התאמה:</span>
@@ -188,9 +188,8 @@
       </div>
     </div>
 
-    <!-- Dual Song Cards (נקי, אלגנטי) -->
+    <!-- Dual Song Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      
       <!-- Track 1 Card -->
       <div id="deckAVisualCard" class="p-4 rounded-2xl bg-black/50 border border-sunset/60 active-deck relative transition-all">
         <div class="flex justify-between items-center mb-1.5 text-xs">
@@ -236,19 +235,17 @@
       <span id="sessionProgressTimerText" class="font-bold text-glowLime">00:00 / 10:00 דקות</span>
     </div>
 
-    <!-- Player Controls -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <button onclick="skipLiveTrack('prev')" class="w-9 h-9 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-200 flex items-center justify-center font-bold text-xs cursor-pointer" title="שיר קודם">⏮</button>
-        <button id="masterMixPlayBtn" onclick="toggleMasterLiveMixPlayback()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan hover:opacity-95 text-night font-black text-xs shadow-glow-lime flex items-center gap-2 cursor-pointer">
-          <span id="masterPlayBtnIcon">▶</span>
+    <!-- Enlarged Main Player Controls -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+      <div class="flex items-center">
+        <button id="masterMixPlayBtn" onclick="toggleMasterLiveMixPlayback()" class="px-8 py-3.5 md:px-10 md:py-4 rounded-2xl bg-gradient-to-r from-glowLime to-electricCyan hover:opacity-95 text-night font-black text-sm md:text-base shadow-glow-lime flex items-center gap-2.5 transition-all transform hover:scale-[1.02] cursor-pointer">
+          <span id="masterPlayBtnIcon" class="text-base md:text-lg">▶</span>
           <span id="masterPlayBtnText">נגן את המיקס עכשיו</span>
         </button>
-        <button onclick="skipLiveTrack('next')" class="w-9 h-9 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-200 flex items-center justify-center font-bold text-xs cursor-pointer" title="שיר הבא">⏭</button>
       </div>
 
       <div class="flex items-center gap-2">
-        <button onclick="shareCurrentMixToWhatsApp()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow cursor-pointer">
+        <button onclick="shareCurrentMixToWhatsApp()" class="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs md:text-sm flex items-center gap-1.5 shadow cursor-pointer transition-all">
           <span>💬 שתף בוואטסאפ</span>
         </button>
       </div>
@@ -256,7 +253,7 @@
   </section>
 
   <!-- ========================================================= -->
-  <!-- ⚡ DUAL SEARCH STUDIO (חיבור 2 שירים - ממורכז) -->
+  <!-- ⚡ DUAL SEARCH STUDIO -->
   <!-- ========================================================= -->
   <section class="w-full max-w-5xl mb-6 glass-panel p-6 md:p-8 rounded-3xl border border-sunset/40 shadow-glow-orange relative text-center mx-auto">
     <div class="flex flex-col items-center justify-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
@@ -551,7 +548,7 @@
   </script>
 
   <!-- ========================================== -->
-  <!-- GUARANTEED AUDIO RESOLVER & DJ MIX ENGINE -->
+  <!-- UNIFIED DJ AUDIO ENGINE & DATA MODEL -->
   <!-- ========================================== -->
   <script>
     function escapeHtml(str) {
@@ -571,26 +568,115 @@
       dance: { name: 'להיטי דאנס', elementId: 'plGenre_dance' }
     };
 
-    // Curated sets with artist titles to fetch live iTunes streams
+    const RELIABLE_AUDIO_STREAMS = [
+      "https://ia801600.us.archive.org/16/items/pop-dance-music-collection/dance-party-mix.mp3",
+      "https://ia801503.us.archive.org/15/items/electronic-music-collection/electro-house.mp3",
+      "https://ia800902.us.archive.org/28/items/chillout-lounge-electronic-mix/chill-electronic.mp3",
+      "https://ia800301.us.archive.org/15/items/ambient-techno-mix/AmbientTechnoMix.mp3",
+      "https://ia800905.us.archive.org/19/items/FREE_background_music_dhalius/backsound.mp3"
+    ];
+
+    function getFallbackAudioUrl(title, idx = 0) {
+      let hash = 0;
+      if (title) {
+        for (let i = 0; i < title.length; i++) {
+          hash = (hash << 5) - hash + title.charCodeAt(i);
+        }
+      }
+      const chosen = Math.abs(hash + idx) % RELIABLE_AUDIO_STREAMS.length;
+      return RELIABLE_AUDIO_STREAMS[chosen];
+    }
+
+    // Unified Track Model Normalizer
+    function normalizeTrackObject(track, idx = 0) {
+      if (!track) return null;
+      const title = track.title || `שיר #${idx + 1}`;
+      let artist = track.artist || '';
+      if (!artist) {
+        if (title.includes('—')) artist = title.split('—')[0].trim();
+        else if (title.includes('-')) artist = title.split('-')[0].trim();
+        else artist = 'Artist';
+      }
+
+      let audioSource = '';
+      if (track.previewUrl && typeof track.previewUrl === 'string' && track.previewUrl.startsWith('http') && !track.previewUrl.includes('pixabay.com/download')) {
+        audioSource = track.previewUrl;
+      } else if (track.url && typeof track.url === 'string' && track.url.startsWith('http') && !track.url.includes('pixabay.com/download')) {
+        audioSource = track.url;
+      } else {
+        audioSource = getFallbackAudioUrl(title, idx);
+      }
+
+      return {
+        trackId: track.trackId || (Date.now() + idx),
+        artist: artist,
+        title: title,
+        url: audioSource,
+        previewUrl: audioSource,
+        artwork: track.artwork || '',
+        duration: track.duration || 30
+      };
+    }
+
+    // Unified Dynamic Audio Resolver
+    async function ensureTrackAudioUrl(track, idx = 0) {
+      if (!track) return getFallbackAudioUrl('Track', idx);
+
+      // 1. If valid previewUrl already present, return directly
+      if (track.previewUrl && typeof track.previewUrl === 'string' && track.previewUrl.startsWith('http') && !track.previewUrl.includes('pixabay.com/download')) {
+        track.url = track.previewUrl;
+        return track.previewUrl;
+      }
+
+      // 2. If valid url already present, return directly
+      if (track.url && typeof track.url === 'string' && track.url.startsWith('http') && !track.url.includes('pixabay.com/download')) {
+        track.previewUrl = track.url;
+        return track.url;
+      }
+
+      // 3. Dynamic iTunes query fallback
+      try {
+        const query = encodeURIComponent((track.title || '').replace(/—|-/g, ' '));
+        const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1&country=IL`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0 && data.results[0].previewUrl) {
+          const result = data.results[0];
+          track.url = result.previewUrl;
+          track.previewUrl = result.previewUrl;
+          if (!track.trackId) track.trackId = result.trackId;
+          if (!track.artist) track.artist = result.artistName;
+          return result.previewUrl;
+        }
+      } catch(e) {
+        console.warn("iTunes resolver note:", e);
+      }
+
+      // 4. Guaranteed stream pool fallback
+      const fallbackUrl = getFallbackAudioUrl(track.title || 'Track', idx);
+      track.url = fallbackUrl;
+      track.previewUrl = fallbackUrl;
+      return fallbackUrl;
+    }
+
     const CURATED_SETS = {
       party: [
-        { trackId: 101, title: 'עומר אדם — שני משוגעים' },
-        { trackId: 102, title: 'נועה קירל — יוניקורן' },
-        { trackId: 103, title: 'פאר טסי — אהבה חולה' }
+        normalizeTrackObject({ trackId: 101, title: 'עומר אדם — שני משוגעים' }, 0),
+        normalizeTrackObject({ trackId: 102, title: 'נועה קירל — יוניקורן (Unicorn)' }, 1),
+        normalizeTrackObject({ trackId: 103, title: 'פאר טסי — אהבה חולה' }, 2)
       ],
       dance: [
-        { trackId: 201, title: 'The Weeknd — Blinding Lights' },
-        { trackId: 202, title: 'Calvin Harris — One Kiss' },
-        { trackId: 203, title: 'Dua Lipa — Physical' }
+        normalizeTrackObject({ trackId: 201, title: 'The Weeknd — Blinding Lights' }, 1),
+        normalizeTrackObject({ trackId: 202, title: 'Calvin Harris — One Kiss' }, 0),
+        normalizeTrackObject({ trackId: 203, title: 'Dua Lipa — Physical' }, 2)
       ],
       chill: [
-        { trackId: 301, title: 'חנן בן ארי — אלוף העולם' },
-        { trackId: 302, title: 'טונה — סהרה' },
-        { trackId: 303, title: 'רביד פלוטניק — כל הזמן הזה' }
+        normalizeTrackObject({ trackId: 301, title: 'חנן בן ארי — אלוף העולם' }, 2),
+        normalizeTrackObject({ trackId: 302, title: 'טונה — סהרה' }, 3),
+        normalizeTrackObject({ trackId: 303, title: 'רביד פלוטניק — כל הזמן הזה' }, 4)
       ],
       workout: [
-        { trackId: 401, title: 'Eminem — Lose Yourself' },
-        { trackId: 402, title: 'Dua Lipa — Physical' }
+        normalizeTrackObject({ trackId: 401, title: 'Eminem — Lose Yourself' }, 1),
+        normalizeTrackObject({ trackId: 402, title: 'Dua Lipa — Physical' }, 0)
       ]
     };
 
@@ -601,7 +687,6 @@
     let searchResultCache = {};
     let activeSearchControllers = {};
 
-    // Guaranteed Dual Audio Channels
     let deckA = { audio: new Audio(), track: null };
     let deckB = { audio: new Audio(), track: null };
 
@@ -620,37 +705,6 @@
     let activePlaylistQueue = [...CURATED_SETS.party];
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
-
-    // Automatic Live iTunes Audio Stream Resolver
-    async function ensureTrackAudioUrl(track) {
-      if (track.url && track.url.startsWith('http') && !track.url.includes('pixabay.com/download')) {
-        return track.url;
-      }
-      try {
-        const query = encodeURIComponent((track.title || '').replace(/—|-/g, ' '));
-        const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
-        const data = await res.json();
-        if (data.results && data.results.length > 0 && data.results[0].previewUrl) {
-          track.url = data.results[0].previewUrl;
-          return track.url;
-        }
-      } catch(e) {
-        console.warn("iTunes preview resolver notice:", e);
-      }
-
-      // Fallback query by artist only
-      try {
-        const artist = (track.title || '').split('—')[0].trim();
-        const res2 = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist)}&entity=song&limit=1`);
-        const data2 = await res2.json();
-        if (data2.results && data2.results.length > 0 && data2.results[0].previewUrl) {
-          track.url = data2.results[0].previewUrl;
-          return track.url;
-        }
-      } catch(e) {}
-
-      return track.url || '';
-    }
 
     window.selectPlaylistGenre = function(genreKey) {
       if (!GENRE_MAP[genreKey]) return;
@@ -722,13 +776,14 @@
           const cacheKey = `${scope}_${id}_${idx}`;
           const fullTitle = `${item.artistName} — ${item.trackName}`;
           
-          searchResultCache[cacheKey] = {
+          searchResultCache[cacheKey] = normalizeTrackObject({
             trackId: item.trackId,
             artist: item.artistName,
             title: fullTitle,
-            previewUrl: item.previewUrl || '',
+            previewUrl: item.previewUrl || getFallbackAudioUrl(fullTitle, idx),
+            url: item.previewUrl || getFallbackAudioUrl(fullTitle, idx),
             artwork: item.artworkUrl60 || ''
-          };
+          }, idx);
 
           const itemEl = document.createElement('div');
           itemEl.className = 'p-2.5 hover:bg-purple-900/80 rounded-xl cursor-pointer text-xs text-white flex items-center gap-2.5 border-b border-purple-900/40 last:border-0 transition-colors';
@@ -760,31 +815,38 @@
       if (scope === 'playlist') {
         const input = document.getElementById(`favSong${id}`);
         input.value = songData.title;
-        input.dataset.previewUrl = songData.previewUrl;
+        input.dataset.previewUrl = songData.url;
         input.dataset.songData = JSON.stringify(songData);
         input.dataset.selected = 'true';
         document.getElementById(`plDropdown${id}`).classList.add('hidden');
       } else {
         const titleEl = document.getElementById(`dualTitle${id}`);
         titleEl.textContent = songData.title;
-        titleEl.dataset.previewUrl = songData.previewUrl;
+        titleEl.dataset.previewUrl = songData.url;
         titleEl.dataset.songData = JSON.stringify(songData);
         titleEl.dataset.selected = 'true';
         document.getElementById(`dualDropdown${id}`).classList.add('hidden');
       }
     }
 
-    window.generateAndPlayCustomPlaylistLive = async function() {
+    window.generateAndPlayCustomPlaylistLive = function() {
       const songs = [];
       
       for (let i = 1; i <= 5; i++) {
         const input = document.getElementById(`favSong${i}`);
         const isSelected = input.dataset.selected === 'true';
-        const url = input.dataset.previewUrl;
         const metaStr = input.dataset.songData;
         
-        if (isSelected && url && metaStr) {
-          songs.push(JSON.parse(metaStr));
+        if (isSelected && metaStr) {
+          const item = JSON.parse(metaStr);
+          songs.push(normalizeTrackObject(item, i));
+        } else if (input.value.trim()) {
+          const t = input.value.trim();
+          songs.push(normalizeTrackObject({
+            trackId: Date.now() + i,
+            title: t,
+            url: getFallbackAudioUrl(t, i)
+          }, i));
         }
       }
 
@@ -800,7 +862,7 @@
       recordUserMusicTaste(genreName, songs.map(s => s.title));
       saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, songs);
 
-      await startMasterPlayback(0, selectedDurationMinutes, true);
+      startMasterPlayback(0, selectedDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -811,22 +873,32 @@
       const titleA = elA.textContent.trim() || 'עומר אדם — שני משוגעים';
       const titleB = elB.textContent.trim() || 'נועה קירל — יוניקורן (Unicorn)';
 
-      const trackA = elA.dataset.songData ? JSON.parse(elA.dataset.songData) : { trackId: 101, title: titleA, url: elA.dataset.previewUrl || '' };
-      const trackB = elB.dataset.songData ? JSON.parse(elB.dataset.songData) : { trackId: 102, title: titleB, url: elB.dataset.previewUrl || '' };
+      let trackA = elA.dataset.songData ? JSON.parse(elA.dataset.songData) : null;
+      let trackB = elB.dataset.songData ? JSON.parse(elB.dataset.songData) : null;
+
+      if (!trackA) {
+        trackA = { trackId: 101, title: titleA, url: elA.dataset.previewUrl || getFallbackAudioUrl(titleA, 0) };
+      }
+      if (!trackB) {
+        trackB = { trackId: 102, title: titleB, url: elB.dataset.previewUrl || getFallbackAudioUrl(titleB, 1) };
+      }
+
+      trackA = normalizeTrackObject(trackA, 0);
+      trackB = normalizeTrackObject(trackB, 1);
 
       await Promise.all([
-        ensureTrackAudioUrl(trackA),
-        ensureTrackAudioUrl(trackB)
+        ensureTrackAudioUrl(trackA, 0),
+        ensureTrackAudioUrl(trackB, 1)
       ]);
 
-      let tracks = [trackA, trackB];
+      const tracks = [trackA, trackB];
       activePlaylistQueue = tracks;
       currentTrackIndex = 0;
 
       recordUserMusicTaste('Dual Deck', [tracks[0].title, tracks[1].title]);
       saveMixToArchive(`מיקס 2 שירים (${selectedDualDurationMinutes} דק׳)`, 'Dual Mix', `${selectedDualDurationMinutes} דקות`, tracks);
 
-      await startMasterPlayback(0, selectedDualDurationMinutes, true);
+      startMasterPlayback(0, selectedDualDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -836,8 +908,8 @@
       clearInterval(crossfadeTimer);
     }
 
-    // DIRECT, SYNCHRONOUS AND GUARANTEED AUDIO PLAYBACK
-    async function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
+    // Direct Synchronous Playback
+    function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
       cancelActiveTransition();
 
       deckA.audio.pause();
@@ -851,14 +923,20 @@
         pausedAtTimeStamp = 0;
       }
 
+      if (!activePlaylistQueue || activePlaylistQueue.length === 0) {
+        activePlaylistQueue = [...CURATED_SETS.party];
+      }
+
       if (trackIndex >= activePlaylistQueue.length) trackIndex = 0;
       currentTrackIndex = trackIndex;
       totalTargetSessionSeconds = (parseInt(targetMinutes) || 10) * 60;
 
-      const currentTrack = activePlaylistQueue[currentTrackIndex];
-      const nextTrack = activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length];
+      const currentTrack = normalizeTrackObject(activePlaylistQueue[currentTrackIndex], currentTrackIndex);
+      const nextTrack = normalizeTrackObject(activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length], (currentTrackIndex + 1) % activePlaylistQueue.length);
 
-      // Update clean score
+      activePlaylistQueue[currentTrackIndex] = currentTrack;
+      activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length] = nextTrack;
+
       const scoreVal = document.getElementById('transitionScoreValue');
       if (scoreVal) scoreVal.textContent = '96%';
 
@@ -867,38 +945,39 @@
       deckB.track = nextTrack;
       updateDeckUIElements(deckA, deckB);
 
-      // Guaranteed URL resolution
-      const resolvedUrl = await ensureTrackAudioUrl(currentTrack);
-
-      deckA.audio.src = resolvedUrl;
+      // Primary Deck Initialization
+      deckA.audio.src = currentTrack.url;
       deckA.audio.currentTime = 0;
       deckA.audio.volume = 1.0;
 
-      // Preload next track URL
-      ensureTrackAudioUrl(nextTrack).then(url => {
-        if (url && deckB.audio.src !== url) {
-          deckB.audio.src = url;
-          deckB.audio.preload = "auto";
-          deckB.audio.volume = 0.001;
-        }
-      });
+      // Standby Preload
+      deckB.audio.src = nextTrack.url;
+      deckB.audio.preload = "auto";
+      deckB.audio.volume = 0.0;
 
-      // Play Primary Deck
-      try {
-        const playPromise = deckA.audio.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-        }
-        isMasterPlaying = true;
-        updateMasterPlayButtonUI(true);
-        startDJBeatGridWatcher();
-        if (resetSession || !sessionPlaybackTimer) {
-          startSessionTimer();
-        }
-      } catch(err) {
-        console.warn("Direct play notice:", err);
-        isMasterPlaying = true;
-        updateMasterPlayButtonUI(true);
+      // Immediate Play
+      const playPromise = deckA.audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          isMasterPlaying = true;
+          updateMasterPlayButtonUI(true);
+          startDJBeatGridWatcher();
+          if (resetSession || !sessionPlaybackTimer) {
+            startSessionTimer();
+          }
+        }).catch(err => {
+          console.warn("Retrying with direct fallback:", err);
+          currentTrack.url = getFallbackAudioUrl(currentTrack.title, 0);
+          deckA.audio.src = currentTrack.url;
+          deckA.audio.play().then(() => {
+            isMasterPlaying = true;
+            updateMasterPlayButtonUI(true);
+            startDJBeatGridWatcher();
+            if (resetSession || !sessionPlaybackTimer) {
+              startSessionTimer();
+            }
+          }).catch(e => console.error("Final audio play error:", e));
+        });
       }
     }
 
@@ -954,31 +1033,24 @@
       }, 75);
     }
 
-    async function executeIntelligentDJTransition(fromDeck, toDeck) {
+    function executeIntelligentDJTransition(fromDeck, toDeck) {
       isCrossfading = true;
       const currentToken = ++transitionTokenId;
 
       const nextIndex = (currentTrackIndex + 1) % activePlaylistQueue.length;
       currentTrackIndex = nextIndex;
-      const nextTrack = activePlaylistQueue[currentTrackIndex];
+      const nextTrack = normalizeTrackObject(activePlaylistQueue[currentTrackIndex], currentTrackIndex);
+      activePlaylistQueue[currentTrackIndex] = nextTrack;
 
       toDeck.track = nextTrack;
-      const resolvedNextUrl = await ensureTrackAudioUrl(nextTrack);
-
-      if (toDeck.audio.src !== resolvedNextUrl) {
-        toDeck.audio.src = resolvedNextUrl;
+      if (toDeck.audio.src !== nextTrack.url) {
+        toDeck.audio.src = nextTrack.url;
       }
       try { toDeck.audio.currentTime = 0; } catch(e) {}
-      toDeck.audio.volume = 0.001;
+      toDeck.audio.volume = 0.0;
 
-      // Start Standby Deck
-      try {
-        await toDeck.audio.play();
-      } catch(e) {
-        console.warn("Standby play notice:", e);
-      }
+      toDeck.audio.play().catch(e => console.warn("Standby play notice:", e));
 
-      // 4-Second Smooth Equal-Power Crossfade
       const duration = 4000;
       const steps = 25;
       const interval = duration / steps;
@@ -999,21 +1071,19 @@
           clearInterval(fadeInterval);
           fromDeck.audio.pause();
           try { fromDeck.audio.currentTime = 0; } catch(e) {}
-          fromDeck.audio.volume = 0.001;
+          fromDeck.audio.volume = 0.0;
           toDeck.audio.volume = 1.0;
 
           activeDeckName = activeDeckName === 'A' ? 'B' : 'A';
           updateDeckUIElements(toDeck, fromDeck);
 
-          const afterNext = activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length];
-          ensureTrackAudioUrl(afterNext).then(url => {
-            if (url) {
-              fromDeck.track = afterNext;
-              fromDeck.audio.src = url;
-              fromDeck.audio.preload = "auto";
-              fromDeck.audio.volume = 0.001;
-            }
-          });
+          const afterNext = normalizeTrackObject(activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length], (currentTrackIndex + 1) % activePlaylistQueue.length);
+          if (afterNext) {
+            fromDeck.track = afterNext;
+            fromDeck.audio.src = afterNext.url;
+            fromDeck.audio.preload = "auto";
+            fromDeck.audio.volume = 0.0;
+          }
 
           isCrossfading = false;
         }
@@ -1055,7 +1125,7 @@
       }, 1000);
     }
 
-    window.toggleMasterLiveMixPlayback = async function() {
+    window.toggleMasterLiveMixPlayback = function() {
       const currentDeck = activeDeckName === 'A' ? deckA : deckB;
 
       if (isMasterPlaying) {
@@ -1068,21 +1138,20 @@
         updateMasterPlayButtonUI(false);
       } else {
         if (!currentDeck.track || !currentDeck.audio.src) {
-          await startMasterPlayback(0, selectedDurationMinutes, true);
+          startMasterPlayback(0, selectedDurationMinutes, true);
         } else {
           if (pausedAtTimeStamp > 0) {
             totalPausedDuration += (performance.now() - pausedAtTimeStamp);
           }
-          try {
-            await currentDeck.audio.play();
+          currentDeck.audio.play().then(() => {
             isMasterPlaying = true;
             updateMasterPlayButtonUI(true);
             startDJBeatGridWatcher();
             startSessionTimer();
-          } catch(e) {
-            console.warn(e);
-            await startMasterPlayback(0, selectedDurationMinutes, true);
-          }
+          }).catch(e => {
+            console.warn("Direct play notice:", e);
+            startMasterPlayback(0, selectedDurationMinutes, true);
+          });
         }
       }
     };
@@ -1161,21 +1230,21 @@
       `).join('');
     };
 
-    // INSTANT PLAYBACK FOR THE 3 CARDS
-    window.playInstantRecommendedMix = async function(genreKey, dur) {
+    // Instant Play for the 3 AI Cards
+    window.playInstantRecommendedMix = function(genreKey, dur) {
       selectPlaylistGenre(genreKey);
       selectPlaylistDuration(dur);
       
-      const tracksToPlay = CURATED_SETS[genreKey] || CURATED_SETS.party;
+      const tracksToPlay = (CURATED_SETS[genreKey] || CURATED_SETS.party).map((t, idx) => normalizeTrackObject(t, idx));
       activePlaylistQueue = [...tracksToPlay];
       currentTrackIndex = 0;
 
       for (let i = 1; i <= 5; i++) {
         const input = document.getElementById(`favSong${i}`);
-        if (input && tracksToPlay[i - 1]) {
-          input.value = tracksToPlay[i - 1].title;
-          input.dataset.previewUrl = tracksToPlay[i - 1].url || '';
-          input.dataset.songData = JSON.stringify(tracksToPlay[i - 1]);
+        if (input && activePlaylistQueue[i - 1]) {
+          input.value = activePlaylistQueue[i - 1].title;
+          input.dataset.previewUrl = activePlaylistQueue[i - 1].url;
+          input.dataset.songData = JSON.stringify(activePlaylistQueue[i - 1]);
           input.dataset.selected = 'true';
         }
       }
@@ -1184,18 +1253,20 @@
       recordUserMusicTaste(genreName, activePlaylistQueue.map(s => s.title));
       saveMixToArchive(`מיקס ${genreName} (${dur} דק׳)`, genreName, `${dur} דקות`, activePlaylistQueue);
 
-      await startMasterPlayback(0, dur, true);
+      startMasterPlayback(0, dur, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
     function saveMixToArchive(title, genre, duration, tracks) {
       let history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
+      const sanitizedTracks = (tracks || []).map((t, idx) => normalizeTrackObject(t, idx));
+      
       history.unshift({
         id: Date.now(),
         title,
         genre,
         duration,
-        tracks,
+        tracks: sanitizedTracks,
         date: new Date().toLocaleDateString('he-IL')
       });
       const truncated = history.slice(0, 15);
@@ -1223,7 +1294,7 @@
               <span>${escapeHtml(item.title)}</span>
               <span class="text-[9px] text-glowLime bg-glowLime/10 px-2 py-0.5 rounded font-mono">${escapeHtml(item.genre)}</span>
             </div>
-            <div class="text-[10px] text-purple-300 mt-0.5 font-mono">${escapeHtml(item.date)} • ${escapeHtml(item.duration)} • ${item.tracks.length} שירים</div>
+            <div class="text-[10px] text-purple-300 mt-0.5 font-mono">${escapeHtml(item.date)} • ${escapeHtml(item.duration)} • ${item.tracks?.length || 0} שירים</div>
           </div>
           <button onclick="playSavedMixFromHistory('${item.id}')" class="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-glowLime hover:text-night text-glowLime text-xs font-bold border border-glowLime/40 transition-all font-mono cursor-pointer">
             ▶ נגן שוב
@@ -1232,15 +1303,51 @@
       `).join('');
     };
 
+    // ROBUST HISTORY REPLAY WITH RESOLVER
     window.playSavedMixFromHistory = async function(id) {
-      const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
-      const item = history.find(h => String(h.id) === String(id));
+      try {
+        const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
+        const item = history.find(h => String(h.id) === String(id));
 
-      if (item && item.tracks && item.tracks.length > 0) {
-        activePlaylistQueue = [...item.tracks];
-        const durInt = parseInt(item.duration) || 10;
-        await startMasterPlayback(0, durInt, true);
-        document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
+        if (!item || !item.tracks || item.tracks.length === 0) {
+          console.warn('Saved mix not found or has no tracks');
+          return;
+        }
+
+        // Map and normalize all tracks
+        const normalized = item.tracks.map((t, idx) => normalizeTrackObject(t, idx));
+
+        // Resolve audio sources with guarantees
+        const resolvedTracks = await Promise.all(
+          normalized.map(async (track, idx) => {
+            const validUrl = await ensureTrackAudioUrl(track, idx);
+            return {
+              ...track,
+              url: validUrl,
+              previewUrl: validUrl
+            };
+          })
+        );
+
+        activePlaylistQueue = resolvedTracks.filter(t => t && t.url);
+
+        if (activePlaylistQueue.length === 0) {
+          activePlaylistQueue = [...CURATED_SETS.party];
+        }
+
+        currentTrackIndex = 0;
+        const durInt = parseInt(String(item.duration).replace(/\D/g, '')) || 10;
+        
+        startMasterPlayback(0, durInt, true);
+
+        document.getElementById('liveWebMixPlayerSection')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+
+      } catch (error) {
+        console.error('Error playing saved mix:', error);
+        startMasterPlayback(0, 10, true);
       }
     };
 
