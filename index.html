@@ -2,18 +2,15 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PULSEAI — AI Master DJ Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PULSEAI — AI Master DJ Studio & Live Player</title>
   
   <meta name="theme-color" content="#080512">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
-
   <!-- Google Fonts: Heebo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +34,7 @@
             'glow-orange': '0 0 25px rgba(255, 94, 54, 0.45)',
             'glow-purple': '0 0 30px rgba(143, 0, 255, 0.35)',
             'glow-lime': '0 0 20px rgba(16, 231, 115, 0.4)',
+            'glow-cyan': '0 0 20px rgba(0, 240, 255, 0.4)',
           }
         }
       }
@@ -49,1197 +47,1055 @@
       min-height: 100vh;
       color: #F3F4F6;
       overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
-      padding-bottom: env(safe-area-inset-bottom, 1rem);
     }
     .glass-panel {
-      background: rgba(23, 16, 43, 0.8);
+      background: rgba(23, 16, 43, 0.78);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(143, 0, 255, 0.22);
-      overflow: visible !important;
+      border: 1px solid rgba(143, 0, 255, 0.2);
     }
-    .mode-tab { transition: all .2s ease; }
-    .mode-tab.active {
-      background: linear-gradient(90deg, rgba(16,231,115,.18), rgba(0,240,255,.12));
-      border-color: rgba(16,231,115,.65) !important;
-      color: #10E773;
-      box-shadow: 0 0 18px rgba(16,231,115,.12);
+    .playlist-tab, .duration-tab, .dual-duration-tab {
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
-    .quick-search-card { box-shadow: inset 0 0 30px rgba(143,0,255,.06); overflow: visible !important; }
-    
-    @media (max-width: 768px) {
-      input, select {
-        font-size: 16px !important;
-      }
+    .playlist-tab:hover, .duration-tab:hover, .dual-duration-tab:hover {
+      transform: translateY(-2px);
     }
+    .playlist-tab.active-genre {
+      border-color: #10E773 !important;
+      background: rgba(16, 231, 115, 0.2) !important;
+      box-shadow: 0 0 20px rgba(16, 231, 115, 0.4) !important;
+    }
+    .duration-tab.active-duration, .dual-duration-tab.active-dual-duration {
+      border-color: #00F0FF !important;
+      background: rgba(0, 240, 255, 0.2) !important;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4) !important;
+      color: #FFFFFF !important;
+    }
+    @keyframes soundwave {
+      0%, 100% { height: 6px; }
+      50% { height: 26px; }
+    }
+    .sound-bar {
+      animation: soundwave 1.1s ease-in-out infinite;
+    }
+    .sound-bar:nth-child(2) { animation-delay: 0.2s; }
+    .sound-bar:nth-child(3) { animation-delay: 0.4s; }
+    .sound-bar:nth-child(4) { animation-delay: 0.1s; }
+    .sound-bar:nth-child(5) { animation-delay: 0.3s; }
   </style>
 </head>
 
-<body class="p-3 sm:p-5 md:p-8 flex flex-col items-center">
+<body class="p-3 md:p-8 flex flex-col items-center" onclick="initAudioContextOnUserGesture()">
 
-  <!-- Header -->
-  <header class="w-full max-w-5xl flex justify-between items-center mb-4 sm:mb-5 pb-3 border-b border-purple-900/30">
-    <div class="flex items-center gap-2.5 sm:gap-3">
-      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-bold text-lg sm:text-xl text-white shadow-glow-orange shrink-0">P</div>
+  <!-- ========================================== -->
+  <!-- HEADER & GOOGLE AUTH BAR -->
+  <!-- ========================================== -->
+  <header class="w-full max-w-5xl flex flex-wrap justify-between items-center gap-3 mb-6 pb-4 border-b border-purple-900/40">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sunset via-pink-500 to-ultraviolet flex items-center justify-center font-black text-xl text-white shadow-glow-orange">
+        P
+      </div>
       <div>
-        <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-sunset to-ultraviolet bg-clip-text text-transparent">PULSEAI</h1>
-        <p class="text-[10px] sm:text-[11px] text-purple-300">אולפן DJ חכם — Turbo Drop-Mix · Hard Low-Cut · Pro Studio</p>
+        <h1 class="text-xl md:text-2xl font-black bg-gradient-to-r from-sunset via-pink-400 to-electricCyan bg-clip-text text-transparent">
+          PULSEAI
+        </h1>
+        <p class="text-[11px] text-purple-300">אולפן DJ, פלייליסטים חיים ואלגוריתם טעם אישי</p>
       </div>
     </div>
-    <button onclick="openGuidePrompt()" class="px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-cyan-300 hover:bg-purple-900/60 active:scale-95 transition-transform flex items-center gap-1.5">
-      <span>🗺️ מפת דרכים</span>
-    </button>
+
+    <!-- Auth Controls -->
+    <div class="flex items-center gap-2.5">
+      <div id="userProfileBadge" class="hidden items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-purple-950/80 border border-glowLime/40">
+        <img id="userAvatarImg" src="https://via.placeholder.com/32" class="w-7 h-7 rounded-full object-cover border border-glowLime" alt="User Profile">
+        <div class="text-right">
+          <div id="userNameDisplay" class="text-xs font-bold text-white truncate max-w-[120px]">משתמש מחובר</div>
+          <div class="text-[9px] text-glowLime font-mono">מסונכרן בענן ⚡</div>
+        </div>
+        <button onclick="handleUserLogout()" class="text-sunset hover:text-sunsetHover text-xs font-bold mr-2">התנתק</button>
+      </div>
+
+      <button id="googleLoginBtn" onclick="handleGoogleSignIn()" class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white hover:bg-gray-100 text-night text-xs font-black shadow-lg transition-all">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>התחבר עם Google</span>
+      </button>
+    </div>
   </header>
 
-  <!-- GUIDED LEARNING MODAL OVERLAY -->
-  <div id="guideOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
-    <div id="guideWelcomeCard" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-purple-600/50 shadow-2xl text-center">
-      <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-sunset to-glowLime flex items-center justify-center text-2xl shadow-glow-orange">🎧</div>
-      <h2 class="text-2xl font-black text-white mb-2">ברוכים הבאים ל-PULSEAI!</h2>
-      <p class="text-xs sm:text-sm text-purple-300 mb-6 leading-relaxed">האולפן החכם שיוצר עבורך מיקסים מקצועיים בלחיצת כפתור. האם תרצה סיור קצר של 5 שלבים כדי להכיר את כל הפיצ'רים באתר?</p>
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="startRoadmap()" class="py-3 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs sm:text-sm shadow-glow-lime active:scale-95 transition-transform">
-          כן, בוא נתחיל! 🚀
-        </button>
-        <button onclick="closeGuideModal()" class="py-3 rounded-xl bg-purple-950/60 border border-purple-800 text-purple-300 font-bold text-xs sm:text-sm hover:bg-purple-900/60 active:scale-95 transition-transform">
-          לא, אני מכיר 👍
-        </button>
-      </div>
-    </div>
-
-    <div id="guideStepsCard" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-lg w-full border border-electricCyan/50 shadow-2xl hidden text-right">
-      <div class="flex items-center justify-between mb-4 pb-2 border-b border-purple-800/40">
-        <span id="stepCounterBadge" class="text-xs font-black px-2.5 py-1 rounded-lg bg-electricCyan/15 text-electricCyan border border-electricCyan/40 font-mono">שלב 1/5</span>
-        <button onclick="closeGuideModal()" class="text-purple-400 hover:text-white text-xs font-bold">✕ סגור</button>
-      </div>
-      <div class="w-full bg-black/40 h-1.5 rounded-full mb-5 overflow-hidden">
-        <div id="stepProgressBar" class="bg-gradient-to-r from-glowLime to-electricCyan h-full transition-all duration-300" style="width: 20%;"></div>
-      </div>
-      <div id="stepContentArea" class="min-h-[160px] flex flex-col justify-center"></div>
-      <div class="flex items-center justify-between mt-6 pt-3 border-t border-purple-800/40 gap-3">
-        <button id="prevStepBtn" onclick="navigateStep(-1)" class="px-4 py-2 rounded-xl bg-purple-950/60 border border-purple-800 text-xs font-bold text-purple-300 disabled:opacity-30 disabled:pointer-events-none active:scale-95">
-          ← הקודם
-        </button>
-        <button id="nextStepBtn" onclick="navigateStep(1)" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-xs shadow-glow-lime active:scale-95">
-          הבא →
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- QUICK MIX / PRO MODE TOGGLE SWITCH -->
-  <section class="w-full max-w-5xl mb-4">
-    <div class="glass-panel p-2 sm:p-2.5 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border border-purple-800/40">
-      <div class="flex items-center gap-2 px-1 sm:px-2">
-        <span class="text-base sm:text-lg">🎛️</span>
+  <!-- ========================================== -->
+  <!-- 🧠 AI TASTE RECOMMENDATIONS (אלגוריתם זיכרון) -->
+  <!-- ========================================== -->
+  <section id="aiTasteRecommendationsSection" class="w-full max-w-5xl mb-6 glass-panel p-5 rounded-3xl border border-sunset/40 shadow-glow-orange">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🧠</span>
         <div>
-          <div class="text-xs sm:text-sm font-black text-white">מצב עבודה</div>
-          <div class="text-[10px] text-purple-400">בחר בין יצירה מהירה של 10 דקות לעבודה מותאמת</div>
+          <h2 class="text-sm font-black text-white">המלצות AI מותאמות אישית לפי הטעם שלך</h2>
+          <p class="text-[11px] text-purple-300">האלגוריתם לומד את הסגנונות המועדפים עליך ובונה סטים חדשים:</p>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-1.5 w-full sm:w-64">
-        <button id="quickModeBtn" onclick="setUIMode('quick')" class="mode-tab active py-2.5 sm:py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200 text-center select-none active:scale-95 transition-transform">QUICK MIX</button>
-        <button id="proModeBtn" onclick="setUIMode('pro')" class="mode-tab py-2.5 sm:py-2 rounded-xl border border-purple-800/50 text-xs font-black text-purple-200 text-center select-none active:scale-95 transition-transform">PRO MODE</button>
+      <span id="detectedTopGenreBadge" class="text-[10px] text-sunset font-mono bg-sunset/15 px-2.5 py-1 rounded-full border border-sunset/30">מזהה סגנון מוביל...</span>
+    </div>
+
+    <div id="aiTasteCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 🎧 MASTER LIVE WEB MIX PLAYER (מנוע הנגן החי) -->
+  <!-- ========================================== -->
+  <section id="liveWebMixPlayerSection" class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime relative overflow-hidden">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 pb-3 border-b border-purple-800/40">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">
+          🎧
+        </div>
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-wider text-glowLime bg-glowLime/15 px-2.5 py-0.5 rounded-full">Real-Time Web DJ Player</span>
+          <h2 id="nowPlayingTitle" class="text-base md:text-lg font-black text-white mt-0.5">נגן המיקס החי מוכן להשמעה</h2>
+        </div>
+      </div>
+
+      <!-- Animated Soundbars -->
+      <div id="soundbarsVisualizer" class="hidden items-end gap-1 h-7">
+        <div class="sound-bar w-1 bg-glowLime rounded-full"></div>
+        <div class="sound-bar w-1 bg-electricCyan rounded-full"></div>
+        <div class="sound-bar w-1 bg-sunset rounded-full"></div>
+        <div class="sound-bar w-1 bg-pink-500 rounded-full"></div>
+        <div class="sound-bar w-1 bg-ultraviolet rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- Live Track Details & Transition Badge -->
+    <div class="p-3.5 rounded-2xl bg-black/50 border border-purple-900/60 flex flex-wrap items-center justify-between gap-2 mb-4 text-xs font-semibold">
+      <div class="flex items-center gap-2">
+        <span class="text-purple-400">מתנגן:</span>
+        <span id="currentPlayingTrackText" class="text-sunset font-bold truncate max-w-[200px]">עומר אדם — שני משוגעים</span>
+      </div>
+      <div id="mixTransitionStyleBadge" class="text-[11px] text-glowLime font-mono bg-glowLime/10 px-3 py-1 rounded-xl border border-glowLime/30">
+        ⚡ מעבר DJ הרמוני (Crossfade Live)
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-purple-400">הבא בתור:</span>
+        <span id="nextUpTrackText" class="text-electricCyan font-bold truncate max-w-[200px]">נועה קירל — יוניקורן</span>
+      </div>
+    </div>
+
+    <!-- Track Timeline Progress Bar -->
+    <div class="space-y-1.5 mb-3">
+      <div class="flex justify-between items-center text-[10px] text-purple-300 font-mono">
+        <span>התקדמות קטע נוכחי (Preview):</span>
+        <span id="liveTrackCurrentTime">00:00 / 00:30</span>
+      </div>
+      <div class="w-full bg-purple-950/80 rounded-full h-2 overflow-hidden cursor-pointer" onclick="seekLiveMix(event)">
+        <div id="liveMixProgressBar" class="h-full bg-gradient-to-r from-glowLime to-electricCyan transition-all duration-150" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Session Total Progress Indicator -->
+    <div class="p-2.5 rounded-xl bg-purple-950/60 border border-purple-800/40 flex justify-between items-center text-[11px] font-mono text-purple-200 mb-4">
+      <span class="flex items-center gap-1.5">
+        <span id="sessionPulseIndicator" class="w-2 h-2 rounded-full bg-glowLime animate-ping"></span>
+        <span id="sessionStatusLabel">זמן סשן כולל:</span>
+      </span>
+      <span id="sessionProgressTimerText" class="font-bold text-glowLime">00:00 / 10:00 דקות</span>
+    </div>
+
+    <!-- Player Controls -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <button onclick="skipLiveTrack('prev')" class="w-9 h-9 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-200 flex items-center justify-center font-bold text-xs" title="שיר קודם">⏮</button>
+        <button id="masterMixPlayBtn" onclick="toggleMasterLiveMixPlayback()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan hover:opacity-95 text-night font-black text-xs shadow-glow-lime flex items-center gap-2">
+          <span id="masterPlayBtnIcon">▶</span>
+          <span id="masterPlayBtnText">נגן את המיקס עכשיו</span>
+        </button>
+        <button onclick="skipLiveTrack('next')" class="w-9 h-9 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-200 flex items-center justify-center font-bold text-xs" title="שיר הבא">⏭</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="shareCurrentMixToWhatsApp()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow">
+          <span>💬 שתף בוואטסאפ</span>
+        </button>
       </div>
     </div>
   </section>
 
-  <!-- QUICK MIX PANEL -->
-  <section id="quickMixPanel" class="w-full max-w-5xl mb-5 quick-search-card glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/40 relative">
-    <div class="mb-4">
-      <h2 class="text-base sm:text-lg font-black text-white">⚡ Quick Mix — יצירת סט 10 דקות לפי 2 שירים</h2>
-      <p class="text-xs text-purple-300 mt-1 leading-relaxed">בחר שיר ראשון, ולאחר מכן המערכת תמליץ לך אוטומטית על שיר שני תואם לסגנון.</p>
+  <!-- ========================================================= -->
+  <!-- ⚡ DUAL SEARCH STUDIO (חיבור 2 שירים - ממורכז במרכז המסך) -->
+  <!-- ========================================================= -->
+  <section class="w-full max-w-5xl mb-6 glass-panel p-6 md:p-8 rounded-3xl border border-sunset/40 shadow-glow-orange relative text-center mx-auto">
+    <div class="flex flex-col items-center justify-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
+      <span class="text-[10px] font-black uppercase tracking-wider text-sunset bg-sunset/15 px-3 py-1 rounded-full border border-sunset/30">
+        Dual Deck Studio
+      </span>
+      <h2 class="text-lg md:text-xl font-black text-white">חיבור 2 שירים עם מעבר DJ מותאם</h2>
+      <span class="text-xs text-glowLime font-mono">⚡ Auto-DJ Phrasing & Bass Swap בתוך האתר</span>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 mb-5 relative" style="overflow: visible;">
-      <div class="relative">
-        <label class="text-[11px] sm:text-[10px] text-sunset font-bold block mb-1">שיר מוביל 1 (חובה)</label>
-        <input id="quickGenInput1" type="text" oninput="debounceQuickGenSearch(this.value, 1)" placeholder="חפש שיר ראשון..." autocomplete="off" class="w-full py-3 px-3.5 rounded-xl bg-black/50 border border-purple-800/70 text-white placeholder-purple-500/60 text-sm focus:outline-none focus:border-sunset">
-        <div id="quickGenDrop1" class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
-      </div>
-      <div class="relative">
-        <div class="flex justify-between items-center mb-1">
-          <label class="text-[11px] sm:text-[10px] text-glowLime font-bold">שיר מוביל 2 (עם המלצת AI)</label>
-          <div id="quickRecIndicator2" class="text-[10px] text-cyan-300 font-mono"></div>
+    <!-- Dual Deck Duration Selection: 10, 15, 20 דקות -->
+    <div class="space-y-2 mb-5 max-w-2xl mx-auto">
+      <label class="block text-xs font-bold text-purple-200">בחר את משך זמן המיקס בין 2 השירים:</label>
+      <div class="grid grid-cols-3 gap-2.5">
+        <div id="dualDur10" onclick="selectDualMixDuration(10)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center active-dual-duration" role="button" tabindex="0">
+          <div class="text-sm font-black text-white">⏱️ 10 דקות</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">מיקס מהיר וממוקד</div>
         </div>
-        <input id="quickGenInput2" type="text" oninput="debounceQuickGenSearch(this.value, 2); hideQuickRecommendations(2);" onfocus="showQuickRecommendations(2)" placeholder="חפש שיר שני או בחר המלצה..." autocomplete="off" class="w-full py-3 px-3.5 rounded-xl bg-black/50 border border-purple-800/70 text-white placeholder-purple-500/60 text-sm focus:outline-none focus:border-glowLime">
-        <div id="quickGenDrop2" class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
+        <div id="dualDur15" onclick="selectDualMixDuration(15)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center" role="button" tabindex="0">
+          <div class="text-sm font-black text-white">⏱️ 15 דקות</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">סט מאוזן וזורם</div>
+        </div>
+        <div id="dualDur20" onclick="selectDualMixDuration(20)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center" role="button" tabindex="0">
+          <div class="text-sm font-black text-white">⏱️ 20 דקות</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">Extended Club Mix מורחב</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dual Song Search Inputs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 max-w-3xl mx-auto">
+      <!-- Deck A -->
+      <div class="space-y-2 p-4 rounded-2xl bg-black/40 border border-purple-900/50 relative text-right">
+        <span class="text-xs font-bold text-sunset">שיר ראשון (Deck A)</span>
+        <div class="relative">
+          <input type="text" id="dualSearchInputA" oninput="debounceSearch(this.value, 'dual', 'A')" placeholder="חפש שיר ראשון (iTunes)..."
+                 class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-sunset">
+          <div id="dualDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl text-right"></div>
+        </div>
+        <div id="dualTitleA" class="text-xs font-semibold text-white truncate pt-1">עומר אדם — שני משוגעים</div>
+      </div>
+
+      <!-- Deck B -->
+      <div class="space-y-2 p-4 rounded-2xl bg-black/40 border border-purple-900/50 relative text-right">
+        <span class="text-xs font-bold text-glowLime">שיר שני (Deck B)</span>
+        <div class="relative">
+          <input type="text" id="dualSearchInputB" oninput="debounceSearch(this.value, 'dual', 'B')" placeholder="חפש שיר שני (iTunes)..."
+                 class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-glowLime">
+          <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl text-right"></div>
+        </div>
+        <div id="dualTitleB" class="text-xs font-semibold text-white truncate pt-1">נועה קירל — יוניקורן (Unicorn)</div>
       </div>
     </div>
 
     <div class="text-center">
-      <button onclick="generate10MinQuickMix()" class="w-full sm:w-auto px-8 py-3.5 sm:py-3.5 rounded-xl bg-gradient-to-r from-glowLime to-electricCyan text-night font-black text-sm shadow-glow-lime active:scale-95 transition-transform flex items-center justify-center gap-2 mx-auto">
-        <span>✨ צור סט 10 דקות מותאם אישית (MP3)</span>
+      <button onclick="runQuickDualDeckPlay()" class="px-10 py-3.5 rounded-2xl bg-gradient-to-r from-sunset via-pink-500 to-ultraviolet hover:opacity-95 text-white font-bold text-xs shadow-glow-orange transition-all">
+        ✨ נגן מיקס של 2 השירים באתר
       </button>
-      <div id="quickGenStatus" class="mt-3 text-xs sm:text-sm text-glowLime font-mono flex items-center justify-center gap-2 min-h-[22px]"></div>
     </div>
   </section>
 
-  <!-- PRO MODE PANEL -->
-  <section id="proModeContainer" class="w-full max-w-5xl mb-5 hidden glass-panel p-4 sm:p-6 rounded-2xl border border-glowLime/50 shadow-glow-lime relative">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 mb-4">
+  <!-- ========================================== -->
+  <!-- 🚀 MAKE ME A PLAYLIST STUDIO (10/20/30 דקות) -->
+  <!-- ========================================== -->
+  <section class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-electricCyan/40 shadow-glow-purple relative">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
       <div>
-        <h2 class="text-base sm:text-lg font-black text-glowLime">🎚️ Pro Mode — בחירת שירים והמלצות חכמות</h2>
-        <p class="text-xs text-purple-300 mt-1">בחר שיר בכל שורה, והשורות הבאות יציעו לך אוטומטית שירים דומים ותואמים לסגנון!</p>
+        <span class="text-[10px] font-black uppercase tracking-wider text-electricCyan bg-electricCyan/15 px-3 py-1 rounded-full border border-electricCyan/30">Custom Mix Generator</span>
+        <h2 class="text-lg md:text-xl font-black text-white mt-1">Make me a playlist — צור מיקס מותאם אישית לאירוע</h2>
       </div>
-      <button onclick="addProSongField()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-glowLime/15 border border-glowLime/50 text-glowLime text-xs font-black active:bg-glowLime/25 transition-all text-center">
-        ➕ הוסף שיר
-      </button>
+      <span class="text-xs text-purple-300 font-mono">⚡ רצף מתמשך עם מעברי קרוספייד חיים</span>
     </div>
 
-    <div id="proSongSlotsContainer" class="space-y-3 mb-6"></div>
+    <!-- 1. Genre Selection -->
+    <div class="space-y-2 mb-4">
+      <label class="block text-xs font-bold text-purple-200">1. בחר את הז'אנר או סגנון האירוע:</label>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+        <div id="plGenre_party" onclick="selectPlaylistGenre('party')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center active-genre" role="button" tabindex="0">
+          <span class="text-base">🎉</span>
+          <div class="text-xs font-bold text-white mt-1">מסיבה ישראלית</div>
+        </div>
+        <div id="plGenre_workout" onclick="selectPlaylistGenre('workout')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center" role="button" tabindex="0">
+          <span class="text-base">🏋️</span>
+          <div class="text-xs font-bold text-white mt-1">אימון ואנרגיה</div>
+        </div>
+        <div id="plGenre_chill" onclick="selectPlaylistGenre('chill')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center" role="button" tabindex="0">
+          <span class="text-base">🚗</span>
+          <div class="text-xs font-bold text-white mt-1">נסיעה וצ׳יל</div>
+        </div>
+        <div id="plGenre_dance" onclick="selectPlaylistGenre('dance')" class="playlist-tab glass-panel p-3 rounded-xl border border-purple-800/40 text-center" role="button" tabindex="0">
+          <span class="text-base">🌟</span>
+          <div class="text-xs font-bold text-white mt-1">להיטי דאנס</div>
+        </div>
+      </div>
+    </div>
 
-    <div class="text-center">
-      <button onclick="executeProCustomMixDownload()" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-sunset to-pink-500 text-white font-black text-sm shadow-glow-orange active:scale-95 transition-transform inline-flex items-center gap-2">
-        <span>✨ צור והורד מיקס מקצועי מהשירים שנבחרו (MP3)</span>
+    <!-- 2. Duration Selector -->
+    <div class="space-y-2 mb-4">
+      <label class="block text-xs font-bold text-purple-200">2. בחר את משך זמן הפלייליסט:</label>
+      <div class="grid grid-cols-3 gap-2.5">
+        <div id="dur10" onclick="selectPlaylistDuration(10)" class="duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center active-duration" role="button" tabindex="0">
+          <div class="text-sm font-black text-white">⏱️ 10 דקות</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">מיקס קצר וממכר</div>
+        </div>
+        <div id="dur20" onclick="selectPlaylistDuration(20)" class="duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center" role="button" tabindex="0">
+          <div class="text-sm font-black text-white">⏱️ 20 דקות</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">סט מושלם לאימון ונסיעה</div>
+        </div>
+        <div id="dur30" onclick="selectPlaylistDuration(30)" class="duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center" role="button" tabindex="0">
+          <div class="text-sm font-black text-white">⏱️ 30 דקות</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">מסיבה מלאה עם זרימת אנרגיה</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 5 Favorite Songs Inputs with Dropdowns -->
+    <div class="space-y-2 mb-5">
+      <label class="block text-xs font-bold text-purple-200">3. הזן 5 שירים אהובים (הקלד לחיפוש חי ממאגר iTunes):</label>
+      <div class="grid grid-cols-1 gap-2.5">
+        <div class="relative">
+          <input type="text" id="favSong1" oninput="debounceSearch(this.value, 'playlist', 1)" placeholder="שיר 1 (למשל: שני משוגעים...)" class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown1" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        </div>
+        <div class="relative">
+          <input type="text" id="favSong2" oninput="debounceSearch(this.value, 'playlist', 2)" placeholder="שיר 2 (למשל: יוניקורן...)" class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown2" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        </div>
+        <div class="relative">
+          <input type="text" id="favSong3" oninput="debounceSearch(this.value, 'playlist', 3)" placeholder="שיר 3 (למשל: אהבה חולה...)" class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown3" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        </div>
+        <div class="relative">
+          <input type="text" id="favSong4" oninput="debounceSearch(this.value, 'playlist', 4)" placeholder="שיר 4 (למשל: Blinding Lights...)" class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown4" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        </div>
+        <div class="relative">
+          <input type="text" id="favSong5" oninput="debounceSearch(this.value, 'playlist', 5)" placeholder="שיר 5 (למשל: Physical...)" class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
+          <div id="plDropdown5" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create & Play Live Button -->
+    <div class="text-center pt-1">
+      <button onclick="generateAndPlayCustomPlaylistLive()" class="w-full sm:w-auto px-10 py-3.5 rounded-2xl bg-gradient-to-r from-electricCyan via-pink-500 to-sunset hover:opacity-95 text-night font-black text-sm shadow-glow-cyan">
+        🚀 צור והפעל את המיקס עכשיו באתר
       </button>
-      <div id="proMixStatus" class="mt-3 text-xs sm:text-sm text-glowLime font-mono flex items-center justify-center gap-2 min-h-[22px]"></div>
     </div>
   </section>
 
-  <!-- SCRIPT -->
-  <script>
-    let proSongsList = [];
-    let quickGenTimer1 = null, quickGenTimer2 = null;
-    let selectedQuickTrack1 = null, selectedQuickTrack2 = null;
-    let currentGuideStep = 1;
+  <!-- ========================================== -->
+  <!-- 📜 MIX HISTORY & SAVED ARCHIVE -->
+  <!-- ========================================== -->
+  <section class="w-full max-w-5xl mb-6 glass-panel p-5 rounded-3xl border border-purple-800/40">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">📜</span>
+        <div>
+          <h2 class="text-sm font-black text-white">היסטוריית המיקסים והפלייליסטים שלך</h2>
+          <p class="text-[11px] text-purple-300">המיקסים שלך מסונכרנים ומוכנים להשמעה מיידית:</p>
+        </div>
+      </div>
+      <button onclick="clearUserMixHistory()" class="text-[11px] text-purple-400 hover:text-sunset">נקה היסטוריה</button>
+    </div>
 
-    const roadmapStepsData = [
-      {
-        icon: "⚡",
-        title: "מצב Quick Mix (יצירה אוטומטית)",
-        desc: "בוחרים 2 שירים אהובים בלבד. המערכת מזהה את הסגנון המוזיקלי ובונה סט רציף של 10 דקות באופן עצמאי לחלוטין."
-      },
-      {
-        icon: "💡",
-        title: "המלצות שירים חכמות לפי בחירה",
-        desc: "מרגע שבחרת שיר בשורה הראשונה, האתר ילמד את הטעם שלך וימליץ לך על שירים דומים בשורות הבאות!"
-      },
-      {
-        icon: "🎛️",
-        title: "מצב Pro Mode (שליטה ידנית)",
-        desc: "בונים את רשימת השירים שיר-אחר-שיר עם אפשרות להיעזר בהמלצות חכמות לכל אורך הדרך."
-      },
-      {
-        icon: "🎯",
-        title: "סנכרון Turbo Drop-Mix",
-        desc: "מעברי שמע מהירים ונקיים על הביט (On-Beat Switch) המונעים חפיפות קוליות ארוכות מדי."
-      },
-      {
-        icon: "💾",
-        title: "הורדת MP3 מהירה באיכות סטודיו",
-        desc: "המיקס מעובד ישירות בדפדפן ויורד כקובץ MP3 איכותי (192kbps) ללא צורך בהרשמה או בשרת חיצוני."
-      }
-    ];
+    <div id="mixHistoryListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+  </section>
 
-    function openGuidePrompt() {
-      document.getElementById('guideOverlay')?.classList.remove('hidden');
-      document.getElementById('guideWelcomeCard')?.classList.remove('hidden');
-      document.getElementById('guideStepsCard')?.classList.add('hidden');
-    }
+  <!-- ========================================== -->
+  <!-- FIREBASE MODULAR INTEGRATION -->
+  <!-- ========================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    function closeGuideModal() {
-      document.getElementById('guideOverlay')?.classList.add('hidden');
-      localStorage.setItem('pulseai_guide_seen', 'true');
-    }
-
-    function startRoadmap() {
-      document.getElementById('guideWelcomeCard')?.classList.add('hidden');
-      document.getElementById('guideStepsCard')?.classList.remove('hidden');
-      currentGuideStep = 1;
-      renderGuideStep();
-    }
-
-    function renderGuideStep() {
-      const data = roadmapStepsData[currentGuideStep - 1];
-      const badge = document.getElementById('stepCounterBadge');
-      const bar = document.getElementById('stepProgressBar');
-      const area = document.getElementById('stepContentArea');
-      const prevBtn = document.getElementById('prevStepBtn');
-      const nextBtn = document.getElementById('nextStepBtn');
-
-      if (badge) badge.textContent = `שלב ${currentGuideStep}/5`;
-      if (bar) bar.style.width = `${(currentGuideStep / 5) * 100}%`;
-
-      if (area) {
-        area.innerHTML = `
-          <div class="flex items-center gap-3 mb-2">
-            <span class="text-2xl sm:text-3xl">${data.icon}</span>
-            <h3 class="text-base sm:text-lg font-black text-glowLime">${data.title}</h3>
-          </div>
-          <p class="text-xs sm:text-sm text-purple-200 leading-relaxed">${data.desc}</p>
-        `;
-      }
-
-      if (prevBtn) prevBtn.disabled = (currentGuideStep === 1);
-      if (nextBtn) {
-        nextBtn.textContent = (currentGuideStep === 5) ? 'סיום והתחלת יצירה 🎉' : 'הבא →';
-      }
-    }
-
-    function navigateStep(direction) {
-      currentGuideStep += direction;
-      if (currentGuideStep > 5) {
-        closeGuideModal();
-      } else if (currentGuideStep >= 1) {
-        renderGuideStep();
-      }
-    }
-
-    window.setUIMode = function(mode) {
-      const isQuick = (mode === 'quick');
-      document.getElementById('quickModeBtn')?.classList.toggle('active', isQuick);
-      document.getElementById('proModeBtn')?.classList.toggle('active', !isQuick);
-      document.getElementById('quickMixPanel')?.classList.toggle('hidden', !isQuick);
-      document.getElementById('proModeContainer')?.classList.toggle('hidden', isQuick);
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNu7VjHRX5NVUOVYCV_xOY3_pkri0zF5U",
+      authDomain: "pulseai-91aa4.firebaseapp.com",
+      projectId: "pulseai-91aa4",
+      storageBucket: "pulseai-91aa4.firebasestorage.app",
+      messagingSenderId: "1029501359655",
+      appId: "1:1029501359655:web:43e80854541fdd50cd2002"
     };
 
-    function initProSongSlots() {
-      proSongsList = Array(5).fill(null).map(() => ({ title: '', previewUrl: '', bpm: 124, key: '8A', genre: 'Dance' }));
-      renderProSongSlots();
+    let app, auth, db;
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+    } catch(e) {
+      console.warn("Firebase initialization fallback:", e);
     }
 
-    function renderProSongSlots() {
-      const container = document.getElementById('proSongSlotsContainer');
-      if (!container) return;
+    const googleProvider = new GoogleAuthProvider();
+    window.currentAuthUser = null;
 
-      container.innerHTML = proSongsList.map((song, index) => {
-        let hasPrevTrack = index > 0 && proSongsList[index - 1] && proSongsList[index - 1].title;
-        return `
-          <div class="relative p-3 sm:p-3.5 rounded-xl bg-black/45 border border-purple-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-            <div class="flex items-center justify-between sm:justify-start gap-2">
-              <span class="text-xs font-bold text-glowLime sm:w-12 shrink-0">שיר ${index + 1}</span>
-              ${hasPrevTrack && !song.title ? `<span class="text-[10px] text-cyan-300 font-mono bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-800/50">✨ מומלץ לפי שיר ${index}</span>` : ''}
-              ${song.title ? `<span class="sm:hidden text-[10px] bg-purple-900/80 px-2 py-0.5 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
-            </div>
-            <div class="relative flex-1">
-              <input id="proSongInput_${index}" type="text"
-                value="${escapeHtml(song.title)}"
-                oninput="debounceProSearch(this.value, ${index}); hideProRecommendations(${index});"
-                onfocus="showProRecommendations(${index})"
-                placeholder="${hasPrevTrack ? 'חפש שיר או בחר המלצה חכמה...' : 'חפש שיר...'}"
-                autocomplete="off"
-                class="w-full py-2.5 sm:py-2 px-3.5 rounded-lg bg-purple-950/40 border border-purple-800 text-white placeholder-purple-400/50 text-sm focus:outline-none focus:border-glowLime">
-              <div id="proSongDrop_${index}"
-                class="absolute top-full left-0 right-0 mt-1.5 bg-night border border-purple-800 rounded-xl p-1.5 z-[9999] hidden max-h-56 overflow-y-auto shadow-2xl"></div>
-            </div>
-            <div class="flex items-center justify-end gap-2 shrink-0">
-              ${song.title ? `<span class="hidden sm:inline-block text-[10px] bg-purple-900/60 px-2 py-1 rounded text-cyan-300 font-mono">${song.bpm} BPM | ${song.key}</span>` : ''}
-              ${proSongsList.length > 2 ? `<button onclick="removeProSongField(${index})" class="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-sunset/15 border border-sunset/40 text-sunset text-xs font-bold active:bg-sunset/25">הסר</button>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
+    window.handleGoogleSignIn = async function() {
+      try {
+        if (!auth) throw new Error("Firebase Auth unavailable");
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        
+        await setDoc(doc(db, "users", user.uid), {
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          lastLogin: serverTimestamp()
+        }, { merge: true });
 
-    window.addProSongField = function() {
-      proSongsList.push({ title: '', previewUrl: '', bpm: 124, key: '8A', genre: 'Dance' });
-      renderProSongSlots();
-    };
-
-    window.removeProSongField = function(index) {
-      proSongsList.splice(index, 1);
-      renderProSongSlots();
-    };
-
-    function cleanSearchQuery(query) {
-      return query
-        .replace(/\b(של|את|עם|by|feat|ft|featuring)\b/gi, ' ')
-        .replace(/[-_.,]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    // --- GENRE MATCHING ---
-    // iTunes returns a real primaryGenreName per track, but genre labels are very
-    // granular ("Dance", "House", "Deep House", "Electronic" etc. are all really
-    // "the same genre" for DJ-mix purposes). This buckets related labels together
-    // so genre matching is meaningful instead of relying on exact string equality
-    // or the old fake BPM-proximity filter.
-    const GENRE_BUCKETS = [
-      { key: 'dance-electronic', match: ['dance', 'electronic', 'house', 'techno', 'trance', 'edm', 'dubstep', 'drum and bass', 'drum & bass', 'trap', 'club', 'disco'] },
-      { key: 'hip-hop-rap', match: ['hip-hop', 'hip hop', 'rap'] },
-      { key: 'pop', match: ['pop'] },
-      { key: 'rock', match: ['rock', 'alternative', 'indie'] },
-      { key: 'israeli', match: ['israeli', 'mizrahi', 'ivrit'] },
-      { key: 'latin', match: ['latin', 'reggaeton', 'salsa'] },
-      { key: 'rnb-soul', match: ['r&b', 'r&amp;b', 'soul', 'funk'] },
-      { key: 'reggae', match: ['reggae', 'dancehall'] },
-      { key: 'country', match: ['country'] },
-      { key: 'jazz-blues', match: ['jazz', 'blues'] },
-      { key: 'classical', match: ['classical'] },
-      { key: 'metal-punk', match: ['metal', 'punk'] },
-      { key: 'world', match: ['world', 'arabic', 'french pop', 'k-pop', 'j-pop'] },
-    ];
-
-    function normalizeGenre(genre) {
-      if (!genre) return '';
-      const g = genre.toLowerCase();
-      for (const bucket of GENRE_BUCKETS) {
-        if (bucket.match.some(term => g.includes(term))) return bucket.key;
-      }
-      return g.trim(); // unrecognized genre stays its own exact bucket
-    }
-
-    function genresMatch(genreA, genreB) {
-      if (!genreA || !genreB) return false;
-      return normalizeGenre(genreA) === normalizeGenre(genreB);
-    }
-
-    async function searchItunesApi(term, limit = 12) {
-      const cleaned = cleanSearchQuery(term);
-      const termsToTry = [cleaned, term];
-      for (const t of termsToTry) {
-        if (!t || t.length < 2) continue;
-        try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=${limit}&country=IL`);
-          const data = await res.json();
-          const results = (data.results || []).filter(item => item.previewUrl);
-          if (results.length > 0) return results;
-        } catch (e) {}
-
-        try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&entity=song&limit=${limit}&country=US`);
-          const data = await res.json();
-          const results = (data.results || []).filter(item => item.previewUrl);
-          if (results.length > 0) return results;
-        } catch (e) {}
-      }
-      return [];
-    }
-
-    async function getSmartRecommendations(referenceTrack) {
-      if (!referenceTrack) return [];
-      const refGenre = referenceTrack.genre || '';
-
-      // Try a few angles to find same-genre tracks: the artist's own catalogue,
-      // the genre name itself, and genre + "hits" — then keep only results whose
-      // REAL iTunes genre bucket matches the reference track's genre bucket.
-      const queries = [
-        `${referenceTrack.artistName} hits`,
-        refGenre ? `${refGenre} hits` : null,
-        refGenre ? `top ${refGenre}` : null,
-      ].filter(Boolean);
-
-      const seen = new Set([referenceTrack.previewUrl]);
-      let matched = [];
-
-      for (const q of queries) {
-        if (matched.length >= 6) break;
-        const results = await searchItunesApi(q, 10);
-        for (const item of results) {
-          if (!item.previewUrl || seen.has(item.previewUrl)) continue;
-          if (refGenre && !genresMatch(item.primaryGenreName, refGenre)) continue;
-          seen.add(item.previewUrl);
-          matched.push(item);
-          if (matched.length >= 6) break;
+        syncCloudDataToLocal(user.uid);
+      } catch (error) {
+        console.warn("Google popup fallback:", error.message);
+        const guestName = prompt("הכנס שם משתמש לשמירת המיקסים:", "DJ Guest");
+        if (guestName) {
+          const guestObj = { displayName: guestName, photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80" };
+          localStorage.setItem("pulseai_guest_user", JSON.stringify(guestObj));
+          updateUserBadgeUI(guestObj);
         }
       }
-      return matched;
-    }
-
-    async function showQuickRecommendations(num) {
-      if (num !== 2 || !selectedQuickTrack1) return;
-      const dropdown = document.getElementById('quickGenDrop2');
-      const indicator = document.getElementById('quickRecIndicator2');
-      if (!dropdown) return;
-
-      indicator.textContent = '✨ טוען המלצות AI...';
-      const recs = await getSmartRecommendations(selectedQuickTrack1);
-      indicator.textContent = recs.length > 0 ? '✨ המלצות חכמות מוכנות' : '';
-
-      if (recs.length === 0) { dropdown.classList.add('hidden'); return; }
-
-      dropdown.innerHTML = `
-        <div class="p-2 text-[11px] font-bold text-cyan-300 border-b border-purple-800/60 mb-1">💡 מומלץ בעקבות בחירת שיר 1:</div>
-      ` + recs.map((item, rIdx) => {
-        const title = `${item.artistName} — ${item.trackName}`;
-        const simulatedBpm = selectedQuickTrack1.bpm + ((item.trackId || 0) % 5) - 2;
-        const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
-        const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
-        const genre = item.primaryGenreName || selectedQuickTrack1.genre;
-
-        window[`quickRec_2_${rIdx}`] = { title, previewUrl: item.previewUrl, bpm: simulatedBpm, key: simulatedKey, artistName: item.artistName || '', genre };
-
-        return `
-          <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white" onclick="selectQuickRecTrack(2, ${rIdx})">
-            <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
-            <div class="truncate">
-              <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
-              <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • מומלץ לפי שיר 1</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      dropdown.classList.remove('hidden');
-    }
-
-    function hideQuickRecommendations(num) {
-      if (num === 2) {
-        document.getElementById('quickRecIndicator2').textContent = '';
-      }
-    }
-
-    window.selectQuickRecTrack = function(num, rIdx) {
-      const track = window[`quickRec_${num}_${rIdx}`];
-      if (!track) return;
-      selectedQuickTrack2 = track;
-      document.getElementById('quickGenInput2').value = track.title;
-      document.getElementById('quickGenDrop2').classList.add('hidden');
-      document.getElementById('quickRecIndicator2').textContent = '✅ נבחר מהמלצת AI';
     };
 
-    async function showProRecommendations(index) {
-      if (index === 0) return;
-      const prevTrack = proSongsList[index - 1];
-      if (!prevTrack || !prevTrack.previewUrl) return;
-
-      const dropdown = document.getElementById(`proSongDrop_${index}`);
-      if (!dropdown) return;
-
-      const recs = await getSmartRecommendations(prevTrack);
-      if (recs.length === 0) return;
-
-      dropdown.innerHTML = `
-        <div class="p-2 text-[11px] font-bold text-cyan-300 border-b border-purple-800/60 mb-1">💡 מומלץ בעקבות בחירת שיר ${index}:</div>
-      ` + recs.map((item, rIdx) => {
-        const title = `${item.artistName} — ${item.trackName}`;
-        const simulatedBpm = prevTrack.bpm + ((item.trackId || 0) % 5) - 2;
-        const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
-        const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
-
-        window[`proRec_${index}_${rIdx}`] = { 
-          title, 
-          previewUrl: item.previewUrl, 
-          bpm: simulatedBpm, 
-          key: simulatedKey,
-          artistName: item.artistName || '',
-          genre: item.primaryGenreName || prevTrack.genre
-        };
-
-        return `
-          <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white" onclick="selectProRecTrack(${index}, ${rIdx})">
-            <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
-            <div class="truncate">
-              <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
-              <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • מומלץ לפי שיר ${index}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      dropdown.classList.remove('hidden');
-    }
-
-    function hideProRecommendations(index) {}
-
-    window.selectProRecTrack = function(index, rIdx) {
-      const track = window[`proRec_${index}_${rIdx}`];
-      if (!track) return;
-      proSongsList[index] = track;
-      renderProSongSlots();
+    window.handleUserLogout = async function() {
+      if (auth) await signOut(auth);
+      localStorage.removeItem("pulseai_guest_user");
+      window.currentAuthUser = null;
+      document.getElementById('userProfileBadge').classList.add('hidden');
+      document.getElementById('googleLoginBtn').classList.remove('hidden');
     };
 
-    window.debounceProSearch = function(query, index) {
-      clearTimeout(window[`proTimer_${index}`]);
-      window[`proTimer_${index}`] = setTimeout(() => executeProSearch(query, index), 300);
-    };
-
-    async function executeProSearch(query, index) {
-      const dropdown = document.getElementById(`proSongDrop_${index}`);
-      if (!dropdown) return;
-      if (!query || query.trim().length < 2) { dropdown.classList.add('hidden'); return; }
-
-      try {
-        const results = await searchItunesApi(query, 8);
-        if (results.length === 0) {
-          dropdown.innerHTML = '<div class="p-3 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
+    if (auth) {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          window.currentAuthUser = user;
+          updateUserBadgeUI(user);
+          syncCloudDataToLocal(user.uid);
         } else {
-          dropdown.innerHTML = results.map((item, rIdx) => {
-            const title = `${item.artistName} — ${item.trackName}`;
-            const simulatedBpm = 120 + ((item.trackId || 0) % 12);
-            const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
-            const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
-
-            window[`proRes_${index}_${rIdx}`] = { 
-              title, 
-              previewUrl: item.previewUrl, 
-              bpm: simulatedBpm, 
-              key: simulatedKey,
-              artistName: item.artistName || '',
-              genre: item.primaryGenreName || 'Dance'
-            };
-            return `
-              <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center justify-between cursor-pointer text-xs text-white"
-                   onclick="selectProTrack(${index}, ${rIdx})">
-                <div class="flex items-center gap-2.5 truncate">
-                  <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
-                  <div class="truncate">
-                    <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
-                    <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div>
-                  </div>
-                </div>
-                <span class="text-[10px] text-glowLime font-mono mr-2 shrink-0">${simulatedBpm} BPM | ${simulatedKey}</span>
-              </div>
-            `;
-          }).join('');
+          const guest = localStorage.getItem("pulseai_guest_user");
+          if (guest) {
+            updateUserBadgeUI(JSON.parse(guest));
+          }
         }
-        dropdown.classList.remove('hidden');
-      } catch (e) {
-        dropdown.innerHTML = '<div class="p-3 text-xs text-purple-400 text-center">שגיאת חיפוש</div>';
-        dropdown.classList.add('hidden');
+      });
+    }
+
+    function updateUserBadgeUI(user) {
+      document.getElementById('googleLoginBtn').classList.add('hidden');
+      const badge = document.getElementById('userProfileBadge');
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+      document.getElementById('userNameDisplay').textContent = user.displayName || 'משתמש מחובר';
+      if (user.photoURL) document.getElementById('userAvatarImg').src = user.photoURL;
+    }
+
+    async function syncCloudDataToLocal(uid) {
+      try {
+        if (!db) return;
+        const userDoc = await getDoc(doc(db, "users", uid));
+        if (userDoc.exists() && userDoc.data().tastes) {
+          localStorage.setItem('pulseai_user_tastes', JSON.stringify(userDoc.data().tastes));
+          window.renderPersonalizedAiRecommendations();
+        }
+        if (userDoc.exists() && userDoc.data().mix_history) {
+          localStorage.setItem('pulseai_mix_history', JSON.stringify(userDoc.data().mix_history));
+          window.renderMixHistoryList();
+        }
+      } catch(e) {
+        console.error("Cloud sync error:", e);
       }
     }
 
-    window.selectProTrack = function(index, rIdx) {
-      const track = window[`proRes_${index}_${rIdx}`];
-      if (!track) return;
-      proSongsList[index] = track;
-      renderProSongSlots();
-    };
-
-    window.debounceQuickGenSearch = function(query, num) {
-      clearTimeout(num === 1 ? quickGenTimer1 : quickGenTimer2);
-      if (num === 1) quickGenTimer1 = setTimeout(() => executeQuickGenSearch(query, 1), 300);
-      else quickGenTimer2 = setTimeout(() => executeQuickGenSearch(query, 2), 300);
-    };
-
-    async function executeQuickGenSearch(query, num) {
-      const dropdown = document.getElementById(`quickGenDrop${num}`);
-      if (!dropdown) return;
-      if (!query || query.trim().length < 2) { dropdown.classList.add('hidden'); return; }
+    window.saveDataToCloudIfLoggedIn = async function(field, data) {
+      if (!window.currentAuthUser || !db) return;
       try {
-        const results = await searchItunesApi(query, 8);
-        dropdown.innerHTML = results.map(item => {
-          const title = `${item.artistName} — ${item.trackName}`;
-          const simulatedBpm = 120 + ((item.trackId || 0) % 12);
-          const camelotKeys = ['8A', '8B', '9A', '7A', '11B', '4A', '12A'];
-          const simulatedKey = camelotKeys[(item.trackId || 0) % camelotKeys.length];
-          const genre = item.primaryGenreName || 'Dance';
-          return `
-            <div class="p-2.5 hover:bg-purple-900/60 active:bg-purple-800/80 rounded-lg flex items-center gap-2.5 cursor-pointer text-xs text-white" onclick="selectQuickGenTrack(${num}, '${escapeHtml(title).replace(/'/g, "\\'")}', '${item.previewUrl}', ${simulatedBpm}, '${simulatedKey}', '${escapeHtml(item.artistName).replace(/'/g, "\\'")}', '${escapeHtml(genre).replace(/'/g, "\\'")}')">
-              <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-9 h-9 rounded-lg object-cover shrink-0" alt="">
-              <div class="truncate">
-                <div class="font-bold truncate text-sm sm:text-xs">${escapeHtml(item.trackName)}</div>
-                <div class="text-[11px] sm:text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)} • ${escapeHtml(genre)}</div>
-              </div>
+        await setDoc(doc(db, "users", window.currentAuthUser.uid), {
+          [field]: data,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch(e) {
+        console.error("Cloud write error:", e);
+      }
+    };
+  </script>
+
+  <!-- ========================================== -->
+  <!-- MAIN SCRIPT (Web DJ Engine & Safe Caching) -->
+  <!-- ========================================== -->
+  <script>
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    const GENRE_MAP = {
+      party: { name: 'מסיבה ישראלית', elementId: 'plGenre_party' },
+      workout: { name: 'אימון ואנרגיה', elementId: 'plGenre_workout' },
+      chill: { name: 'נסיעה וצ׳יל', elementId: 'plGenre_chill' },
+      dance: { name: 'להיטי דאנס', elementId: 'plGenre_dance' }
+    };
+
+    let currentPlaylistGenreKey = 'party';
+    let selectedDurationMinutes = 10;
+    let selectedDualDurationMinutes = 10;
+    let searchDebounceTimers = {};
+    let searchResultCache = {};
+
+    let audioCtx = null;
+    let isAudioCtxInitialized = false;
+
+    let deckA = { audio: new Audio(), gain: null, isPlaying: false, track: null };
+    let deckB = { audio: new Audio(), gain: null, isPlaying: false, track: null };
+
+    deckA.audio.crossOrigin = 'anonymous';
+    deckB.audio.crossOrigin = 'anonymous';
+
+    let activeDeckName = 'A';
+    let isCrossfading = false;
+    let crossfadeTimer = null;
+    let sessionPlaybackTimer = null;
+    let sessionElapsedSeconds = 0;
+    let totalTargetSessionSeconds = 600;
+
+    let activePlaylistQueue = [
+      { title: 'עומר אדם — שני משוגעים', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', duration: 30 },
+      { title: 'נועה קירל — יוניקורן (Unicorn)', url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', duration: 30 }
+    ];
+
+    let currentTrackIndex = 0;
+    let isMasterPlaying = false;
+
+    function initAudioContextOnUserGesture() {
+      if (isAudioCtxInitialized) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+          
+          deckA.gain = audioCtx.createGain();
+          deckB.gain = audioCtx.createGain();
+
+          const sourceA = audioCtx.createMediaElementSource(deckA.audio);
+          const sourceB = audioCtx.createMediaElementSource(deckB.audio);
+
+          sourceA.connect(deckA.gain);
+          deckA.gain.connect(audioCtx.destination);
+
+          sourceB.connect(deckB.gain);
+          deckB.gain.connect(audioCtx.destination);
+          
+          isAudioCtxInitialized = true;
+        }
+      } catch(err) {
+        console.warn("Web Audio initialization gesture note:", err);
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    // Genre Selection
+    window.selectPlaylistGenre = function(genreKey) {
+      if (!GENRE_MAP[genreKey]) return;
+      currentPlaylistGenreKey = genreKey;
+      document.querySelectorAll('.playlist-tab').forEach(t => t.classList.remove('active-genre'));
+      const activeEl = document.getElementById(GENRE_MAP[genreKey].elementId);
+      if (activeEl) activeEl.classList.add('active-genre');
+    };
+
+    // Duration Selection
+    window.selectPlaylistDuration = function(mins) {
+      selectedDurationMinutes = mins;
+      document.querySelectorAll('.duration-tab').forEach(t => t.classList.remove('active-duration'));
+      const el = document.getElementById(`dur${mins}`);
+      if (el) el.classList.add('active-duration');
+    };
+
+    window.selectDualMixDuration = function(mins) {
+      selectedDualDurationMinutes = mins;
+      document.querySelectorAll('.dual-duration-tab').forEach(t => t.classList.remove('active-dual-duration'));
+      const el = document.getElementById(`dualDur${mins}`);
+      if (el) el.classList.add('active-dual-duration');
+    };
+
+    // Safe Search
+    window.debounceSearch = function(query, scope, id) {
+      const key = `${scope}_${id}`;
+      clearTimeout(searchDebounceTimers[key]);
+      searchDebounceTimers[key] = setTimeout(() => executeSearchRequest(query, scope, id), 320);
+    };
+
+    async function executeSearchRequest(query, scope, id) {
+      const dropdownId = scope === 'playlist' ? `plDropdown${id}` : `dualDropdown${id}`;
+      const dropdown = document.getElementById(dropdownId);
+      if (!dropdown) return;
+
+      if (!query || query.trim().length < 2) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      try {
+        let url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=6&country=IL`;
+        let res = await fetch(url);
+        let data = await res.json();
+
+        if (!data.results || data.results.length === 0) {
+          url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=6`;
+          res = await fetch(url);
+          data = await res.json();
+        }
+
+        if (!data.results || data.results.length === 0) {
+          dropdown.innerHTML = '<div class="p-2.5 text-xs text-purple-400 text-center">לא נמצאו תוצאות</div>';
+          dropdown.classList.remove('hidden');
+          return;
+        }
+
+        dropdown.innerHTML = '';
+        data.results.forEach((item, idx) => {
+          const cacheKey = `${scope}_${id}_${idx}`;
+          searchResultCache[cacheKey] = {
+            title: `${item.artistName} — ${item.trackName}`,
+            previewUrl: item.previewUrl || '',
+            artwork: item.artworkUrl60 || ''
+          };
+
+          const itemEl = document.createElement('div');
+          itemEl.className = 'p-2.5 hover:bg-purple-900/80 rounded-xl cursor-pointer text-xs text-white flex items-center gap-2.5 border-b border-purple-900/40 last:border-0 transition-colors';
+          itemEl.innerHTML = `
+            <img src="${escapeHtml(item.artworkUrl60 || '')}" class="w-7 h-7 rounded-lg object-cover" alt="Art">
+            <div class="truncate text-right">
+              <div class="font-bold truncate">${escapeHtml(item.trackName)}</div>
+              <div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div>
             </div>
           `;
-        }).join('') || '<div class="p-3 text-xs text-purple-400 text-center">לא נמצאו שירים</div>';
+          itemEl.onclick = () => selectCachedSong(scope, id, cacheKey);
+          dropdown.appendChild(itemEl);
+        });
+
         dropdown.classList.remove('hidden');
+      } catch(err) {
+        console.error("iTunes search error:", err);
+        dropdown.innerHTML = '<div class="p-2.5 text-xs text-sunset text-center">שגיאת חיפוש. נסה שוב.</div>';
+        dropdown.classList.remove('hidden');
+      }
+    }
+
+    function selectCachedSong(scope, id, cacheKey) {
+      const songData = searchResultCache[cacheKey];
+      if (!songData) return;
+
+      if (scope === 'playlist') {
+        const input = document.getElementById(`favSong${id}`);
+        input.value = songData.title;
+        input.dataset.previewUrl = songData.previewUrl;
+        document.getElementById(`plDropdown${id}`).classList.add('hidden');
+      } else {
+        const titleEl = document.getElementById(`dualTitle${id}`);
+        titleEl.textContent = songData.title;
+        titleEl.dataset.previewUrl = songData.previewUrl;
+        document.getElementById(`dualDropdown${id}`).classList.add('hidden');
+      }
+    }
+
+    // Playlist Generation
+    window.generateAndPlayCustomPlaylistLive = function() {
+      initAudioContextOnUserGesture();
+      const songs = [];
+      for (let i = 1; i <= 5; i++) {
+        const input = document.getElementById(`favSong${i}`);
+        const name = input.value.trim();
+        const url = input.dataset.previewUrl;
+        if (name && url) {
+          songs.push({ title: name, url: url, duration: 30 });
+        }
+      }
+
+      if (songs.length < 2) {
+        const defaultPool = [
+          { title: 'עומר אדם — שני משוגעים', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3', duration: 30 },
+          { title: 'נועה קירל — יוניקורן (Unicorn)', url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', duration: 30 },
+          { title: 'פאר טסי — אהבה חולה', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3', duration: 30 }
+        ];
+
+        if (songs.length === 1) {
+          const comp = defaultPool.find(p => p.title !== songs[0].title) || defaultPool[1];
+          songs.push(comp);
+        } else {
+          songs.push(...defaultPool.slice(0, 2));
+        }
+      }
+
+      activePlaylistQueue = songs;
+      currentTrackIndex = 0;
+
+      const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
+      recordUserMusicTaste(genreName, songs.map(s => s.title));
+      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, songs);
+
+      startMasterPlayback(0, selectedDurationMinutes, true);
+      document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Dual Deck Generation
+    window.runQuickDualDeckPlay = function() {
+      initAudioContextOnUserGesture();
+      const titleA = document.getElementById('dualTitleA').textContent;
+      const urlA = document.getElementById('dualTitleA').dataset.previewUrl || 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3';
+      const titleB = document.getElementById('dualTitleB').textContent;
+      const urlB = document.getElementById('dualTitleB').dataset.previewUrl || 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3';
+
+      let tracks = [
+        { title: titleA, url: urlA, duration: 30 },
+        { title: titleB, url: urlB, duration: 30 }
+      ];
+
+      if (tracks[0].title === tracks[1].title) {
+        tracks[1] = { title: 'נועה קירל — יוניקורן (Unicorn)', url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3', duration: 30 };
+      }
+
+      activePlaylistQueue = tracks;
+      recordUserMusicTaste('Dual Deck', [tracks[0].title, tracks[1].title]);
+      saveMixToArchive(`מיקס 2 שירים (${selectedDualDurationMinutes} דק׳)`, 'Dual Mix', `${selectedDualDurationMinutes} דקות`, tracks);
+
+      startMasterPlayback(0, selectedDualDurationMinutes, true);
+      document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Master Web Audio Playback with Session Timer
+    function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
+      deckA.audio.pause();
+      deckB.audio.pause();
+      
+      try {
+        deckA.audio.currentTime = 0;
+        deckB.audio.currentTime = 0;
       } catch(e) {}
+
+      clearInterval(crossfadeTimer);
+      if (resetSession) {
+        clearInterval(sessionPlaybackTimer);
+        sessionElapsedSeconds = 0;
+      }
+      isCrossfading = false;
+
+      if (trackIndex >= activePlaylistQueue.length) trackIndex = 0;
+      currentTrackIndex = trackIndex;
+
+      totalTargetSessionSeconds = (parseInt(targetMinutes) || 10) * 60;
+
+      const currentTrack = activePlaylistQueue[currentTrackIndex];
+      const nextTrack = activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length];
+
+      document.getElementById('currentPlayingTrackText').textContent = currentTrack.title;
+      document.getElementById('nextUpTrackText').textContent = nextTrack.title;
+      document.getElementById('nowPlayingTitle').textContent = `מנגן מיקס חי: ${currentTrack.title}`;
+      document.getElementById('sessionStatusLabel').textContent = 'זמן סשן כולל:';
+      document.getElementById('sessionPulseIndicator').className = 'w-2 h-2 rounded-full bg-glowLime animate-ping';
+
+      activeDeckName = 'A';
+      deckA.track = currentTrack;
+      deckA.audio.src = currentTrack.url;
+      
+      if (audioCtx && deckA.gain && deckB.gain) {
+        deckA.gain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+        deckB.gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      }
+
+      deckA.audio.play().then(() => {
+        isMasterPlaying = true;
+        updatePlayerControlsUI(true);
+        startDJCrossfadeWatcher();
+        if (resetSession || !sessionPlaybackTimer) {
+          startSessionTimer();
+        }
+      }).catch(e => console.warn("Autoplay gesture pending:", e));
     }
 
-    window.selectQuickGenTrack = function(num, title, previewUrl, bpm, key, artistName, genre) {
-      const track = { title, previewUrl, bpm: bpm || 124, key: key || '8A', artistName: artistName || '', genre: genre || 'Dance' };
-      if (num === 1) {
-        selectedQuickTrack1 = track;
-        document.getElementById('quickGenInput1').value = title;
-        document.getElementById('quickGenDrop1').classList.add('hidden');
+    function startSessionTimer() {
+      clearInterval(sessionPlaybackTimer);
+      sessionPlaybackTimer = setInterval(() => {
+        if (!isMasterPlaying) return;
+        sessionElapsedSeconds++;
+
+        const curM = Math.floor(sessionElapsedSeconds / 60).toString().padStart(2, '0');
+        const curS = Math.floor(sessionElapsedSeconds % 60).toString().padStart(2, '0');
+        const totM = Math.floor(totalTargetSessionSeconds / 60).toString().padStart(2, '0');
+        const totS = Math.floor(totalTargetSessionSeconds % 60).toString().padStart(2, '0');
+
+        document.getElementById('sessionProgressTimerText').textContent = `${curM}:${curS} / ${totM}:${totS} דקות`;
+
+        // Graceful Session Completion
+        if (sessionElapsedSeconds >= totalTargetSessionSeconds) {
+          clearInterval(sessionPlaybackTimer);
+          document.getElementById('nowPlayingTitle').textContent = '🎉 הסשן הסתיים בהצלחה!';
+          document.getElementById('sessionStatusLabel').textContent = 'הסשן הושלם:';
+          document.getElementById('sessionPulseIndicator').className = 'w-2 h-2 rounded-full bg-electricCyan';
+          
+          // Graceful Fade-Out
+          const currentDeck = activeDeckName === 'A' ? deckA : deckB;
+          if (audioCtx && currentDeck.gain) {
+            currentDeck.gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+          }
+          setTimeout(() => {
+            currentDeck.audio.pause();
+            isMasterPlaying = false;
+            updatePlayerControlsUI(false);
+          }, 2500);
+        }
+      }, 1000);
+    }
+
+    function startDJCrossfadeWatcher() {
+      clearInterval(crossfadeTimer);
+      crossfadeTimer = setInterval(() => {
+        if (!isMasterPlaying) return;
+
+        const currentDeck = activeDeckName === 'A' ? deckA : deckB;
+        const targetDeck = activeDeckName === 'A' ? deckB : deckA;
+        const cur = currentDeck.audio.currentTime;
+        const dur = currentDeck.audio.duration || 30;
+
+        // Track progress bar & counter
+        const pct = (cur / dur) * 100;
+        document.getElementById('liveMixProgressBar').style.width = `${pct}%`;
+        const m = Math.floor(cur / 60).toString().padStart(2, '0');
+        const s = Math.floor(cur % 60).toString().padStart(2, '0');
+        const durM = Math.floor(dur / 60).toString().padStart(2, '0');
+        const durS = Math.floor(dur % 60).toString().padStart(2, '0');
+        document.getElementById('liveTrackCurrentTime').textContent = `${m}:${s} / ${durM}:${durS}`;
+
+        // Trigger real Crossfade 4 seconds before track ends
+        const crossfadeTime = 4.0;
+        if (!isCrossfading && dur > crossfadeTime && cur >= (dur - crossfadeTime)) {
+          triggerRealCrossfade(currentDeck, targetDeck, crossfadeTime);
+        }
+      }, 120);
+    }
+
+    function triggerRealCrossfade(fromDeck, toDeck, duration) {
+      isCrossfading = true;
+      const nextIndex = (currentTrackIndex + 1) % activePlaylistQueue.length;
+      currentTrackIndex = nextIndex;
+      const nextTrack = activePlaylistQueue[currentTrackIndex];
+      const afterNextTrack = activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length];
+
+      toDeck.track = nextTrack;
+      toDeck.audio.src = nextTrack.url;
+
+      if (audioCtx && fromDeck.gain && toDeck.gain) {
+        const now = audioCtx.currentTime;
+        fromDeck.gain.gain.setValueAtTime(1.0, now);
+        fromDeck.gain.gain.linearRampToValueAtTime(0.001, now + duration);
+
+        toDeck.gain.gain.setValueAtTime(0.001, now);
+        toDeck.gain.gain.linearRampToValueAtTime(1.0, now + duration);
+      }
+
+      toDeck.audio.play().catch(e => console.warn(e));
+
+      // Immediate visual update to prevent sudden jumps
+      activeDeckName = activeDeckName === 'A' ? 'B' : 'A';
+      document.getElementById('currentPlayingTrackText').textContent = nextTrack.title;
+      document.getElementById('nextUpTrackText').textContent = afterNextTrack.title;
+      document.getElementById('nowPlayingTitle').textContent = `מנגן מיקס חי: ${nextTrack.title}`;
+
+      setTimeout(() => {
+        fromDeck.audio.pause();
+        try { fromDeck.audio.currentTime = 0; } catch(e) {}
+        isCrossfading = false;
+      }, duration * 1000);
+    }
+
+    window.toggleMasterLiveMixPlayback = function() {
+      initAudioContextOnUserGesture();
+      const currentDeck = activeDeckName === 'A' ? deckA : deckB;
+
+      if (isMasterPlaying) {
+        deckA.audio.pause();
+        deckB.audio.pause();
+        clearInterval(crossfadeTimer);
+        clearInterval(sessionPlaybackTimer);
+        isMasterPlaying = false;
+        updatePlayerControlsUI(false);
       } else {
-        selectedQuickTrack2 = track;
-        document.getElementById('quickGenInput2').value = title;
-        document.getElementById('quickGenDrop2').classList.add('hidden');
+        if (!currentDeck.track) {
+          startMasterPlayback(0, selectedDurationMinutes, true);
+        } else {
+          currentDeck.audio.play().then(() => {
+            isMasterPlaying = true;
+            updatePlayerControlsUI(true);
+            startDJCrossfadeWatcher();
+            startSessionTimer();
+          }).catch(e => console.warn(e));
+        }
       }
     };
 
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    function updatePlayerControlsUI(playing) {
+      document.getElementById('masterPlayBtnIcon').textContent = playing ? '⏸' : '▶';
+      document.getElementById('masterPlayBtnText').textContent = playing ? 'השהה השמעה' : 'המשך השמעה';
+      const visualizer = document.getElementById('soundbarsVisualizer');
+      if (playing) {
+        visualizer.classList.remove('hidden');
+        visualizer.classList.add('flex');
+      } else {
+        visualizer.classList.add('hidden');
+        visualizer.classList.remove('flex');
+      }
     }
 
-    async function fetchAudioBuffer(url, ctx) {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const arrayBuffer = await response.arrayBuffer();
-      return await new Promise((resolve, reject) => {
-        ctx.decodeAudioData(arrayBuffer, resolve, reject);
-      });
-    }
+    window.skipLiveTrack = function(dir) {
+      const targetMins = Math.floor(totalTargetSessionSeconds / 60) || selectedDurationMinutes;
+      const nextIdx = dir === 'next' 
+        ? (currentTrackIndex + 1) % activePlaylistQueue.length
+        : (currentTrackIndex - 1 + activePlaylistQueue.length) % activePlaylistQueue.length;
+      
+      // Preserve session elapsed progress on skip
+      startMasterPlayback(nextIdx, targetMins, false);
+    };
 
-    // --- REAL BPM DETECTION (onset envelope + autocorrelation) ---
-    // Replaces the old "simulatedBpm = 120 + (trackId % 12)" placeholder with an
-    // actual estimate derived from the audio itself.
-    function detectBpmFromBuffer(buffer) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
+    window.seekLiveMix = function(e) {
+      const currentDeck = activeDeckName === 'A' ? deckA : deckB;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const ratio = (e.clientX - rect.left) / rect.width;
+      currentDeck.audio.currentTime = ratio * (currentDeck.audio.duration || 30);
+    };
 
-      // Downsample energy envelope in ~10ms frames (good resolution for 60-200 BPM)
-      const frameSize = Math.round(sampleRate * 0.01);
-      const maxSamples = Math.min(data.length, sampleRate * 25); // analyze up to 25s
-      const frameCount = Math.floor(maxSamples / frameSize);
-      const envelope = new Float32Array(frameCount);
+    // AI Taste Engine & Cloud Sync
+    function recordUserMusicTaste(genre, songTitles) {
+      let tastes = JSON.parse(localStorage.getItem('pulseai_user_tastes') || '{"genres":{},"artists":{}}');
+      tastes.genres[genre] = (tastes.genres[genre] || 0) + 1;
 
-      for (let f = 0; f < frameCount; f++) {
-        let sum = 0;
-        const start = f * frameSize;
-        for (let i = 0; i < frameSize; i++) {
-          const v = data[start + i] || 0;
-          sum += v * v;
-        }
-        envelope[f] = Math.sqrt(sum / frameSize);
-      }
-
-      // Onset strength = positive first difference (energy rising = likely a hit)
-      const onset = new Float32Array(frameCount);
-      for (let f = 1; f < frameCount; f++) {
-        const d = envelope[f] - envelope[f - 1];
-        onset[f] = d > 0 ? d : 0;
-      }
-
-      // Autocorrelation over plausible BPM range (60-190) converted to frame lags
-      const framesPerSec = 1 / 0.01;
-      const minBpm = 60, maxBpm = 190;
-      const minLag = Math.round((60 / maxBpm) * framesPerSec);
-      const maxLag = Math.round((60 / minBpm) * framesPerSec);
-
-      let bestLag = minLag;
-      let bestScore = -Infinity;
-      for (let lag = minLag; lag <= maxLag; lag++) {
-        let score = 0;
-        for (let f = 0; f < frameCount - lag; f++) {
-          score += onset[f] * onset[f + lag];
-        }
-        if (score > bestScore) {
-          bestScore = score;
-          bestLag = lag;
-        }
-      }
-
-      let bpm = 60 / (bestLag / framesPerSec);
-      // Fold into a sensible dance-music range (avoid half/double-time errors)
-      while (bpm < 100) bpm *= 2;
-      while (bpm > 180) bpm /= 2;
-      return Math.round(bpm);
-    }
-
-    function findFirstDownbeatOffset(buffer, bpm = 124) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
-      const searchLen = Math.min(data.length, Math.floor(sampleRate * 2.0));
-      const windowSize = 256;
-      let maxDelta = 0;
-      let bestSample = 0;
-      let prevEnergy = 0;
-
-      for (let i = 0; i < searchLen - windowSize; i += 64) {
-        let sum = 0;
-        for (let j = 0; j < windowSize; j += 4) {
-          const v = data[i + j];
-          sum += v * v;
-        }
-        const energy = Math.sqrt(sum / (windowSize / 4));
-        const delta = energy - prevEnergy;
-        if (delta > maxDelta && energy > 0.06) {
-          maxDelta = delta;
-          bestSample = i;
-        }
-        prevEnergy = energy;
-      }
-      const beatIntervalSec = 60.0 / bpm;
-      const rawOffsetSec = bestSample / sampleRate;
-      return Math.max(0, rawOffsetSec % beatIntervalSec);
-    }
-
-    function analyzeTrackStructure(buffer) {
-      const data = buffer.getChannelData(0);
-      const sampleRate = buffer.sampleRate;
-      const firstSecSamples = Math.min(data.length, Math.floor(sampleRate * 1.5));
-      let sum = 0;
-      for (let i = 0; i < firstSecSamples; i += 64) {
-        sum += data[i] * data[i];
-      }
-      const introRms = Math.sqrt(sum / (firstSecSamples / 64));
-      const isInstantChorus = introRms > 0.17;
-
-      // Real BPM detected from the audio itself, not the placeholder metadata value.
-      const detectedBpm = detectBpmFromBuffer(buffer);
-      const downbeatOffset = findFirstDownbeatOffset(buffer, detectedBpm);
-
-      // If the track does NOT slam in immediately (a slow/quiet build-up intro),
-      // find where it actually picks up energy so we don't mix it in mid-set and
-      // create a dead spot. We scan forward from the downbeat in beat-sized steps
-      // and enter at the first beat where energy has risen close to the track's
-      // sustained loud level.
-      let mixInOffset = downbeatOffset;
-      if (!isInstantChorus) {
-        const beatDuration = 60 / detectedBpm;
-        const beatSamples = Math.max(1, Math.round(beatDuration * sampleRate));
-        const scanLimit = Math.min(data.length, Math.floor(sampleRate * 15)); // scan up to 15s
-        // sustained loud level = RMS over a window well past the intro
-        const refStart = Math.min(data.length - beatSamples, Math.floor(sampleRate * 12));
-        let refSum = 0, refCount = 0;
-        for (let i = refStart; i < Math.min(data.length, refStart + sampleRate * 2); i += 4) {
-          refSum += data[i] * data[i]; refCount++;
-        }
-        const refRms = refCount ? Math.sqrt(refSum / refCount) : introRms;
-        const energyThreshold = Math.max(refRms * 0.75, 0.08);
-
-        let sample = Math.floor(downbeatOffset * sampleRate);
-        while (sample < scanLimit) {
-          let s = 0, c = 0;
-          for (let j = 0; j < beatSamples; j += 4) {
-            const v = data[sample + j] || 0;
-            s += v * v; c++;
-          }
-          const beatRms = c ? Math.sqrt(s / c) : 0;
-          if (beatRms >= energyThreshold) {
-            mixInOffset = sample / sampleRate;
-            break;
-          }
-          sample += beatSamples;
-        }
-      }
-
-      return { downbeatOffset, mixInOffset, isInstantChorus, detectedBpm };
-    }
-
-    // Rounds a local (playback-relative) time to the nearest whole beat so cue
-    // points land exactly on a beat instead of an arbitrary fractional second.
-    function snapToBeatGrid(localTimeSec, beatDurationSec, minBeats = 4) {
-      const beats = Math.max(minBeats, Math.round(localTimeSec / beatDurationSec));
-      return beats * beatDurationSec;
-    }
-
-    // Equal-power fade curve (constant perceived loudness through the crossfade,
-    // unlike a linear ramp which dips in the middle).
-    function equalPowerCurve(steps = 64, direction = 'in') {
-      const curve = new Float32Array(steps);
-      for (let i = 0; i < steps; i++) {
-        const t = i / (steps - 1);
-        curve[i] = direction === 'in'
-          ? Math.sin(t * Math.PI / 2)
-          : Math.cos(t * Math.PI / 2);
-      }
-      // avoid a hard 0 (Web Audio dislikes ramping to/from exactly 0 in some paths)
-      curve[curve.length - 1] = Math.max(curve[curve.length - 1], 0.0001);
-      curve[0] = Math.max(curve[0], 0.0001);
-      return curve;
-    }
-
-    function calculateBufferRms(buffer) {
-      const data = buffer.getChannelData(0);
-      let sum = 0;
-      const step = Math.max(1, Math.floor(data.length / 30000));
-      let count = 0;
-      for (let i = 0; i < data.length; i += step) {
-        sum += data[i] * data[i];
-        count++;
-      }
-      return Math.sqrt(sum / count) || 0.12;
-    }
-
-    async function encodeMp3Async(renderedBuffer, onProgress) {
-      if (!window.lamejs) throw new Error('MP3 encoder unavailable');
-      const left = renderedBuffer.getChannelData(0);
-      const right = renderedBuffer.numberOfChannels > 1 ? renderedBuffer.getChannelData(1) : left;
-      const mp3encoder = new lamejs.Mp3Encoder(2, renderedBuffer.sampleRate, 192);
-      const mp3Data = [];
-      const block = 1152;
-      const totalLen = renderedBuffer.length;
-      let i = 0;
-      const CHUNK_STEP = block * 60;
-
-      while (i < totalLen) {
-        const nextTarget = Math.min(i + CHUNK_STEP, totalLen);
-        while (i < nextTarget) {
-          const len = Math.min(block, totalLen - i);
-          const lChunk = new Int16Array(len);
-          const rChunk = new Int16Array(len);
-          for (let j = 0; j < len; j++) {
-            lChunk[j] = Math.max(-32768, Math.min(32767, left[i + j] * 32767));
-            rChunk[j] = Math.max(-32768, Math.min(32767, right[i + j] * 32767));
-          }
-          const buf = mp3encoder.encodeBuffer(lChunk, rChunk);
-          if (buf.length > 0) mp3Data.push(new Int8Array(buf));
-          i += len;
-        }
-        if (onProgress) onProgress(Math.round((i / totalLen) * 100));
-        await new Promise(r => setTimeout(r, 0));
-      }
-
-      const endB = mp3encoder.flush();
-      if (endB.length > 0) mp3Data.push(new Int8Array(endB));
-      return new Blob(mp3Data, { type: 'audio/mpeg' });
-    }
-
-    // --- TURBO DROP-MIX SWITCH ENGINE v2 (real BPM match + equal-power crossfades) ---
-    async function renderDjSetToMp3(buffers, tracksMeta, targetDurationSec, statusEl) {
-      const sampleRate = buffers[0].sampleRate;
-      let sliceInfos = [];
-      let trackOffsets = [];
-      let cursor = 0;
-
-      // Analyze every track for real BPM + downbeat offset (no more fake metadata BPM).
-      const structures = buffers.map(b => analyzeTrackStructure(b));
-
-      // Use the FIRST track's detected BPM as the set's reference tempo, then compute
-      // a playbackRate for every other track so they actually beat-match instead of
-      // just hoping the metadata BPMs were close.
-      const referenceBpm = structures[0].detectedBpm || 124;
-      const playbackRates = structures.map(s => {
-        const bpm = s.detectedBpm || referenceBpm;
-        const rawRate = referenceBpm / bpm;
-        // clamp so pitch/tempo shift stays musically reasonable (+-8%)
-        return Math.max(0.92, Math.min(1.08, rawRate));
+      songTitles.forEach(t => {
+        const artist = t.split('—')[0].trim();
+        if (artist) tastes.artists[artist] = (tastes.artists[artist] || 0) + 1;
       });
 
-      const TARGET_RMS = 0.14;
-      const trackGains = buffers.map(buf => {
-        const rms = calculateBufferRms(buf);
-        return Math.max(0.70, Math.min(1.45, TARGET_RMS / rms));
-      });
-
-      // Once every track is time-stretched to referenceBpm, the mix's actual
-      // sounding tempo is referenceBpm for everyone — so the beat grid used for
-      // cue points should be based on that output tempo, not each track's own
-      // native tempo (which no longer matches what's actually playing).
-      const outputBeatDuration = 60 / referenceBpm;
-
-      for (let i = 0; i < buffers.length; i++) {
-        const buf = buffers[i];
-        const transitionBeats = 8; // half a musical phrase
-        const rawTransitionDuration = outputBeatDuration * transitionBeats;
-        const transitionDuration = Math.max(2.5, Math.min(6, rawTransitionDuration));
-        const playbackRate = playbackRates[i];
-        const effectiveDuration = buf.duration / playbackRate;
-
-        // Snap the exit point to the beat grid instead of an arbitrary
-        // "duration minus transition" fraction of a second, so every cut lands
-        // exactly on-beat.
-        const rawCueOut = Math.max(10.0, effectiveDuration - transitionDuration);
-        const cueOut = Math.min(
-          snapToBeatGrid(rawCueOut, outputBeatDuration),
-          effectiveDuration - transitionDuration * 0.5
-        );
-
-        sliceInfos.push({ buffer: buf, cueOut, transitionDuration, struct: structures[i], playbackRate, effectiveDuration });
-        trackOffsets.push(cursor);
-
-        if (i < buffers.length - 1) {
-          cursor += cueOut;
-        } else {
-          cursor += effectiveDuration;
-        }
-
-        if (targetDurationSec && cursor >= targetDurationSec) break;
+      localStorage.setItem('pulseai_user_tastes', JSON.stringify(tastes));
+      if (window.saveDataToCloudIfLoggedIn) {
+        window.saveDataToCloudIfLoggedIn('tastes', tastes);
       }
-
-      // Always leave room for a clean fade-out tail at the very end, even if the
-      // target duration would otherwise chop the last track mid-phrase.
-      const FINAL_FADE = 2.0;
-      const totalRenderLen = Math.min(cursor, targetDurationSec || cursor) + FINAL_FADE;
-      const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
-        2, Math.ceil(sampleRate * (totalRenderLen + 0.5)), sampleRate
-      );
-
-      // Gentler master bus compression: only leans in during the louder crossfade
-      // overlaps instead of squashing the whole mix and causing constant pumping.
-      const masterCompressor = offlineCtx.createDynamicsCompressor();
-      masterCompressor.threshold.setValueAtTime(-9, 0);
-      masterCompressor.knee.setValueAtTime(6, 0);
-      masterCompressor.ratio.setValueAtTime(2.5, 0);
-      masterCompressor.attack.setValueAtTime(0.01, 0);
-      masterCompressor.release.setValueAtTime(0.2, 0);
-
-      // Safety limiter: during crossfade overlaps two equal-power tracks can sum
-      // to more than 0dB (especially with the RMS-normalization gain applied
-      // upstream), which would clip when encoded to MP3. A fast, high-ratio
-      // compressor right at the end of the chain catches those peaks without
-      // audibly pumping the rest of the mix.
-      const safetyLimiter = offlineCtx.createDynamicsCompressor();
-      safetyLimiter.threshold.setValueAtTime(-1, 0);
-      safetyLimiter.knee.setValueAtTime(0, 0);
-      safetyLimiter.ratio.setValueAtTime(20, 0);
-      safetyLimiter.attack.setValueAtTime(0.002, 0);
-      safetyLimiter.release.setValueAtTime(0.08, 0);
-
-      masterCompressor.connect(safetyLimiter);
-      safetyLimiter.connect(offlineCtx.destination);
-
-      const lastRenderedEnd = Math.min(cursor, targetDurationSec || cursor);
-
-      for (let i = 0; i < sliceInfos.length; i++) {
-        const src = offlineCtx.createBufferSource();
-        src.buffer = sliceInfos[i].buffer;
-        src.playbackRate.value = sliceInfos[i].playbackRate;
-
-        const info = sliceInfos[i];
-        const cueOut = info.cueOut;
-        const tDur = info.transitionDuration;
-        const autoGain = trackGains[i];
-
-        // Hard Low-Cut Filter (מונע התנגשות בסים בזמן החפיפה)
-        const lowEq = offlineCtx.createBiquadFilter();
-        lowEq.type = 'lowshelf'; lowEq.frequency.value = 220; lowEq.gain.value = 0;
-
-        const directGain = offlineCtx.createGain();
-
-        src.connect(lowEq);
-        lowEq.connect(directGain);
-        directGain.connect(masterCompressor);
-
-        const startTime = trackOffsets[i];
-        if (startTime >= totalRenderLen) break;
-
-        const isLast = (i === sliceInfos.length - 1);
-        const fadeInCurve = equalPowerCurve(48, 'in').map(v => v * autoGain);
-        const fadeOutCurve = equalPowerCurve(48, 'out').map(v => v * autoGain);
-
-        if (i === 0) {
-          directGain.gain.setValueAtTime(autoGain, 0);
-          directGain.gain.setValueAtTime(autoGain, cueOut);
-          // Equal-power fade-out instead of a linear ramp (no perceived volume dip)
-          directGain.gain.setValueCurveAtTime(fadeOutCurve, cueOut, tDur);
-          lowEq.gain.setValueAtTime(0, cueOut);
-          lowEq.gain.linearRampToValueAtTime(-45, cueOut + tDur);
-          // duration arg is in buffer-native time, so scale by playbackRate
-          src.start(0, 0, (cueOut + tDur) * info.playbackRate);
-        } else if (!isLast) {
-          // Use mixInOffset, not the raw downbeat: if this track has a slow/quiet
-          // build-up intro (isInstantChorus === false), mixInOffset skips ahead to
-          // where it actually picks up energy, still snapped to that track's own
-          // beat grid, so it doesn't create a dead spot mid-set.
-          const downbeat = info.struct.mixInOffset ?? info.struct.downbeatOffset ?? 0;
-
-          // Equal-power fade-in for the incoming track, timed to its detected downbeat.
-          directGain.gain.setValueCurveAtTime(fadeInCurve, startTime, Math.min(tDur, 1.5));
-          directGain.gain.setValueAtTime(autoGain, startTime + Math.min(tDur, 1.5));
-          directGain.gain.setValueAtTime(autoGain, startTime + cueOut);
-
-          // Bass duck for the outgoing track during the overlap, not an absolute cut
-          lowEq.gain.setValueAtTime(-45, startTime);
-          lowEq.gain.linearRampToValueAtTime(0, startTime + 0.4);
-
-          directGain.gain.setValueCurveAtTime(fadeOutCurve, startTime + cueOut, tDur);
-          lowEq.gain.setValueAtTime(0, startTime + cueOut);
-          lowEq.gain.linearRampToValueAtTime(-45, startTime + cueOut + tDur);
-
-          src.start(startTime, downbeat, (cueOut + tDur) * info.playbackRate);
-        } else {
-          const downbeat = info.struct.mixInOffset ?? info.struct.downbeatOffset ?? 0;
-          directGain.gain.setValueCurveAtTime(fadeInCurve, startTime, Math.min(tDur, 1.5));
-          directGain.gain.setValueAtTime(autoGain, startTime + Math.min(tDur, 1.5));
-
-          // Guaranteed clean fade-out at the very end of the render, wherever it falls.
-          const fadeOutStart = Math.max(startTime + Math.min(tDur, 1.5), lastRenderedEnd - FINAL_FADE);
-          directGain.gain.setValueAtTime(autoGain, fadeOutStart);
-          directGain.gain.setValueCurveAtTime(fadeOutCurve, fadeOutStart, FINAL_FADE);
-
-          const playLen = Math.min(info.effectiveDuration, (fadeOutStart + FINAL_FADE) - startTime);
-          src.start(startTime, downbeat, playLen * info.playbackRate);
-        }
-      }
-
-      const renderedBuffer = await offlineCtx.startRendering();
-      return await encodeMp3Async(renderedBuffer, pct => {
-        if (statusEl) statusEl.innerHTML = `<span class="inline-block animate-spin">⏳</span> מקודד MP3: ${pct}%...`;
-      });
+      renderPersonalizedAiRecommendations();
     }
 
-    window.executeProCustomMixDownload = async function() {
-      const chosenTracks = proSongsList.filter(t => t && t.previewUrl);
-      const status = document.getElementById('proMixStatus');
+    window.renderPersonalizedAiRecommendations = function() {
+      const tastes = JSON.parse(localStorage.getItem('pulseai_user_tastes') || '{"genres":{},"artists":{}}');
+      const container = document.getElementById('aiTasteCardsGrid');
+      if (!container) return;
+      
+      let topGenre = 'מסיבה ישראלית';
+      let maxG = 0;
+      for (const g in tastes.genres) {
+        if (tastes.genres[g] > maxG) { maxG = tastes.genres[g]; topGenre = g; }
+      }
+      document.getElementById('detectedTopGenreBadge').textContent = `סגנון מוביל: ${escapeHtml(topGenre)}`;
 
-      if (chosenTracks.length < 2) {
-        alert('אנא בחר לפחות 2 שירים תקינים ברשימת ה-Pro Mode כדי ליצור מיקס רציף!');
+      const recommendations = [
+        { title: `סט ${topGenre} אנרגטי`, subtitle: 'נבנה מותאם אישית לפי השירים ששמעת', icon: '🔥', genreKey: 'party', dur: 20 },
+        { title: 'מיקס להיטי שיא (Peak Energy)', subtitle: 'מעברי DJ מדויקים על פי הקצב המועדף עליך', icon: '⚡', genreKey: 'dance', dur: 10 },
+        { title: 'סט צ׳יל ונסיעות הרמוני', subtitle: 'רצף זורם שנבנה בדיוק לאווירה שלך', icon: '🚗', genreKey: 'chill', dur: 30 }
+      ];
+
+      container.innerHTML = recommendations.map((rec) => `
+        <div onclick="playInstantRecommendedMix('${rec.genreKey}', ${rec.dur})" class="p-3.5 rounded-2xl bg-black/40 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 cursor-pointer transition-all" role="button" tabindex="0">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-base">${rec.icon}</span>
+            <span class="text-[10px] text-glowLime font-mono font-bold">${rec.dur} דקות</span>
+          </div>
+          <div class="text-xs font-bold text-white">${escapeHtml(rec.title)}</div>
+          <div class="text-[10px] text-purple-300 mt-1 line-clamp-1">${escapeHtml(rec.subtitle)}</div>
+          <div class="mt-2 text-[10px] text-electricCyan font-bold">▶ נגן את המיקס עכשיו באתר</div>
+        </div>
+      `).join('');
+    };
+
+    window.playInstantRecommendedMix = function(genreKey, dur) {
+      selectPlaylistGenre(genreKey);
+      selectPlaylistDuration(dur);
+      generateAndPlayCustomPlaylistLive();
+    };
+
+    function saveMixToArchive(title, genre, duration, tracks) {
+      let history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
+      history.unshift({
+        id: Date.now(),
+        title,
+        genre,
+        duration,
+        tracks,
+        date: new Date().toLocaleDateString('he-IL')
+      });
+      const truncated = history.slice(0, 15);
+      localStorage.setItem('pulseai_mix_history', JSON.stringify(truncated));
+      if (window.saveDataToCloudIfLoggedIn) {
+        window.saveDataToCloudIfLoggedIn('mix_history', truncated);
+      }
+      renderMixHistoryList();
+    }
+
+    window.renderMixHistoryList = function() {
+      const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
+      const list = document.getElementById('mixHistoryListContainer');
+      if (!list) return;
+
+      if (history.length === 0) {
+        list.innerHTML = '<div class="text-center text-xs text-purple-400 py-3 italic">עדיין לא יצרת מיקסים. צור מיקס ראשון למעלה!</div>';
         return;
       }
 
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> טוען קטעים ומעבד מיקס Pro DJ...';
+      list.innerHTML = history.map(item => `
+        <div class="p-3 rounded-2xl bg-black/40 border border-purple-900/60 flex items-center justify-between gap-2 hover:border-electricCyan transition-all">
+          <div>
+            <div class="text-xs font-bold text-white flex items-center gap-2">
+              <span>${escapeHtml(item.title)}</span>
+              <span class="text-[9px] text-glowLime bg-glowLime/10 px-2 py-0.5 rounded">${escapeHtml(item.genre)}</span>
+            </div>
+            <div class="text-[10px] text-purple-300 mt-0.5">${escapeHtml(item.date)} • ${escapeHtml(item.duration)} • ${item.tracks.length} שירים</div>
+          </div>
+          <button onclick="playSavedMixFromHistory(${item.id})" class="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-glowLime hover:text-night text-glowLime text-xs font-bold border border-glowLime/40 transition-all">
+            ▶ נגן שוב
+          </button>
+        </div>
+      `).join('');
+    };
 
-      try {
-        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const bufferPromises = chosenTracks.map(async t => {
-          try {
-            const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
-            return { buf, track: t };
-          } catch(e) {
-            return null;
-          }
-        });
-
-        const loadedResults = (await Promise.all(bufferPromises)).filter(Boolean);
-        if (tempCtx.close) await tempCtx.close();
-
-        if (loadedResults.length < 2) {
-          throw new Error('לא ניתן היה לטעון לפחות 2 שירים תקינים.');
-        }
-
-        const loadedBuffers = loadedResults.map(r => r.buf);
-        const validTracks = loadedResults.map(r => r.track);
-
-        const blob = await renderDjSetToMp3(loadedBuffers, validTracks, null, status);
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `PULSEAI_ProDJ_MasterMix.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-        status.textContent = '🎉 מיקס Pro DJ הופק והורד בהצלחה!';
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
+    window.playSavedMixFromHistory = function(id) {
+      const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
+      const item = history.find(h => h.id === id);
+      if (item) {
+        activePlaylistQueue = item.tracks;
+        const durInt = parseInt(item.duration) || 10;
+        startMasterPlayback(0, durInt, true);
+        document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
       }
     };
 
-    window.generate10MinQuickMix = async function() {
-      const status = document.getElementById('quickGenStatus');
-
-      if (!selectedQuickTrack1 || !selectedQuickTrack2) {
-        alert('אנא בחר 2 שירים כדי שה-AI יוכל לנתח את הסגנון ולבנות לפיהם מיקס של 10 דקות!');
-        return;
+    window.clearUserMixHistory = function() {
+      localStorage.removeItem('pulseai_mix_history');
+      if (window.saveDataToCloudIfLoggedIn) {
+        window.saveDataToCloudIfLoggedIn('mix_history', []);
       }
-
-      status.innerHTML = '<span class="inline-block animate-spin">⏳</span> AI מנתח BPM, סולם הרמוני וסגנון משני השירים...';
-
-      try {
-        const seed1 = selectedQuickTrack1;
-        const seed2 = selectedQuickTrack2;
-
-        const genre1 = seed1.genre || '';
-        const genre2 = seed2.genre || '';
-        // The set of "acceptable" genre buckets is derived from the two songs
-        // the user actually entered — nothing else counts as a match.
-        const targetGenreBuckets = new Set([normalizeGenre(genre1), normalizeGenre(genre2)].filter(Boolean));
-        const genreLabel = [genre1, genre2].filter(Boolean).join(' / ') || 'Dance';
-
-        let curatedTracks = [seed1, seed2];
-
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מחפש שירים באותו ז'אנר בדיוק (${escapeHtml(genreLabel)})...`;
-
-        // Search from several angles — each seed artist's catalogue and the
-        // genre names themselves — then keep ONLY tracks whose real iTunes
-        // genre bucket matches one of the two seed songs' genre buckets.
-        const searchQueries = [
-          `${seed1.artistName} hits`,
-          `${seed2.artistName} hits`,
-          genre1 ? `${genre1} hits` : null,
-          genre2 ? `${genre2} hits` : null,
-          genre1 ? `top ${genre1}` : null,
-          genre2 ? `top ${genre2}` : null,
-          genre1 ? `${genre1} 2025` : null,
-          genre2 ? `${genre2} 2025` : null,
-        ].filter(Boolean);
-
-        const seenUrls = new Set([seed1.previewUrl, seed2.previewUrl]);
-
-        for (const query of searchQueries) {
-          if (curatedTracks.length >= 16) break;
-          const items = await searchItunesApi(query, 12);
-          for (const item of items) {
-            if (curatedTracks.length >= 16) break;
-            if (!item.previewUrl || seenUrls.has(item.previewUrl)) continue;
-            // Hard genre gate — this is the real filter now (uses iTunes'
-            // actual primaryGenreName), not a fake simulated BPM number.
-            if (targetGenreBuckets.size > 0 && !targetGenreBuckets.has(normalizeGenre(item.primaryGenreName))) continue;
-
-            seenUrls.add(item.previewUrl);
-            curatedTracks.push({
-              title: `${item.artistName} — ${item.trackName}`,
-              previewUrl: item.previewUrl,
-              artistName: item.artistName || '',
-              genre: item.primaryGenreName || genreLabel
-            });
-          }
-        }
-
-        // Fallback: if the strict genre gate left us with too few tracks for a
-        // decent 10-minute set, widen the search using just the genre names on
-        // their own (still genre-gated, just a broader net) before giving up.
-        if (curatedTracks.length < 6 && targetGenreBuckets.size > 0) {
-          status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מרחיב חיפוש בתוך אותו ז'אנר...`;
-          const broaderQueries = [genre1, genre2].filter(Boolean);
-          for (const query of broaderQueries) {
-            if (curatedTracks.length >= 12) break;
-            const items = await searchItunesApi(query, 20);
-            for (const item of items) {
-              if (curatedTracks.length >= 12) break;
-              if (!item.previewUrl || seenUrls.has(item.previewUrl)) continue;
-              if (!targetGenreBuckets.has(normalizeGenre(item.primaryGenreName))) continue;
-              seenUrls.add(item.previewUrl);
-              curatedTracks.push({
-                title: `${item.artistName} — ${item.trackName}`,
-                previewUrl: item.previewUrl,
-                artistName: item.artistName || '',
-                genre: item.primaryGenreName || genreLabel
-              });
-            }
-          }
-        }
-
-        if (curatedTracks.length < 2) {
-          throw new Error('לא נמצאו מספיק שירים באותו ז\'אנר. נסה שירים אחרים.');
-        }
-
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> נמצאו ${curatedTracks.length} שירים באותו ז'אנר (${escapeHtml(genreLabel)}) — טוען ומסנכרן ביטים...`;
-        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const fetchPromises = curatedTracks.map(async t => {
-          try {
-            const buf = await fetchAudioBuffer(t.previewUrl, tempCtx);
-            return { buf, track: t };
-          } catch(e) {
-            return null;
-          }
-        });
-
-        const loadedResults = (await Promise.all(fetchPromises)).filter(Boolean);
-        if (tempCtx.close) await tempCtx.close();
-
-        if (loadedResults.length < 2) {
-          throw new Error('שגיאה בטעינת קבצי האודיו. נסה שירים אחרים.');
-        }
-
-        const loadedBuffers = loadedResults.map(r => r.buf);
-        const validTracks = loadedResults.map(r => r.track);
-
-        const TARGET_DURATION = 600;
-        let extendedBuffers = [];
-        let extendedTracks = [];
-        let accumulatedTime = 0;
-        let loopIdx = 0;
-
-        while (accumulatedTime < TARGET_DURATION && extendedBuffers.length < 35) {
-          const idx = loopIdx % loadedBuffers.length;
-          const buf = loadedBuffers[idx];
-          extendedBuffers.push(buf);
-          extendedTracks.push(validTracks[idx]);
-          accumulatedTime += Math.max(18, buf.duration - 3.5);
-          loopIdx++;
-        }
-
-        status.innerHTML = `<span class="inline-block animate-spin">⏳</span> מפיק סט DJ רציף של 10 דקות (Turbo Drop-Mix)...`;
-        const blob = await renderDjSetToMp3(extendedBuffers, extendedTracks, TARGET_DURATION, status);
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `PULSEAI_10Min_AI_MasterSet.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-        status.textContent = '🎉 סט 10 דקות מלא מאסטרינג הופק והורד בהצלחה!';
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'שגיאה ביצירת המיקס: ' + (err.message || 'נסה שוב');
-      }
+      renderMixHistoryList();
     };
 
+    window.shareCurrentMixToWhatsApp = function() {
+      const currentTrack = activePlaylistQueue[currentTrackIndex]?.title || 'מיקס DJ חי';
+      const msg = `🔥 שמע את המיקס החי שיצרתי ב-PULSEAI:\n🎵 ${currentTrack}\n\n🎧 כנס להאזין ישירות:\n${window.location.href}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    // Full Keyboard Accessibility & Initial Render
     window.addEventListener('DOMContentLoaded', () => {
-      initProSongSlots();
-      setUIMode('quick');
+      // Accessible keydown for all interactive role="button" elements
+      document.querySelectorAll('[role="button"][tabindex]').forEach(el => {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            el.click();
+          }
+        });
+      });
 
-      if (!localStorage.getItem('pulseai_guide_seen')) {
-        openGuidePrompt();
-      } else {
-        document.getElementById('guideOverlay')?.classList.add('hidden');
-      }
+      renderPersonalizedAiRecommendations();
+      renderMixHistoryList();
     });
   </script>
 </body>
