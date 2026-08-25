@@ -132,12 +132,10 @@
     </div>
   </header>
 
-  <!-- ========================================================= -->
-  <!-- 🧠 AI TASTE RECOMMENDATIONS (עיצוב מעודכן, סימטרי ויוקרתי) -->
-  <!-- ========================================================= -->
+  <!-- ========================================== -->
+  <!-- 🧠 AI TASTE RECOMMENDATIONS (מתוקן ועובד מיידית) -->
+  <!-- ========================================== -->
   <section id="aiTasteRecommendationsSection" class="w-full max-w-5xl mb-6 glass-panel p-6 md:p-7 rounded-3xl border border-purple-800/50 shadow-glow-purple">
-    
-    <!-- Section Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-3 border-b border-purple-900/40">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-ultraviolet flex items-center justify-center text-xl shadow-glow-purple">
@@ -151,7 +149,7 @@
       <span id="detectedTopGenreBadge" class="text-xs text-glowLime font-mono bg-glowLime/10 px-3.5 py-1.5 rounded-full border border-glowLime/30">סטים חכמים מוכנים</span>
     </div>
 
-    <!-- 3 Symmetrical Full-Width Cards -->
+    <!-- 3 Symmetrical Cards -->
     <div id="aiTasteCardsGrid" class="w-full grid grid-cols-1 md:grid-cols-3 gap-4"></div>
   </section>
 
@@ -316,7 +314,7 @@
       <span class="text-xs text-purple-300 font-mono">⚡ רצף שירים זורם ומותאם אישית</span>
     </div>
 
-    <!-- 1. Genre Selection -->
+    <!-- Genre Selection -->
     <div class="space-y-2 mb-4">
       <label class="block text-xs font-bold text-purple-200">1. בחר את הז'אנר או סגנון האירוע:</label>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -339,7 +337,7 @@
       </div>
     </div>
 
-    <!-- 2. Duration Selector -->
+    <!-- Duration Selector -->
     <div class="space-y-2 mb-4">
       <label class="block text-xs font-bold text-purple-200">2. בחר את משך זמן הפלייליסט:</label>
       <div class="grid grid-cols-3 gap-2.5">
@@ -358,7 +356,7 @@
       </div>
     </div>
 
-    <!-- 3. 5 Favorite Songs Seed Inputs -->
+    <!-- 5 Songs Inputs -->
     <div class="space-y-2 mb-5">
       <label class="block text-xs font-bold text-purple-200">3. הזן שירים אהובים (חפש והוסף שירים לפלייליסט):</label>
       <div class="grid grid-cols-1 gap-2.5">
@@ -524,7 +522,7 @@
     };
   </script>
 
-  <!-- DJ Audio Engine & Renderers -->
+  <!-- DJ Audio Engine & Smart Expansion -->
   <script>
     function escapeHtml(str) {
       if (!str) return '';
@@ -751,7 +749,6 @@
       tracks.forEach(t => recordTasteInteraction(t, 3, genre));
     }
 
-    // REDESIGNED SYMMETRICAL 3-CARD RENDERER
     window.renderPersonalizedAiRecommendations = function() {
       const container = document.getElementById('aiTasteCardsGrid');
       const badgeEl = document.getElementById('detectedTopGenreBadge');
@@ -780,66 +777,29 @@
       }
 
       if (badgeEl) {
-        badgeEl.textContent = mixCount === 0 ? 'סטים חכמים מוכנים' : `סגנון מוביל: ${topGenre}`;
+        badgeEl.textContent = mixCount === 0 ? 'שלב 1: התחלה' : `סגנון מוביל: ${topGenre}`;
       }
 
       const setArtist = topArtist || 'עומר אדם';
       const recommendations = [
-        {
-          title: `סט מסיבה ישראלית מותאם אישית`,
-          subtitle: `רצף להיטים קצבי המבוסס על הבחירות האחרונות מ-${setArtist}`,
-          icon: '🔥',
-          genreKey: 'party',
-          dur: 20,
-          themeColor: 'from-orange-500/20 to-sunset/10',
-          borderColor: 'border-sunset/40'
-        },
-        {
-          title: `Peak Energy — לפי הטעם שלך`,
-          subtitle: `רצף דאנס ואנרגיה גבוהה להקפצת האווירה`,
-          icon: '⚡',
-          genreKey: 'dance',
-          dur: 10,
-          themeColor: 'from-yellow-500/20 to-glowLime/10',
-          borderColor: 'border-glowLime/40'
-        },
-        {
-          title: `Chill & Drive — בהתאמה אישית`,
-          subtitle: `רצף זורם ונעים המותאם לאווירה של ${setArtist}`,
-          icon: '🚗',
-          genreKey: 'chill',
-          dur: 30,
-          themeColor: 'from-cyan-500/20 to-ultraviolet/10',
-          borderColor: 'border-electricCyan/40'
-        }
+        { title: `סט ${topGenre} מותאם אישית`, subtitle: `מבוסס על הבחירות האחרונות מ-${setArtist}`, icon: '🔥', genreKey: 'party', dur: 20 },
+        { title: `Peak Energy — לפי הטעם שלך`, subtitle: `רצף אנרגטי וקצבי להקפצת האווירה`, icon: '⚡', genreKey: 'dance', dur: 10 },
+        { title: `Chill & Drive — בהתאמה אישית`, subtitle: `רצף זורם ונעים המותאם לאווירה של ${setArtist}`, icon: '🚗', genreKey: 'chill', dur: 30 }
       ];
 
       container.innerHTML = recommendations.map(rec => `
-        <div onclick="playInstantRecommendedMix('${rec.genreKey}', ${rec.dur})" 
-             class="group relative p-5 rounded-2xl bg-gradient-to-b ${rec.themeColor} bg-black/40 border ${rec.borderColor} hover:border-glowLime hover:shadow-glow-lime cursor-pointer transition-all duration-300 flex flex-col justify-between">
-          
+        <div onclick="playInstantRecommendedMix('${rec.genreKey}', ${rec.dur})" class="p-4 rounded-2xl bg-black/50 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 cursor-pointer transition-all flex flex-col justify-between">
           <div>
-            <!-- Top Tag & Icon -->
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-2xl p-2 rounded-xl bg-purple-950/60 border border-purple-800/40">${rec.icon}</span>
-              <span class="text-xs font-mono font-bold text-glowLime bg-glowLime/15 px-3 py-1 rounded-full border border-glowLime/30">
-                ⏱️ ${rec.dur} דקות
-              </span>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xl p-2 rounded-xl bg-purple-950/60 border border-purple-800/40">${rec.icon}</span>
+              <span class="text-[10px] text-glowLime font-mono font-bold bg-glowLime/10 px-2.5 py-1 rounded-full border border-glowLime/30">⏱️ ${rec.dur} דקות</span>
             </div>
-
-            <!-- Title & Subtitle -->
-            <h3 class="text-sm md:text-base font-bold text-white group-hover:text-glowLime transition-colors mb-1.5">
-              ${escapeHtml(rec.title)}
-            </h3>
-            <p class="text-xs text-purple-300 leading-relaxed mb-4">
-              ${escapeHtml(rec.subtitle)}
-            </p>
+            <div class="text-xs md:text-sm font-bold text-white mb-1">${escapeHtml(rec.title)}</div>
+            <div class="text-[11px] text-purple-300 leading-relaxed">${escapeHtml(rec.subtitle)}</div>
           </div>
-
-          <!-- Bottom Action Button -->
-          <div class="pt-2 border-t border-purple-900/40 flex items-center justify-between text-xs font-bold text-electricCyan group-hover:text-glowLime">
+          <div class="mt-4 pt-2 border-t border-purple-900/40 text-xs font-bold text-electricCyan flex items-center justify-between">
             <span>הפעל סט עכשיו</span>
-            <span class="text-sm transform group-hover:translate-x-[-4px] transition-transform">▶</span>
+            <span>▶</span>
           </div>
         </div>
       `).join('');
@@ -988,7 +948,7 @@
 
       const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
       incrementUserMixCount(genreName, activePlaylistQueue);
-      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, activePlaylistQueue);
+      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, songs);
 
       startMasterPlayback(0, selectedDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
@@ -1031,7 +991,7 @@
       clearInterval(crossfadeTimer);
     }
 
-    // Synchronous Native Playback
+    // Direct Synchronous Playback
     function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
       cancelActiveTransition();
 
@@ -1065,10 +1025,12 @@
       deckB.track = nextTrack;
       updateDeckUIElements(deckA, deckB);
 
+      // Primary Deck
       deckA.audio.src = currentTrack.url;
       deckA.audio.currentTime = 0;
       deckA.audio.volume = 1.0;
 
+      // Standby Preload
       deckB.audio.src = nextTrack.url;
       deckB.audio.preload = "auto";
       deckB.audio.volume = 0.0;
@@ -1123,6 +1085,7 @@
       }
     }
 
+    // DJ Watcher & Seamless Loop Trigger
     function startDJBeatGridWatcher() {
       clearInterval(crossfadeTimer);
       crossfadeTimer = setInterval(() => {
@@ -1141,6 +1104,7 @@
       }, 80);
     }
 
+    // Seamless Equal-Power DJ Crossfade Loop
     function executeIntelligentDJTransition(fromDeck, toDeck) {
       isCrossfading = true;
       const currentToken = ++transitionTokenId;
@@ -1198,6 +1162,7 @@
       }, interval);
     }
 
+    // High-Precision Session Timer & Green Bar Sync across full duration
     function startSessionTimer() {
       clearInterval(sessionPlaybackTimer);
       const currentSessionToken = sessionTokenId;
@@ -1350,7 +1315,7 @@
       }
     };
 
-    // Instant Play for AI Cards
+    // Instant Play for AI Recommendation Cards
     window.playInstantRecommendedMix = async function(genreKey, dur) {
       selectPlaylistGenre(genreKey);
       selectPlaylistDuration(dur);
@@ -1372,7 +1337,7 @@
       }
 
       const genreName = GENRE_MAP[genreKey]?.name || 'מותאם אישית';
-      incrementUserMixCount(genreName, activePlaylistQueue);
+      recordUserMusicTaste(genreName, activePlaylistQueue.map(s => s.title));
       saveMixToArchive(`מיקס ${genreName} (${dur} דק׳)`, genreName, `${dur} דקות`, activePlaylistQueue);
 
       startMasterPlayback(0, dur, true);
