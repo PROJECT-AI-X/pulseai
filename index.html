@@ -30,18 +30,18 @@
             mono: ['JetBrains Mono', 'monospace']
           },
           colors: {
-            night: '#080512',
-            surface: 'rgba(21, 15, 38, 0.85)',
-            sunset: '#FF5E36',
-            sunsetHover: '#FF7754',
-            ultraviolet: '#8F00FF',
-            glowLime: '#10E773',
-            electricCyan: '#00F0FF',
+            night: 'var(--bg-night, #080512)',
+            surface: 'var(--bg-surface, rgba(21, 15, 38, 0.85))',
+            sunset: 'var(--color-primary, #FF5E36)',
+            sunsetHover: 'var(--color-primary-hover, #FF7754)',
+            ultraviolet: 'var(--color-secondary, #8F00FF)',
+            glowLime: 'var(--color-accent, #10E773)',
+            electricCyan: 'var(--color-cyan, #00F0FF)',
           },
           boxShadow: {
-            'glow-orange': '0 0 25px rgba(255, 94, 54, 0.45)',
+            'glow-orange': '0 0 25px var(--shadow-primary, rgba(255, 94, 54, 0.45))',
             'glow-purple': '0 0 30px rgba(143, 0, 255, 0.35)',
-            'glow-lime': '0 0 20px rgba(16, 231, 115, 0.4)',
+            'glow-lime': '0 0 20px var(--shadow-accent, rgba(16, 231, 115, 0.4))',
             'glow-cyan': '0 0 20px rgba(0, 240, 255, 0.4)',
           }
         }
@@ -50,20 +50,42 @@
   </script>
 
   <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at top right, #200c3e 0%, #080512 60%, #030108 100%);
+      --panel-bg: rgba(23, 16, 43, 0.78);
+      --panel-border: rgba(143, 0, 255, 0.2);
+    }
+    body.theme-sunset {
+      --bg-gradient: radial-gradient(circle at top right, #3e120c 0%, #120805 60%, #080301 100%);
+      --panel-bg: rgba(43, 20, 16, 0.78);
+      --panel-border: rgba(255, 94, 56, 0.3);
+      --color-primary: #FF5E36;
+      --color-accent: #FFB703;
+      --shadow-accent: rgba(255, 183, 3, 0.4);
+    }
+    body.theme-minimal {
+      --bg-gradient: radial-gradient(circle at top right, #1a1a1a 0%, #0a0a0a 60%, #000000 100%);
+      --panel-bg: rgba(20, 20, 20, 0.85);
+      --panel-border: rgba(255, 255, 255, 0.15);
+      --color-primary: #FFFFFF;
+      --color-accent: #00F0FF;
+      --shadow-accent: rgba(0, 240, 255, 0.3);
+    }
+
     body {
-      background: radial-gradient(circle at top right, #200c3e 0%, #080512 60%, #030108 100%);
+      background: var(--bg-gradient);
       min-height: 100vh;
       color: #F3F4F6;
       overflow-x: hidden;
     }
     .glass-panel {
-      background: rgba(23, 16, 43, 0.78);
+      background: var(--panel-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(143, 0, 255, 0.2);
+      border: 1px solid var(--panel-border);
     }
     .active-deck {
-      border: 1px solid rgba(255, 94, 54, 0.7) !important;
+      border: 1px solid var(--color-primary, #FF5E36) !important;
       box-shadow: 0 0 25px rgba(255, 94, 54, 0.25);
     }
     .playlist-tab, .duration-tab, .dual-duration-tab {
@@ -74,12 +96,12 @@
       transform: translateY(-2px);
     }
     .playlist-tab.active-genre {
-      border-color: #10E773 !important;
+      border-color: var(--color-accent, #10E773) !important;
       background: rgba(16, 231, 115, 0.2) !important;
-      box-shadow: 0 0 20px rgba(16, 231, 115, 0.4) !important;
+      box-shadow: 0 0 20px var(--shadow-accent, rgba(16, 231, 115, 0.4)) !important;
     }
     .duration-tab.active-duration, .dual-duration-tab.active-dual-duration {
-      border-color: #00F0FF !important;
+      border-color: var(--color-cyan, #00F0FF) !important;
       background: rgba(0, 240, 255, 0.2) !important;
       box-shadow: 0 0 15px rgba(0, 240, 255, 0.4) !important;
       color: #FFFFFF !important;
@@ -88,10 +110,10 @@
       height: 14px;
       width: 14px;
       border-radius: 50%;
-      background: #10E773;
+      background: var(--color-accent, #10E773);
       cursor: pointer;
       -webkit-appearance: none;
-      box-shadow: 0 0 8px #10E773;
+      box-shadow: 0 0 8px var(--color-accent, #10E773);
     }
   </style>
 </head>
@@ -112,8 +134,15 @@
       </div>
     </div>
 
-    <!-- Auth Controls -->
-    <div class="flex items-center gap-2.5">
+    <!-- Theme & Auth Controls -->
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <!-- Theme Switcher -->
+      <select id="themeSelector" onchange="switchAppTheme(this.value)" class="bg-black/60 border border-purple-800/60 text-white text-xs rounded-xl px-2.5 py-2 focus:outline-none cursor-pointer font-mono">
+        <option value="neon">🔮 Cyber Neon</option>
+        <option value="sunset">🌅 Sunset Club</option>
+        <option value="minimal">🖤 Minimalist Dark</option>
+      </select>
+
       <div id="userProfileBadge" class="hidden items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-purple-950/80 border border-glowLime/40">
         <img id="userAvatarImg" src="https://via.placeholder.com/32" class="w-7 h-7 rounded-full object-cover border border-glowLime" alt="User Profile">
         <div class="text-right">
@@ -138,7 +167,7 @@
   <!-- Live DJ Master Player -->
   <section id="liveWebMixPlayerSection" class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime relative overflow-hidden">
     
-    <!-- Top Bar with Real Canvas Visualizer & Score -->
+    <!-- Top Bar with Canvas Visualizer & Tracklist Button -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 pb-3 border-b border-purple-800/40">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">
@@ -149,15 +178,13 @@
         </div>
       </div>
 
-      <!-- Live Canvas Equalizer & Compatibility Score -->
-      <div class="flex items-center gap-3">
-        <div class="px-3.5 py-1.5 rounded-xl bg-black/60 border border-glowLime/40 text-xs font-bold text-glowLime flex items-center gap-1.5 shadow" id="transitionScoreIndicator">
-          <span>✨ ציון התאמה:</span>
-          <span id="transitionScoreValue" class="text-white font-mono font-black">96%</span>
-        </div>
+      <!-- Controls Right: Tracklist Modal Trigger & Canvas -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <button onclick="openTracklistModal()" class="px-3 py-1.5 rounded-xl bg-purple-900/60 hover:bg-purple-800 text-electricCyan text-xs font-bold border border-electricCyan/40 flex items-center gap-1.5 shadow transition-all cursor-pointer">
+          <span>📋 צפה בסטלִיסט</span>
+        </button>
 
-        <!-- Canvas Spectrum Visualizer -->
-        <canvas id="djCanvasVisualizer" width="90" height="28" class="rounded-lg bg-black/40 border border-purple-900/60"></canvas>
+        <canvas id="djCanvasVisualizer" width="80" height="26" class="rounded-lg bg-black/40 border border-purple-900/60"></canvas>
       </div>
     </div>
 
@@ -391,6 +418,22 @@
     <div id="mixHistoryListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
   </section>
 
+  <!-- Tracklist Modal -->
+  <div id="tracklistModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg p-6 rounded-3xl border border-electricCyan/50 shadow-glow-cyan relative flex flex-col max-h-[80vh]">
+      <div class="flex justify-between items-center mb-4 pb-3 border-b border-purple-800/40">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📋</span>
+          <h3 class="text-base font-black text-white">סטלִיסט מלא — רשימת שירי הסט</h3>
+        </div>
+        <button onclick="closeTracklistModal()" class="text-purple-300 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+      </div>
+      <div id="modalTracklistContainer" class="space-y-2 overflow-y-auto pr-1 flex-1">
+        <!-- Dynamic tracks inserted here -->
+      </div>
+    </div>
+  </div>
+
   <!-- PWA Install Banner -->
   <div id="pwaInstallBanner" class="fixed bottom-3 left-3 right-3 max-w-md mx-auto p-3.5 rounded-2xl glass-panel border border-glowLime/60 shadow-glow-lime flex items-center justify-between gap-3 z-50 hidden">
     <div class="flex items-center gap-2.5">
@@ -589,9 +632,7 @@
           const blobUrl = URL.createObjectURL(blob);
           preloadedBlobCache.set(url, blobUrl);
         }
-      } catch (e) {
-        // Fallback silently if CORS blocked
-      }
+      } catch (e) {}
     }
 
     function getResolvedAudioSrc(url) {
@@ -682,20 +723,6 @@
         normalizeTrackObject({ trackId: 101, title: 'עומר אדם — שני משוגעים', artist: 'עומר אדם' }, 0),
         normalizeTrackObject({ trackId: 102, title: 'נועה קירל — יוניקורן (Unicorn)', artist: 'נועה קירל' }, 1),
         normalizeTrackObject({ trackId: 103, title: 'פאר טסי — אהבה חולה', artist: 'פאר טסי' }, 2)
-      ],
-      dance: [
-        normalizeTrackObject({ trackId: 201, title: 'The Weeknd — Blinding Lights', artist: 'The Weeknd' }, 1),
-        normalizeTrackObject({ trackId: 202, title: 'Calvin Harris — One Kiss', artist: 'Calvin Harris' }, 0),
-        normalizeTrackObject({ trackId: 203, title: 'Dua Lipa — Physical', artist: 'Dua Lipa' }, 2)
-      ],
-      chill: [
-        normalizeTrackObject({ trackId: 301, title: 'חנן בן ארי — אלוף העולם', artist: 'חנן בן ארי' }, 2),
-        normalizeTrackObject({ trackId: 302, title: 'טונה — סהרה', artist: 'טונה' }, 3),
-        normalizeTrackObject({ trackId: 303, title: 'רביד פלוטניק — כל הזמן הזה', artist: 'רביד פלוטניק' }, 4)
-      ],
-      workout: [
-        normalizeTrackObject({ trackId: 401, title: 'Eminem — Lose Yourself', artist: 'Eminem' }, 1),
-        normalizeTrackObject({ trackId: 402, title: 'Dua Lipa — Physical', artist: 'Dua Lipa' }, 0)
       ]
     };
 
@@ -727,6 +754,46 @@
     let activePlaylistQueue = [...CURATED_SETS.party];
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
+
+    // Theme Switcher Logic
+    window.switchAppTheme = function(themeName) {
+      document.body.className = document.body.className.replace(/theme-\S+/g, '');
+      if (themeName === 'sunset') {
+        document.body.classList.add('theme-sunset');
+      } else if (themeName === 'minimal') {
+        document.body.classList.add('theme-minimal');
+      }
+      localStorage.setItem('pulseai_theme', themeName);
+    };
+
+    // Tracklist Modal Logic
+    window.openTracklistModal = function() {
+      const container = document.getElementById('modalTracklistContainer');
+      if (!container) return;
+
+      container.innerHTML = activePlaylistQueue.map((t, idx) => `
+        <div class="p-3 rounded-xl bg-black/40 border ${idx === currentTrackIndex ? 'border-glowLime bg-glowLime/10' : 'border-purple-900/50'} flex items-center justify-between gap-2 hover:border-electricCyan transition-all">
+          <div class="truncate text-right flex-1">
+            <div class="text-xs font-bold text-white truncate">${idx + 1}. ${escapeHtml(t.title)}</div>
+            <div class="text-[10px] text-purple-300 font-mono">${escapeHtml(t.artist)}</div>
+          </div>
+          <button onclick="jumpToTrackIndex(${idx})" class="px-3 py-1.5 rounded-lg bg-purple-950 hover:bg-electricCyan hover:text-night text-electricCyan text-xs font-bold border border-electricCyan/40 font-mono cursor-pointer">
+            ▶ נגן
+          </button>
+        </div>
+      `).join('');
+
+      document.getElementById('tracklistModal').classList.remove('hidden');
+    };
+
+    window.closeTracklistModal = function() {
+      document.getElementById('tracklistModal').classList.add('hidden');
+    };
+
+    window.jumpToTrackIndex = function(idx) {
+      closeTracklistModal();
+      startMasterPlayback(idx, selectedDurationMinutes, false);
+    };
 
     // Master Volume Controls
     window.changeMasterVolume = function(val) {
@@ -774,19 +841,18 @@
     }
 
     // Canvas Equalizer Animation
-    let canvasVisualizerAnimId = null;
     function initCanvasVisualizer() {
       const canvas = document.getElementById('djCanvasVisualizer');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const numBars = 16;
+      const numBars = 14;
 
       function renderFrame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const barWidth = (canvas.width / numBars) - 1.5;
 
         for (let i = 0; i < numBars; i++) {
-          let height = isMasterPlaying ? Math.sin(Date.now() * 0.008 + i * 0.6) * 10 + 14 : 2;
+          let height = isMasterPlaying ? Math.sin(Date.now() * 0.009 + i * 0.5) * 9 + 13 : 2;
           height = Math.max(2, Math.min(canvas.height, height));
 
           const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
@@ -797,16 +863,15 @@
           ctx.fillStyle = grad;
           ctx.fillRect(i * (barWidth + 1.5), canvas.height - height, barWidth, height);
         }
-        canvasVisualizerAnimId = requestAnimationFrame(renderFrame);
+        requestAnimationFrame(renderFrame);
       }
       renderFrame();
     }
 
     window.selectPlaylistGenre = function(genreKey) {
-      if (!GENRE_MAP[genreKey]) return;
       currentPlaylistGenreKey = genreKey;
       document.querySelectorAll('.playlist-tab').forEach(t => t.classList.remove('active-genre'));
-      const activeEl = document.getElementById(GENRE_MAP[genreKey].elementId);
+      const activeEl = document.getElementById(`plGenre_${genreKey}`);
       if (activeEl) activeEl.classList.add('active-genre');
     };
 
@@ -971,7 +1036,8 @@
       activePlaylistQueue = expandedSet;
       currentTrackIndex = 0;
 
-      const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
+      const genreNames = { party: 'מסיבה ישראלית', workout: 'אימון ואנרגיה', chill: 'נסיעה וצ׳יל', dance: 'להיטי דאנס' };
+      const genreName = genreNames[currentPlaylistGenreKey] || 'מותאם אישית';
       saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, expandedSet);
 
       startMasterPlayback(0, selectedDurationMinutes, true);
@@ -984,7 +1050,6 @@
       clearInterval(crossfadeTimer);
     }
 
-    // Direct Playback with Active Volume and Preload
     function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
       cancelActiveTransition();
 
@@ -1020,12 +1085,10 @@
 
       const effectiveGain = isVolumeMuted ? 0 : masterGainVolume;
 
-      // Primary Deck Setup
       deckA.audio.src = getResolvedAudioSrc(currentTrack.url);
       deckA.audio.currentTime = 0;
       deckA.audio.volume = effectiveGain;
 
-      // Standby Preload and Blob Trigger
       deckB.audio.src = getResolvedAudioSrc(nextTrack.url);
       deckB.audio.preload = "auto";
       deckB.audio.volume = 0.0;
@@ -1399,7 +1462,6 @@
     };
 
     window.shareCurrentMixToWhatsApp = function() {
-      const currentTrack = activePlaylistQueue[currentTrackIndex]?.title || 'מיקס DJ חי';
       const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI:\n\n🎧 כנס להאזין ישירות:\nhttps://PROJECT-AI-X.github.io/pulseai/`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
@@ -1434,6 +1496,11 @@
 
     // Initial Render
     window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('pulseai_theme') || 'neon';
+      const themeSelector = document.getElementById('themeSelector');
+      if (themeSelector) themeSelector.value = savedTheme;
+      switchAppTheme(savedTheme);
+
       initCanvasVisualizer();
       renderMixHistoryList();
     });
