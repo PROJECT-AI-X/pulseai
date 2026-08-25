@@ -105,7 +105,7 @@
         <h1 class="text-xl md:text-2xl font-black bg-gradient-to-r from-sunset via-pink-400 to-electricCyan bg-clip-text text-transparent">
           PULSEAI
         </h1>
-        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • Infinite Stream Engine • Smart Mix</p>
+        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • Long-Set Stream Engine • Smart Mix</p>
       </div>
     </div>
 
@@ -233,15 +233,15 @@
       <div class="grid grid-cols-3 gap-2.5">
         <div id="dualDur10" onclick="selectDualMixDuration(10)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center active-dual-duration">
           <div class="text-sm font-black text-white">⏱️ 10 דקות</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">מיקס מהיר וממוקד (~6 שירים)</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">מיקס מהיר וממוקד (~20 שירים)</div>
         </div>
         <div id="dualDur15" onclick="selectDualMixDuration(15)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center">
           <div class="text-sm font-black text-white">⏱️ 15 דקות</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">סט מאוזן וזורם (~9 שירים)</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">סט מאוזן וזורם (~30 שירים)</div>
         </div>
         <div id="dualDur20" onclick="selectDualMixDuration(20)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center">
           <div class="text-sm font-black text-white">⏱️ 20 דקות</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">Extended Club Mix (~12 שירים)</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">Extended Club Mix (~40 שירים)</div>
         </div>
       </div>
     </div>
@@ -378,7 +378,7 @@
         <span class="text-xl">📜</span>
         <div>
           <h2 class="text-sm font-black text-white">היסטוריית המיקסים והפלייליסטים שלך</h2>
-          <p class="text-[11px] text-purple-300">המיקסים שלך מסונחרנים ומוכנים להשמעה מיידית:</p>
+          <p class="text-[11px] text-purple-300">המיקסים שלך מסונכרנים ומוכנים להשמעה מיידית:</p>
         </div>
       </div>
       <button onclick="clearUserMixHistory()" class="text-[11px] text-purple-400 hover:text-sunset cursor-pointer">נקה היסטוריה</button>
@@ -498,7 +498,7 @@
     };
   </script>
 
-  <!-- DJ Audio Engine & Infinite Dynamic Track Generator -->
+  <!-- DJ Audio Engine & Long-Set Generator -->
   <script>
     function escapeHtml(str) {
       if (!str) return '';
@@ -592,9 +592,9 @@
       return fallbackUrl;
     }
 
-    // AI Smart Track Expander: Calculates required track count based on target duration (approx 2.5 mins per track)
+    // Long-Set Track Expander: Generates enough tracks to match target minutes (e.g. 10 mins = 20 tracks, 15 mins = 30 tracks)
     async function expandSeedTracks(seeds, targetMinutes = 10) {
-      const targetCount = Math.max(5, Math.ceil(targetMinutes / 2.2));
+      const targetCount = Math.max(6, Math.ceil(targetMinutes * 2)); // ~2 tracks per minute to fill full length
       const expanded = [...seeds];
       const searchQueries = [];
 
@@ -607,7 +607,7 @@
       for (const q of searchQueries) {
         if (expanded.length >= targetCount) break;
         try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=6&country=IL`);
+          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=8&country=IL`);
           const data = await res.json();
           if (data.results) {
             data.results.forEach(r => {
