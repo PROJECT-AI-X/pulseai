@@ -1243,7 +1243,14 @@
           return;
         }
 
-        const normalized = item.tracks.map((t, idx) => normalizeTrackObject(t, idx));
+        // Check if history track count is too low for the duration, and expand if needed
+        const targetDurationMins = parseInt(String(item.duration).replace(/\D/g, '')) || 10;
+        let normalized = item.tracks.map((t, idx) => normalizeTrackObject(t, idx));
+        
+        if (normalized.length < Math.max(6, Math.ceil(targetDurationMins * 2))) {
+          normalized = await expandSeedTracks(normalized, targetDurationMins);
+        }
+
         const resolvedTracks = await Promise.all(
           normalized.map(async (track, idx) => {
             const url = await ensureTrackAudioUrl(track, idx);
@@ -1257,9 +1264,8 @@
         }
 
         currentTrackIndex = 0;
-        const durInt = parseInt(String(item.duration).replace(/\D/g, '')) || 10;
         
-        startMasterPlayback(0, durInt, true);
+        startMasterPlayback(0, targetDurationMins, true);
 
         document.getElementById('liveWebMixPlayerSection')?.scrollIntoView({
           behavior: 'smooth',
@@ -1282,7 +1288,7 @@
 
     window.shareCurrentMixToWhatsApp = function() {
       const currentTrack = activePlaylistQueue[currentTrackIndex]?.title || 'מיקס DJ חי';
-      const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI:\n🎵 ${currentTrack}\n\n🎧 כנס להאזין ישירות:\n${window.location.href}`;
+      const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI:\n🎵 ${currentTrack}\n\n🎧 כנס להאזין ישירות:\nhttps://reemkayzer-spec.github.io/pulseai/`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
