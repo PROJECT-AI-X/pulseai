@@ -504,7 +504,6 @@
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
         
-        // Minimal secure data storage without email exposure
         await setDoc(doc(db, "users", user.uid), {
           uid: user.uid,
           displayName: user.displayName,
@@ -608,7 +607,6 @@
       dance: { name: 'להיטי דאנס', elementId: 'plGenre_dance', targetEnergy: 0.88 }
     };
 
-    // Full 24-Key Camelot Wheel Matrix
     const CAMELOT_WHEEL = {
       '1A': { adj: ['12A', '2A', '1B'], boost: '3A' },
       '2A': { adj: ['1A', '3A', '2B'], boost: '4A' },
@@ -622,7 +620,6 @@
       '10A': { adj: ['9A', '11A', '10B'], boost: '12A' },
       '11A': { adj: ['10A', '12A', '11B'], boost: '1A' },
       '12A': { adj: ['11A', '1A', '12B'], boost: '2A' },
-      
       '1B': { adj: ['12B', '2B', '1A'], boost: '3B' },
       '2B': { adj: ['1B', '3B', '2A'], boost: '4B' },
       '3B': { adj: ['2B', '4B', '3A'], boost: '5B' },
@@ -644,11 +641,9 @@
     let searchResultCache = {};
     let activeSearchControllers = {};
 
-    // DSP Global Cache to avoid repeated downloads
     const analysisCache = new Map();
     const recentTrackIds = [];
 
-    // DJ ENGINE WEB AUDIO GRAPH
     let audioCtx = null;
     let isAudioCtxInitialized = false;
     let masterLimiter = null;
@@ -687,7 +682,6 @@
     let sessionPlaybackTimer = null;
     let totalTargetSessionSeconds = 600;
 
-    // Default Seed Pool with full Analysis Objects
     const DEFAULT_TRACK_POOL = [
       {
         trackId: 101,
@@ -723,15 +717,18 @@
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
 
-    // 1. Initial Web Audio Setup with Limiter, 3-Band Filters & Dedicated Echo FX
     function initAudioContextOnUserGesture() {
-      if (isAudioCtxInitialized) return;
+      if (isAudioCtxInitialized) {
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+        return;
+      }
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (AudioContextClass) {
           audioCtx = new AudioContextClass();
 
-          // Musical Master Limiter (Clean Headroom: -1.5dB)
           masterLimiter = audioCtx.createDynamicsCompressor();
           masterLimiter.threshold.setValueAtTime(-1.5, audioCtx.currentTime);
           masterLimiter.ratio.setValueAtTime(8.0, audioCtx.currentTime);
@@ -739,14 +736,13 @@
           masterLimiter.release.setValueAtTime(0.15, audioCtx.currentTime);
           masterLimiter.connect(audioCtx.destination);
 
-          // Setup Dedicated Deck Nodes
           setupDeckAudioChain(deckA);
           setupDeckAudioChain(deckB);
 
           isAudioCtxInitialized = true;
         }
       } catch(err) {
-        console.warn("Web Audio gesture initialization notice:", err);
+        console.warn("Web Audio gesture notice:", err);
       }
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume().catch(() => {});
@@ -756,7 +752,6 @@
     function setupDeckAudioChain(deck) {
       deck.source = audioCtx.createMediaElementSource(deck.audio);
 
-      // Pro DJ 3-Band Isolator EQ (Low: 120Hz, Mid: 1200Hz, High: 8000Hz)
       deck.lowFilter = audioCtx.createBiquadFilter();
       deck.lowFilter.type = 'lowshelf';
       deck.lowFilter.frequency.value = 120;
@@ -774,65 +769,78 @@
       deck.highFilter.gain.value = 0;
 
       deck.gain = audioCtx.createGain();
-      deck.gain.gain.value = 0.85; // Clean headroom
+      deck.gain.gain.value = 0.85;
 
-      // Dedicated BPM-Synced Delay/Echo Bus for this deck
       deck.delayNode = audioCtx.createDelay(2.5);
-      deck.delayNode.delayTime.value = 0.468; // Default 128 BPM quarter note
+      deck.delayNode.delayTime.value = 0.468;
       
       deck.delayFeedback = audioCtx.createGain();
       deck.delayFeedback.gain.value = 0.45;
 
       deck.delayWetGain = audioCtx.createGain();
-      deck.delayWetGain.gain.value = 0.001; // Silent until Echo Out triggered
+      deck.delayWetGain.gain.value = 0.001;
 
       deck.delayNode.connect(deck.delayFeedback);
       deck.delayFeedback.connect(deck.delayNode);
       deck.delayNode.connect(deck.delayWetGain);
       deck.delayWetGain.connect(masterLimiter);
 
-      // Main Chain
       deck.source.connect(deck.lowFilter);
       deck.lowFilter.connect(deck.midFilter);
       deck.midFilter.connect(deck.highFilter);
       deck.highFilter.connect(deck.gain);
       deck.gain.connect(masterLimiter);
 
-      // Send to dedicated delay
       deck.highFilter.connect(deck.delayNode);
     }
 
-    // Safe Deck Track Loader awaiting Metadata before seek/play
+    // Bulletproof Track Loader with Timeout and Error Handlers
     function loadDeckTrack(deck, track, targetStartTime = 0) {
       return new Promise((resolve) => {
-        deck.audio.pause();
-        deck.audio.src = track.url;
-        deck.track = track;
-        deck.analysis = track.analysis;
+        if (!track || !track.url) {
+          resolve(false);
+          return;
+        }
 
-        const onReady = () => {
-          deck.audio.removeEventListener('loadedmetadata', onReady);
-          deck.audio.removeEventListener('canplay', onReady);
+        deck.track = track;
+        deck.analysis = track.analysis || { bpm: 128, key: '8A', energy: 0.85, cueIn: 0, dropStart: 15, breakdown: 23, duration: 30 };
+
+        let isResolved = false;
+        const done = () => {
+          if (isResolved) return;
+          isResolved = true;
+          cleanup();
           try {
-            deck.audio.currentTime = targetStartTime;
+            if (targetStartTime && deck.audio.duration && targetStartTime < deck.audio.duration) {
+              deck.audio.currentTime = targetStartTime;
+            }
           } catch(e) {}
           resolve(true);
         };
 
-        if (deck.audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
-          try {
-            deck.audio.currentTime = targetStartTime;
-          } catch(e) {}
-          resolve(true);
-        } else {
-          deck.audio.addEventListener('loadedmetadata', onReady);
-          deck.audio.addEventListener('canplay', onReady);
+        const cleanup = () => {
+          deck.audio.removeEventListener('loadedmetadata', done);
+          deck.audio.removeEventListener('canplay', done);
+          deck.audio.removeEventListener('error', done);
+        };
+
+        // Safety timeout (never hang longer than 450ms)
+        setTimeout(done, 450);
+
+        deck.audio.addEventListener('loadedmetadata', done);
+        deck.audio.addEventListener('canplay', done);
+        deck.audio.addEventListener('error', done);
+
+        if (deck.audio.src !== track.url) {
+          deck.audio.src = track.url;
           deck.audio.load();
+        } else if (deck.audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+          done();
         }
       });
     }
 
-    // 2. REAL DSP AUDIO ANALYZER (Spectral Flux & Autocorrelation)
+    // REAL DSP AUDIO ANALYZER
     async function performRealAudioAnalysis(audioUrl, trackId) {
       if (trackId && analysisCache.has(trackId)) {
         return analysisCache.get(trackId);
@@ -851,7 +859,6 @@
         const sampleRate = audioBuffer.sampleRate;
         const totalSamples = channelData.length;
 
-        // Windowing (40ms windows, 20ms hops)
         const windowSize = Math.floor(sampleRate * 0.04);
         const hopSize = Math.floor(sampleRate * 0.02);
         const numFrames = Math.floor((totalSamples - windowSize) / hopSize);
@@ -863,13 +870,11 @@
 
         for (let i = 0; i < numFrames; i++) {
           let sum = 0;
-          let lowBandSum = 0;
           const start = i * hopSize;
 
           for (let j = 0; j < windowSize; j++) {
             const val = channelData[start + j];
             sum += val * val;
-            if (j % 4 === 0) lowBandSum += val * val; // Subsampled low band energy proxy
           }
 
           const rms = Math.sqrt(sum / windowSize);
@@ -879,7 +884,6 @@
           if (i > 0) {
             const flux = Math.max(0, rms - energyEnvelope[i - 1]);
             spectralFlux[i] = flux;
-            // Transient onset threshold
             if (flux > 0.04) {
               onsets.push((i * hopSize) / sampleRate);
             }
@@ -889,7 +893,6 @@
         const avgEnergy = totalEnergy / Math.max(1, numFrames);
         const normalizedEnergy = Math.min(0.98, Math.max(0.65, avgEnergy * 4.2));
 
-        // Autocorrelation of the Spectral Flux for Real BPM Extraction
         const minBpm = 75;
         const maxBpm = 175;
         const minLag = Math.floor((60 / maxBpm) / (hopSize / sampleRate));
@@ -917,12 +920,10 @@
           bpmConfidence = Math.min(0.98, maxCorrelation / (totalEnergy + 0.001));
         }
 
-        // True Beat Offset & Musical Section Points
         const beatOffset = onsets.length > 0 ? onsets[0] : 0.20;
         const dropPoint = onsets.length > 8 ? onsets[Math.floor(onsets.length * 0.48)] : 14.8;
         const breakdownPoint = onsets.length > 12 ? onsets[Math.floor(onsets.length * 0.72)] : 22.5;
 
-        // 24-Key Camelot Estimation based on energy & harmonic flux
         const camelotKeys = [
           '1A', '2A', '3A', '4A', '5A', '6A', '7A', '8A', '9A', '10A', '11A', '12A',
           '1B', '2B', '3B', '4B', '5B', '6B', '7B', '8B', '9B', '10B', '11B', '12B'
@@ -940,7 +941,7 @@
           cueIn: parseFloat(beatOffset.toFixed(2)),
           dropStart: parseFloat(dropPoint.toFixed(2)),
           breakdown: parseFloat(breakdownPoint.toFixed(2)),
-          duration: audioBuffer.duration || duration
+          duration: audioBuffer.duration || 30
         };
 
         if (trackId) {
@@ -960,10 +961,9 @@
           cueIn: 0.0,
           dropStart: 15.0,
           breakdown: 23.0,
-          duration: duration
+          duration: 30
         };
       } finally {
-        // Strict memory leak disposal of temporary AudioContext
         if (tempCtx) {
           try {
             await tempCtx.close();
@@ -972,7 +972,6 @@
       }
     }
 
-    // 3. Harmonic Mixing & Multi-Criteria Transition Planner
     function calculateTransitionProfile(trackA, trackB) {
       const a = trackA.analysis;
       const b = trackB.analysis;
@@ -1002,11 +1001,9 @@
       return { type, description, score, bpmDiff, isHarmonic };
     }
 
-    // 4. Candidate Selector with Anti-Loop Memory & 2-Track Lookahead
     function selectOptimalNextTrackCandidate(currentTrack, pool) {
-      if (pool.length <= 1) return pool[0];
+      if (!pool || pool.length <= 1) return pool ? pool[0] : DEFAULT_TRACK_POOL[0];
       
-      // Filter out recent tracks to prevent A -> B -> A loops
       const eligiblePool = pool.filter(candidate => {
         if (candidate.trackId === currentTrack.trackId) return false;
         if (recentTrackIds.slice(-2).includes(candidate.trackId) && pool.length > 2) return false;
@@ -1023,11 +1020,10 @@
         const profile = calculateTransitionProfile(currentTrack, candidate);
         let totalScore = profile.score;
 
-        // Lookahead: check compatibility with the remainder of the pool
         const secondaryCandidate = pool.find(p => p.trackId !== candidate.trackId && p.trackId !== currentTrack.trackId);
         if (secondaryCandidate) {
           const lookaheadProfile = calculateTransitionProfile(candidate, secondaryCandidate);
-          totalScore += lookaheadProfile.score * 0.25; // 25% lookahead weight
+          totalScore += lookaheadProfile.score * 0.25;
         }
 
         if (totalScore > bestScore) {
@@ -1042,24 +1038,17 @@
       return bestTrack;
     }
 
-    // 5. True Energy Arc Construction (Warmup -> Build -> Peak -> Release -> Peak)
     function optimizePlaylistOrder(tracks) {
       if (tracks.length <= 2) return tracks;
-      
       const sortedByEnergy = [...tracks].sort((t1, t2) => (t1.analysis?.energy || 0.8) - (t2.analysis?.energy || 0.8));
       const result = [];
-
       const low = sortedByEnergy.slice(0, Math.ceil(tracks.length * 0.35));
       const high = sortedByEnergy.slice(Math.ceil(tracks.length * 0.35));
-
-      // Interleave into energy arc
       result.push(...low);
       result.push(...high);
-
       return result;
     }
 
-    // 6. UI Selectors
     window.selectPlaylistGenre = function(genreKey) {
       if (!GENRE_MAP[genreKey]) return;
       currentPlaylistGenreKey = genreKey;
@@ -1082,11 +1071,8 @@
       if (el) el.classList.add('active-dual-duration');
     };
 
-    // 7. Search with AbortController & Input Invalidation
     window.debounceSearch = function(query, scope, id) {
       const key = `${scope}_${id}`;
-      
-      // Invalidate stale data immediately upon typing
       const inputEl = document.getElementById(scope === 'playlist' ? `favSong${id}` : `dualSearchInput${id}`);
       if (inputEl) {
         inputEl.dataset.selected = 'false';
@@ -1094,7 +1080,7 @@
 
       clearTimeout(searchDebounceTimers[key]);
       if (activeSearchControllers[key]) {
-        activeSearchControllers[key].abort(); // Cancel pending fetch to stop race conditions
+        activeSearchControllers[key].abort();
       }
 
       activeSearchControllers[key] = new AbortController();
@@ -1169,7 +1155,6 @@
       const songData = searchResultCache[cacheKey];
       if (!songData) return;
 
-      // Real Audio DSP Analysis with Caching
       const analysis = await performRealAudioAnalysis(songData.previewUrl, songData.trackId);
       songData.analysis = analysis;
 
@@ -1192,7 +1177,6 @@
       }
     }
 
-    // 8. Playlist Generation
     window.generateAndPlayCustomPlaylistLive = async function() {
       initAudioContextOnUserGesture();
       const songs = [];
@@ -1208,7 +1192,6 @@
         }
       }
 
-      // Safeguard: Min 2 unique songs
       if (songs.length < 2) {
         const defaultPool = [...DEFAULT_TRACK_POOL];
         if (songs.length === 1) {
@@ -1230,7 +1213,6 @@
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
-    // 9. Dual Deck Generation
     window.runQuickDualDeckPlay = async function() {
       initAudioContextOnUserGesture();
       const elA = document.getElementById('dualTitleA');
@@ -1252,7 +1234,6 @@
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
-    // 10. Master Playback & State Reset
     function cancelActiveTransition() {
       transitionTokenId++;
       isCrossfading = false;
@@ -1268,6 +1249,7 @@
     }
 
     async function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
+      initAudioContextOnUserGesture();
       cancelActiveTransition();
 
       deckA.audio.pause();
@@ -1298,9 +1280,7 @@
 
       activeDeckName = 'A';
       
-      // Load primary track with safe metadata wait
       await loadDeckTrack(deckA, currentTrack, currentTrack.analysis.cueIn || 0.0);
-      // Preload standby deck
       loadDeckTrack(deckB, nextTrack, nextTrack.analysis.cueIn || 0.0);
 
       updateDeckUIElements(deckA, deckB);
@@ -1313,7 +1293,7 @@
         deckA.highFilter.gain.setValueAtTime(0, now);
 
         deckB.gain.gain.setValueAtTime(0.001, now);
-        deckB.lowFilter.gain.setValueAtTime(-60, now); // Low Cut on Standby
+        deckB.lowFilter.gain.setValueAtTime(-60, now);
       }
 
       try {
@@ -1349,7 +1329,6 @@
       document.getElementById('deckBHiBar').style.width = '0%';
     }
 
-    // 11. Precise Phrase-Aligned DJ Beatgrid Watcher
     function startDJBeatGridWatcher() {
       clearInterval(crossfadeTimer);
       crossfadeTimer = setInterval(() => {
@@ -1372,7 +1351,6 @@
 
         document.getElementById('liveBeatGridBadge').textContent = `${currentBar}.${beatInBar}`;
 
-        // Timeline UI
         const pct = (cur / dur) * 100;
         document.getElementById('liveMixProgressBar').style.width = `${pct}%`;
         const m = Math.floor(cur / 60).toString().padStart(2, '0');
@@ -1381,7 +1359,6 @@
         const durS = Math.floor(dur % 60).toString().padStart(2, '0');
         document.getElementById('liveTrackCurrentTime').textContent = `${m}:${s} / ${durM}:${durS}`;
 
-        // Phrase Boundary Triggering: 4.8s before track outro
         const transitionLeadTime = 4.8;
         if (!isCrossfading && dur > transitionLeadTime && cur >= (dur - transitionLeadTime)) {
           executeIntelligentDJTransition(currentDeck, standbyDeck);
@@ -1389,7 +1366,6 @@
       }, 75);
     }
 
-    // 12. Strategy Pattern Transition Executor with Cancellation & Error Handling
     async function executeIntelligentDJTransition(fromDeck, toDeck) {
       isCrossfading = true;
       const currentToken = ++transitionTokenId;
@@ -1399,14 +1375,11 @@
       const duration = 4.0;
       const now = audioCtx ? audioCtx.currentTime : 0;
 
-      // Safe track loading before transition execution
       const targetStart = (profile.type === 'DROP_SWAP') ? (nextTrack.analysis.dropStart || 14.5) : (nextTrack.analysis.cueIn || 0.0);
       await loadDeckTrack(toDeck, nextTrack, targetStart);
 
-      // Verify token hasn't changed during async loading
       if (currentToken !== transitionTokenId) return;
 
-      // Execute Strategic DJ Technique
       switch(profile.type) {
         case 'BEATMIX':
           executeBeatmixStrategy(fromDeck, toDeck, now, duration);
@@ -1426,20 +1399,18 @@
       try {
         await toDeck.audio.play();
       } catch(err) {
-        console.warn("Standby deck play fail - rolling back:", err);
-        // Rollback state smoothly
+        console.warn("Standby deck play rollback:", err);
         fromDeck.gain.gain.setValueAtTime(0.85, audioCtx.currentTime);
         toDeck.gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
         isCrossfading = false;
         return;
       }
 
-      // Synchronized UI flip
       activeDeckName = activeDeckName === 'A' ? 'B' : 'A';
       updateDeckUIElements(toDeck, fromDeck);
 
       setTimeout(() => {
-        if (currentToken !== transitionTokenId) return; // Guard against stale callbacks
+        if (currentToken !== transitionTokenId) return;
 
         fromDeck.audio.pause();
         try { fromDeck.audio.currentTime = 0; } catch(e) {}
@@ -1451,7 +1422,6 @@
           fromDeck.delayWetGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
         }
 
-        // Standby preloading for lookahead candidate
         const afterNext = selectOptimalNextTrackCandidate(toDeck.track, activePlaylistQueue);
         loadDeckTrack(fromDeck, afterNext, afterNext.analysis.cueIn || 0.0);
 
@@ -1459,7 +1429,6 @@
       }, duration * 1000);
     }
 
-    // --- STRATEGIES ---
     function executeBassSwapStrategy(fromDeck, toDeck, now, duration) {
       if (!audioCtx) return;
       fromDeck.gain.gain.setValueAtTime(0.85, now);
@@ -1470,13 +1439,12 @@
 
       const phraseSwapTime = now + (duration * 0.45);
 
-      // Low End Instant Cut on Phrase Beat
       fromDeck.lowFilter.gain.setValueAtTime(0, now);
       fromDeck.lowFilter.gain.linearRampToValueAtTime(-60, phraseSwapTime);
 
       toDeck.lowFilter.gain.setValueAtTime(-60, now);
       toDeck.lowFilter.gain.setValueAtTime(-60, phraseSwapTime);
-      toDeck.lowFilter.gain.linearRampToValueAtTime(0, phraseSwapTime + 0.08); // Instant snap
+      toDeck.lowFilter.gain.linearRampToValueAtTime(0, phraseSwapTime + 0.08);
     }
 
     function executeBeatmixStrategy(fromDeck, toDeck, now, duration) {
@@ -1509,7 +1477,6 @@
 
     function executeEchoOutStrategy(fromDeck, toDeck, now, duration, bpm) {
       if (!audioCtx) return;
-      // Dedicated tempo-synced delay time (Dotted 8th note: 60/BPM * 0.75)
       const delayTimeSec = Math.min(1.5, Math.max(0.2, (60 / bpm) * 0.75));
       fromDeck.delayNode.delayTime.setValueAtTime(delayTimeSec, now);
 
@@ -1524,7 +1491,6 @@
       toDeck.lowFilter.gain.linearRampToValueAtTime(0, now + duration);
     }
 
-    // 13. Accurate Session Timer with True Pause/Resume Tracking & Token
     function startSessionTimer() {
       clearInterval(sessionPlaybackTimer);
       const currentSessionToken = sessionTokenId;
@@ -1619,7 +1585,6 @@
       currentDeck.audio.currentTime = ratio * (currentDeck.audio.duration || 30);
     };
 
-    // 14. Advanced AI Taste & Recommendation Engine
     function recordUserMusicTaste(genre, songTitles) {
       let tastes = JSON.parse(localStorage.getItem('pulseai_user_tastes') || '{"genres":{},"artists":{}}');
       tastes.genres[genre] = (tastes.genres[genre] || 0) + 1;
@@ -1668,6 +1633,7 @@
     };
 
     window.playInstantRecommendedMix = function(genreKey, dur) {
+      initAudioContextOnUserGesture();
       selectPlaylistGenre(genreKey);
       selectPlaylistDuration(dur);
       generateAndPlayCustomPlaylistLive();
@@ -1710,21 +1676,30 @@
             </div>
             <div class="text-[10px] text-purple-300 mt-0.5 font-mono">${escapeHtml(item.date)} • ${escapeHtml(item.duration)} • ${item.tracks.length} שירים</div>
           </div>
-          <button onclick="playSavedMixFromHistory(${item.id})" class="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-glowLime hover:text-night text-glowLime text-xs font-bold border border-glowLime/40 transition-all font-mono" role="button" tabindex="0">
+          <button onclick="playSavedMixFromHistory('${item.id}')" class="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-glowLime hover:text-night text-glowLime text-xs font-bold border border-glowLime/40 transition-all font-mono" role="button" tabindex="0">
             ▶ נגן שוב
           </button>
         </div>
       `).join('');
     };
 
+    // FIXED: Play Saved Mix from History Handler with Resume and Reliable Track Loading
     window.playSavedMixFromHistory = async function(id) {
+      initAudioContextOnUserGesture();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        try { await audioCtx.resume(); } catch(e) {}
+      }
+
       const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
-      const item = history.find(h => h.id === id);
-      if (item) {
+      const item = history.find(h => String(h.id) === String(id));
+
+      if (item && item.tracks && item.tracks.length > 0) {
         activePlaylistQueue = item.tracks;
         const durInt = parseInt(item.duration) || 10;
         await startMasterPlayback(0, durInt, true);
         document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        console.warn("Mix not found or empty:", id);
       }
     };
 
@@ -1742,7 +1717,7 @@
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    // Full Keyboard Accessibility & Init
+    // Full Keyboard Accessibility & Initial Render
     window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('[role="button"][tabindex]').forEach(el => {
         el.addEventListener('keydown', (e) => {
