@@ -132,27 +132,6 @@
     </div>
   </header>
 
-  <!-- ========================================== -->
-  <!-- 🧠 AI TASTE RECOMMENDATIONS (מתוקן ועובד מיידית) -->
-  <!-- ========================================== -->
-  <section id="aiTasteRecommendationsSection" class="w-full max-w-5xl mb-6 glass-panel p-6 md:p-7 rounded-3xl border border-purple-800/50 shadow-glow-purple">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-3 border-b border-purple-900/40">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-ultraviolet flex items-center justify-center text-xl shadow-glow-purple">
-          🧠
-        </div>
-        <div>
-          <h2 class="text-base md:text-lg font-black text-white">המלצות AI מותאמות אישית לפי הטעם שלך</h2>
-          <p class="text-xs text-purple-300">בחר סט מוכן להשמעה מיידית של מיקס מלא ומסונכרן:</p>
-        </div>
-      </div>
-      <span id="detectedTopGenreBadge" class="text-xs text-glowLime font-mono bg-glowLime/10 px-3.5 py-1.5 rounded-full border border-glowLime/30">סטים חכמים מוכנים</span>
-    </div>
-
-    <!-- 3 Symmetrical Cards -->
-    <div id="aiTasteCardsGrid" class="w-full grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-  </section>
-
   <!-- Live DJ Master Player -->
   <section id="liveWebMixPlayerSection" class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime relative overflow-hidden">
     
@@ -495,10 +474,6 @@
         const userDoc = await getDoc(doc(db, "users", uid));
         if (userDoc.exists()) {
           const data = userDoc.data();
-          if (data.tasteProfile) {
-            localStorage.setItem('pulseai_user_taste_profile', JSON.stringify(data.tasteProfile));
-            window.renderPersonalizedAiRecommendations();
-          }
           if (data.mix_history) {
             localStorage.setItem('pulseai_mix_history', JSON.stringify(data.mix_history));
             window.renderMixHistoryList();
@@ -656,7 +631,11 @@
       }
 
       if (expanded.length < targetCount) {
-        const pool = CURATED_SETS.party;
+        const pool = [
+          normalizeTrackObject({ trackId: 101, title: 'עומר אדם — שני משוגעים', artist: 'עומר אדם' }, 0),
+          normalizeTrackObject({ trackId: 102, title: 'נועה קירל — יוניקורן (Unicorn)', artist: 'נועה קירל' }, 1),
+          normalizeTrackObject({ trackId: 103, title: 'פאר טסי — אהבה חולה', artist: 'פאר טסי' }, 2)
+        ];
         pool.forEach(p => {
           if (expanded.length < targetCount && !expanded.some(e => e.title === p.title)) {
             expanded.push(normalizeTrackObject(p, expanded.length));
@@ -714,96 +693,6 @@
     let activePlaylistQueue = [...CURATED_SETS.party];
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
-
-    function getUserTasteProfile() {
-      const defaultProfile = { mixCount: 0, totalInteractions: 0, genres: {}, artists: {}, tracks: {} };
-      return JSON.parse(localStorage.getItem('pulseai_user_taste_profile') || JSON.stringify(defaultProfile));
-    }
-
-    function recordTasteInteraction(track, points = 3, genre = null) {
-      if (!track) return;
-      const profile = getUserTasteProfile();
-      profile.totalInteractions = (profile.totalInteractions || 0) + 1;
-
-      const norm = normalizeTrackObject(track);
-      if (norm.artist) profile.artists[norm.artist] = (profile.artists[norm.artist] || 0) + points;
-      if (genre) profile.genres[genre] = (profile.genres[genre] || 0) + points;
-
-      const tKey = norm.title;
-      if (!profile.tracks[tKey]) {
-        profile.tracks[tKey] = { score: 0, artist: norm.artist, title: norm.title, url: norm.url };
-      }
-      profile.tracks[tKey].score += points;
-
-      localStorage.setItem('pulseai_user_taste_profile', JSON.stringify(profile));
-      if (window.saveDataToCloudIfLoggedIn) {
-        window.saveDataToCloudIfLoggedIn('tasteProfile', profile);
-      }
-      renderPersonalizedAiRecommendations();
-    }
-
-    function incrementUserMixCount(genre, tracks) {
-      const profile = getUserTasteProfile();
-      profile.mixCount = (profile.mixCount || 0) + 1;
-      localStorage.setItem('pulseai_user_taste_profile', JSON.stringify(profile));
-      tracks.forEach(t => recordTasteInteraction(t, 3, genre));
-    }
-
-    window.renderPersonalizedAiRecommendations = function() {
-      const container = document.getElementById('aiTasteCardsGrid');
-      const badgeEl = document.getElementById('detectedTopGenreBadge');
-      if (!container) return;
-
-      const profile = getUserTasteProfile();
-      const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
-      const mixCount = Math.max(profile.mixCount || 0, history.length);
-
-      let topArtist = '';
-      let maxArtistScore = 0;
-      for (const a in profile.artists) {
-        if (profile.artists[a] > maxArtistScore) {
-          maxArtistScore = profile.artists[a];
-          topArtist = a;
-        }
-      }
-
-      let topGenre = 'מסיבה ישראלית';
-      let maxGenreScore = 0;
-      for (const g in profile.genres) {
-        if (profile.genres[g] > maxGenreScore) {
-          maxGenreScore = profile.genres[g];
-          topGenre = g;
-        }
-      }
-
-      if (badgeEl) {
-        badgeEl.textContent = mixCount === 0 ? 'שלב 1: התחלה' : `סגנון מוביל: ${topGenre}`;
-      }
-
-      const setArtist = topArtist || 'עומר אדם';
-      const recommendations = [
-        { title: `סט ${topGenre} מותאם אישית`, subtitle: `מבוסס על הבחירות האחרונות מ-${setArtist}`, icon: '🔥', genreKey: 'party', dur: 20 },
-        { title: `Peak Energy — לפי הטעם שלך`, subtitle: `רצף אנרגטי וקצבי להקפצת האווירה`, icon: '⚡', genreKey: 'dance', dur: 10 },
-        { title: `Chill & Drive — בהתאמה אישית`, subtitle: `רצף זורם ונעים המותאם לאווירה של ${setArtist}`, icon: '🚗', genreKey: 'chill', dur: 30 }
-      ];
-
-      container.innerHTML = recommendations.map(rec => `
-        <div onclick="playInstantRecommendedMix('${rec.genreKey}', ${rec.dur})" class="p-4 rounded-2xl bg-black/50 border border-purple-800/60 hover:border-glowLime hover:bg-glowLime/10 cursor-pointer transition-all flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xl p-2 rounded-xl bg-purple-950/60 border border-purple-800/40">${rec.icon}</span>
-              <span class="text-[10px] text-glowLime font-mono font-bold bg-glowLime/10 px-2.5 py-1 rounded-full border border-glowLime/30">⏱️ ${rec.dur} דקות</span>
-            </div>
-            <div class="text-xs md:text-sm font-bold text-white mb-1">${escapeHtml(rec.title)}</div>
-            <div class="text-[11px] text-purple-300 leading-relaxed">${escapeHtml(rec.subtitle)}</div>
-          </div>
-          <div class="mt-4 pt-2 border-t border-purple-900/40 text-xs font-bold text-electricCyan flex items-center justify-between">
-            <span>הפעל סט עכשיו</span>
-            <span>▶</span>
-          </div>
-        </div>
-      `).join('');
-    };
 
     window.selectPlaylistGenre = function(genreKey) {
       if (!GENRE_MAP[genreKey]) return;
@@ -907,8 +796,6 @@
       const songData = searchResultCache[cacheKey];
       if (!songData) return;
 
-      recordTasteInteraction(songData, 4, currentPlaylistGenreKey);
-
       if (scope === 'playlist') {
         const input = document.getElementById(`favSong${id}`);
         input.value = songData.title;
@@ -947,7 +834,6 @@
       currentTrackIndex = 0;
 
       const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
-      incrementUserMixCount(genreName, activePlaylistQueue);
       saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, songs);
 
       startMasterPlayback(0, selectedDurationMinutes, true);
@@ -978,7 +864,6 @@
       activePlaylistQueue = fullSet;
       currentTrackIndex = 0;
 
-      incrementUserMixCount('Dual Mix', fullSet);
       saveMixToArchive(`מיקס 2 שירים (${selectedDualDurationMinutes} דק׳)`, 'Dual Mix', `${selectedDualDurationMinutes} דקות`, fullSet);
 
       startMasterPlayback(0, selectedDualDurationMinutes, true);
@@ -1035,8 +920,6 @@
       deckB.audio.preload = "auto";
       deckB.audio.volume = 0.0;
 
-      recordTasteInteraction(currentTrack, 2);
-
       const playPromise = deckA.audio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
@@ -1085,7 +968,6 @@
       }
     }
 
-    // DJ Watcher & Seamless Loop Trigger
     function startDJBeatGridWatcher() {
       clearInterval(crossfadeTimer);
       crossfadeTimer = setInterval(() => {
@@ -1104,7 +986,6 @@
       }, 80);
     }
 
-    // Seamless Equal-Power DJ Crossfade Loop
     function executeIntelligentDJTransition(fromDeck, toDeck) {
       isCrossfading = true;
       const currentToken = ++transitionTokenId;
@@ -1162,7 +1043,6 @@
       }, interval);
     }
 
-    // High-Precision Session Timer & Green Bar Sync across full duration
     function startSessionTimer() {
       clearInterval(sessionPlaybackTimer);
       const currentSessionToken = sessionTokenId;
@@ -1315,35 +1195,6 @@
       }
     };
 
-    // Instant Play for AI Recommendation Cards
-    window.playInstantRecommendedMix = async function(genreKey, dur) {
-      selectPlaylistGenre(genreKey);
-      selectPlaylistDuration(dur);
-      
-      const basePool = (CURATED_SETS[genreKey] || CURATED_SETS.party).map((t, idx) => normalizeTrackObject(t, idx));
-      const expandedSet = await expandSeedTracks(basePool, 6);
-
-      activePlaylistQueue = [...expandedSet];
-      currentTrackIndex = 0;
-
-      for (let i = 1; i <= 5; i++) {
-        const input = document.getElementById(`favSong${i}`);
-        if (input && activePlaylistQueue[i - 1]) {
-          input.value = activePlaylistQueue[i - 1].title;
-          input.dataset.previewUrl = activePlaylistQueue[i - 1].url;
-          input.dataset.songData = JSON.stringify(activePlaylistQueue[i - 1]);
-          input.dataset.selected = 'true';
-        }
-      }
-
-      const genreName = GENRE_MAP[genreKey]?.name || 'מותאם אישית';
-      recordUserMusicTaste(genreName, activePlaylistQueue.map(s => s.title));
-      saveMixToArchive(`מיקס ${genreName} (${dur} דק׳)`, genreName, `${dur} דקות`, activePlaylistQueue);
-
-      startMasterPlayback(0, dur, true);
-      document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
-    };
-
     function saveMixToArchive(title, genre, duration, tracks) {
       let history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
       const sanitizedTracks = (tracks || []).map((t, idx) => normalizeTrackObject(t, idx));
@@ -1413,8 +1264,6 @@
           activePlaylistQueue = [...CURATED_SETS.party];
         }
 
-        activePlaylistQueue.forEach(t => recordTasteInteraction(t, 3, item.genre));
-
         currentTrackIndex = 0;
         const durInt = parseInt(String(item.duration).replace(/\D/g, '')) || 10;
         
@@ -1456,7 +1305,6 @@
         });
       });
 
-      renderPersonalizedAiRecommendations();
       renderMixHistoryList();
     });
   </script>
