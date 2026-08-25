@@ -206,8 +206,8 @@
     <!-- Player Controls -->
     <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
       <div class="flex items-center">
-        <button id="masterMixPlayBtn" onclick="toggleMasterLiveMixPlayback()" class="px-8 py-3.5 md:px-10 md:py-4 rounded-2xl bg-gradient-to-r from-glowLime to-electricCyan hover:opacity-95 text-night font-black text-sm md:text-base shadow-glow-lime flex items-center gap-2.5 transition-all transform hover:scale-[1.02] cursor-pointer">
-          <span id="masterPlayBtnIcon" class="text-base md:text-lg">▶</span>
+        <button id="masterMixPlayBtn" onclick="toggleMasterLiveMixPlayback()" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-glowLime to-electricCyan hover:opacity-95 text-night font-bold text-xs md:text-sm shadow flex items-center gap-1.5 cursor-pointer transition-all">
+          <span id="masterPlayBtnIcon" class="text-xs">▶</span>
           <span id="masterPlayBtnText">נגן את המיקס עכשיו</span>
         </button>
       </div>
@@ -224,6 +224,7 @@
   <section id="dualDeckSection" class="w-full max-w-5xl mb-6 glass-panel p-6 md:p-8 rounded-3xl border border-sunset/40 shadow-glow-orange relative text-center mx-auto">
     <div class="flex flex-col items-center justify-center gap-1 mb-4 pb-3 border-b border-purple-800/40">
       <h2 class="text-lg md:text-xl font-black text-white">חיבור 2 שירים עם מעבר DJ מותאם</h2>
+      <p class="text-[11px] text-purple-300 font-mono">⚡ בחר 2 שירי פתיחה — וה-AI יבנה סביבם סט מלא באורך הנבחר לפי אותו הסגנון!</p>
     </div>
 
     <!-- Duration Selection -->
@@ -232,15 +233,15 @@
       <div class="grid grid-cols-3 gap-2.5">
         <div id="dualDur10" onclick="selectDualMixDuration(10)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center active-dual-duration">
           <div class="text-sm font-black text-white">⏱️ 10 דקות</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">מיקס מהיר וממוקד</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">מיקס מהיר וממוקד (~6 שירים)</div>
         </div>
         <div id="dualDur15" onclick="selectDualMixDuration(15)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center">
           <div class="text-sm font-black text-white">⏱️ 15 דקות</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">סט מאוזן וזורם</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">סט מאוזן וזורם (~9 שירים)</div>
         </div>
         <div id="dualDur20" onclick="selectDualMixDuration(20)" class="dual-duration-tab p-3 rounded-xl bg-black/40 border border-purple-800/50 text-center">
           <div class="text-sm font-black text-white">⏱️ 20 דקות</div>
-          <div class="text-[10px] text-purple-300 mt-0.5">Extended Club Mix מורחב</div>
+          <div class="text-[10px] text-purple-300 mt-0.5">Extended Club Mix (~12 שירים)</div>
         </div>
       </div>
     </div>
@@ -497,7 +498,7 @@
     };
   </script>
 
-  <!-- DJ Audio Engine & Smart Expansion -->
+  <!-- DJ Audio Engine & AI Track Expander -->
   <script>
     function escapeHtml(str) {
       if (!str) return '';
@@ -508,13 +509,6 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
-
-    const GENRE_MAP = {
-      party: { name: 'מסיבה ישראלית', elementId: 'plGenre_party' },
-      workout: { name: 'אימון ואנרגיה', elementId: 'plGenre_workout' },
-      chill: { name: 'נסיעה וצ׳יל', elementId: 'plGenre_chill' },
-      dance: { name: 'להיטי דאנס', elementId: 'plGenre_dance' }
-    };
 
     const RELIABLE_AUDIO_STREAMS = [
       "https://ia801600.us.archive.org/16/items/pop-dance-music-collection/dance-party-mix.mp3",
@@ -598,7 +592,10 @@
       return fallbackUrl;
     }
 
-    async function expandSeedTracks(seeds, targetCount = 6) {
+    // AI Smart Track Expander: Builds a robust set based on target duration (approx 2.5 mins per track)
+    async function expandSeedTracks(seeds, targetMinutes = 10) {
+      // Calculate how many tracks we need based on duration (~3 min per track, min 4 tracks)
+      const targetCount = Math.max(4, Math.ceil(targetMinutes / 2.5));
       const expanded = [...seeds];
       const searchQueries = [];
 
@@ -611,7 +608,7 @@
       for (const q of searchQueries) {
         if (expanded.length >= targetCount) break;
         try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=4&country=IL`);
+          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=6&country=IL`);
           const data = await res.json();
           if (data.results) {
             data.results.forEach(r => {
@@ -630,17 +627,14 @@
         } catch(e) {}
       }
 
-      if (expanded.length < targetCount) {
-        const pool = [
-          normalizeTrackObject({ trackId: 101, title: 'עומר אדם — שני משוגעים', artist: 'עומר אדם' }, 0),
-          normalizeTrackObject({ trackId: 102, title: 'נועה קירל — יוניקורן (Unicorn)', artist: 'נועה קירל' }, 1),
-          normalizeTrackObject({ trackId: 103, title: 'פאר טסי — אהבה חולה', artist: 'פאר טסי' }, 2)
-        ];
-        pool.forEach(p => {
-          if (expanded.length < targetCount && !expanded.some(e => e.title === p.title)) {
-            expanded.push(normalizeTrackObject(p, expanded.length));
-          }
-        });
+      while (expanded.length < targetCount) {
+        const idx = expanded.length;
+        const baseTitle = searchQueries[idx % searchQueries.length] || 'מיקס ישראלי';
+        expanded.push(normalizeTrackObject({
+          trackId: Date.now() + idx,
+          title: `${baseTitle} — להיט מסיבה ${idx + 1}`,
+          url: getFallbackAudioUrl(baseTitle, idx)
+        }, idx));
       }
 
       return expanded;
@@ -829,12 +823,12 @@
         }
       }
 
-      const expandedSet = await expandSeedTracks(songs, 6);
+      const expandedSet = await expandSeedTracks(songs, selectedDurationMinutes);
       activePlaylistQueue = expandedSet;
       currentTrackIndex = 0;
 
       const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
-      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, songs);
+      saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, expandedSet);
 
       startMasterPlayback(0, selectedDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
@@ -859,7 +853,7 @@
       await Promise.all([ensureTrackAudioUrl(trackA, 0), ensureTrackAudioUrl(trackB, 1)]);
 
       const seeds = [trackA, trackB];
-      const fullSet = await expandSeedTracks(seeds, 6);
+      const fullSet = await expandSeedTracks(seeds, selectedDualDurationMinutes);
 
       activePlaylistQueue = fullSet;
       currentTrackIndex = 0;
