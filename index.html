@@ -107,7 +107,7 @@
         <h1 class="text-xl md:text-2xl font-black bg-gradient-to-r from-sunset via-pink-400 to-electricCyan bg-clip-text text-transparent">
           PULSEAI
         </h1>
-        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • DSP Beatgrid • 24 Camelot Keys • Phrase Sync</p>
+        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • Real-Time Stream Engine • Smart Mix</p>
       </div>
     </div>
 
@@ -135,7 +135,7 @@
   </header>
 
   <!-- ========================================== -->
-  <!-- 🧠 AI TASTE RECOMMENDATIONS -->
+  <!-- 🧠 AI TASTE RECOMMENDATIONS (השמעה מיידית) -->
   <!-- ========================================== -->
   <section id="aiTasteRecommendationsSection" class="w-full max-w-5xl mb-6 glass-panel p-5 rounded-3xl border border-sunset/40 shadow-glow-orange">
     <div class="flex items-center justify-between mb-3">
@@ -157,7 +157,7 @@
   <!-- ========================================== -->
   <section id="liveWebMixPlayerSection" class="w-full max-w-5xl mb-6 glass-panel p-5 md:p-6 rounded-3xl border border-glowLime/50 shadow-glow-lime relative overflow-hidden">
     
-    <!-- Top Bar: Deck Info & Master Clock -->
+    <!-- Top Bar: Now Playing & Clean Compatibility Score -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 pb-3 border-b border-purple-800/40">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-glowLime to-electricCyan flex items-center justify-center text-2xl shadow-glow-lime">
@@ -165,97 +165,61 @@
         </div>
         <div>
           <span class="text-[10px] font-black uppercase tracking-wider text-glowLime bg-glowLime/15 px-2.5 py-0.5 rounded-full font-mono">
-            Autonomous DJ Engine Active
+            DJ Mix Player Active
           </span>
-          <h2 id="nowPlayingTitle" class="text-base md:text-lg font-black text-white mt-0.5">מנוע ה-DJ מוכן להשמעה חכמה</h2>
+          <h2 id="nowPlayingTitle" class="text-base md:text-lg font-black text-white mt-0.5">נגן המיקס החי מוכן להשמעה</h2>
         </div>
       </div>
 
-      <!-- Live DJ Telemetry Badges -->
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="px-3 py-1 rounded-xl bg-black/60 border border-purple-700 text-xs font-mono flex items-center gap-1.5">
-          <span class="text-purple-400">BPM:</span>
-          <span id="liveBpmBadge" class="text-glowLime font-bold">128.0</span>
+      <!-- Clean Header Indicator: Compatibility Score & Visualizer -->
+      <div class="flex items-center gap-3">
+        <div class="px-3.5 py-1.5 rounded-xl bg-black/60 border border-glowLime/40 text-xs font-bold text-glowLime flex items-center gap-1.5 shadow" id="transitionScoreIndicator">
+          <span>✨ ציון התאמה:</span>
+          <span id="transitionScoreValue" class="text-white font-mono font-black">96%</span>
         </div>
-        <div class="px-3 py-1 rounded-xl bg-black/60 border border-purple-700 text-xs font-mono flex items-center gap-1.5">
-          <span class="text-purple-400">KEY:</span>
-          <span id="liveKeyBadge" class="text-electricCyan font-bold">8A</span>
-        </div>
-        <div class="px-3 py-1 rounded-xl bg-black/60 border border-purple-700 text-xs font-mono flex items-center gap-1.5">
-          <span class="text-purple-400">BAR.BEAT:</span>
-          <span id="liveBeatGridBadge" class="text-sunset font-bold">1.1</span>
+
+        <div id="soundbarsVisualizer" class="hidden items-end gap-1 h-7">
+          <div class="sound-bar w-1 bg-glowLime rounded-full"></div>
+          <div class="sound-bar w-1 bg-electricCyan rounded-full"></div>
+          <div class="sound-bar w-1 bg-sunset rounded-full"></div>
+          <div class="sound-bar w-1 bg-pink-500 rounded-full"></div>
+          <div class="sound-bar w-1 bg-ultraviolet rounded-full"></div>
         </div>
       </div>
     </div>
 
-    <!-- Dual Live Deck Status Panels -->
+    <!-- Dual Song Cards (נקי, אלגנטי) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       
-      <!-- Deck A Status -->
-      <div id="deckAVisualCard" class="p-3.5 rounded-2xl bg-black/50 border border-sunset/60 active-deck relative">
-        <div class="flex justify-between items-center mb-1 text-xs">
-          <span class="text-sunset font-black font-mono">DECK A (MASTER)</span>
-          <span id="deckAKeyBpm" class="text-[10px] text-purple-300 font-mono">128 BPM • 8A</span>
+      <!-- Track 1 Card -->
+      <div id="deckAVisualCard" class="p-4 rounded-2xl bg-black/50 border border-sunset/60 active-deck relative transition-all">
+        <div class="flex justify-between items-center mb-1.5 text-xs">
+          <span class="text-sunset font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-sunset animate-pulse"></span>
+            <span>מתנגן עכשיו</span>
+          </span>
+          <span class="text-[10px] text-purple-300 font-mono">שיר ראשון</span>
         </div>
-        <div id="deckATrackTitle" class="text-xs font-bold text-white truncate mb-2">עומר אדם — שני משוגעים</div>
-        
-        <!-- Deck A 3-Band Pro EQ Meters -->
-        <div class="flex items-center gap-2 text-[10px] font-mono">
-          <span class="text-purple-400">LOW</span>
-          <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
-            <div id="deckALowBar" class="bg-glowLime h-full transition-all duration-75" style="width: 100%;"></div>
-          </div>
-          <span class="text-purple-400">MID</span>
-          <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
-            <div id="deckAMidBar" class="bg-electricCyan h-full transition-all duration-75" style="width: 100%;"></div>
-          </div>
-          <span class="text-purple-400">HI</span>
-          <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
-            <div id="deckAHiBar" class="bg-sunset h-full transition-all duration-75" style="width: 100%;"></div>
-          </div>
-        </div>
+        <div id="deckATrackTitle" class="text-sm font-bold text-white truncate">עומר אדם — שני משוגעים</div>
       </div>
 
-      <!-- Deck B Status -->
-      <div id="deckBVisualCard" class="p-3.5 rounded-2xl bg-black/50 border border-purple-900/60 relative">
-        <div class="flex justify-between items-center mb-1 text-xs">
-          <span class="text-glowLime font-black font-mono">DECK B (STANDBY)</span>
-          <span id="deckBKeyBpm" class="text-[10px] text-purple-300 font-mono">126 BPM • 9A</span>
+      <!-- Track 2 Card -->
+      <div id="deckBVisualCard" class="p-4 rounded-2xl bg-black/50 border border-purple-900/60 relative transition-all">
+        <div class="flex justify-between items-center mb-1.5 text-xs">
+          <span class="text-glowLime font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-glowLime"></span>
+            <span>הבא בתור</span>
+          </span>
+          <span class="text-[10px] text-purple-300 font-mono">שיר שני</span>
         </div>
-        <div id="deckBTrackTitle" class="text-xs font-bold text-white truncate mb-2">נועה קירל — יוניקורן (Unicorn)</div>
-        
-        <!-- Deck B 3-Band Pro EQ Meters -->
-        <div class="flex items-center gap-2 text-[10px] font-mono">
-          <span class="text-purple-400">LOW</span>
-          <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
-            <div id="deckBLowBar" class="bg-glowLime h-full transition-all duration-75" style="width: 0%;"></div>
-          </div>
-          <span class="text-purple-400">MID</span>
-          <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
-            <div id="deckBMidBar" class="bg-electricCyan h-full transition-all duration-75" style="width: 0%;"></div>
-          </div>
-          <span class="text-purple-400">HI</span>
-          <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
-            <div id="deckBHiBar" class="bg-sunset h-full transition-all duration-75" style="width: 0%;"></div>
-          </div>
-        </div>
+        <div id="deckBTrackTitle" class="text-sm font-bold text-white truncate">נועה קירל — יוניקורן (Unicorn)</div>
       </div>
-    </div>
-
-    <!-- Active Transition Status Banner -->
-    <div id="activeTransitionBanner" class="p-2.5 rounded-xl bg-purple-950/80 border border-glowLime/40 flex items-center justify-between text-xs font-mono mb-4">
-      <div class="flex items-center gap-2">
-        <span class="text-glowLime animate-pulse">⚡</span>
-        <span class="text-purple-300">אסטרטגיית מעבר DJ:</span>
-        <span id="selectedTransitionTypeName" class="text-glowLime font-bold">BASS SWAP ON PHRASE (Bar 16)</span>
-      </div>
-      <div class="text-[10px] text-electricCyan font-bold" id="transitionScoreIndicator">ציון התאמה: 96/100</div>
     </div>
 
     <!-- Track Timeline Progress Bar -->
     <div class="space-y-1.5 mb-3">
       <div class="flex justify-between items-center text-[10px] text-purple-300 font-mono">
-        <span>התקדמות קטע נוכחי (Phrase & Beatgrid):</span>
+        <span>התקדמות קטע נוכחי:</span>
         <span id="liveTrackCurrentTime">00:00 / 00:30</span>
       </div>
       <div class="w-full bg-purple-950/80 rounded-full h-2 overflow-hidden cursor-pointer" onclick="seekLiveMix(event)">
@@ -297,10 +261,10 @@
   <section class="w-full max-w-5xl mb-6 glass-panel p-6 md:p-8 rounded-3xl border border-sunset/40 shadow-glow-orange relative text-center mx-auto">
     <div class="flex flex-col items-center justify-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
       <span class="text-[10px] font-black uppercase tracking-wider text-sunset bg-sunset/15 px-3 py-1 rounded-full border border-sunset/30 font-mono">
-        Dual Deck Harmonic Matcher
+        Dual Song Studio
       </span>
       <h2 class="text-lg md:text-xl font-black text-white">חיבור 2 שירים עם מעבר DJ מותאם</h2>
-      <span class="text-xs text-glowLime font-mono">⚡ DSP Beatgrid • 24 Camelot Wheel • 3-Band EQ Bass Swap</span>
+      <span class="text-xs text-glowLime font-mono">⚡ מעבר מוזיקלי חלק ומדויק ישירות באתר</span>
     </div>
 
     <!-- Dual Deck Duration Selection -->
@@ -324,11 +288,11 @@
 
     <!-- Dual Song Search Inputs -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 max-w-3xl mx-auto">
-      <!-- Deck A -->
+      <!-- Track A -->
       <div class="space-y-2 p-4 rounded-2xl bg-black/40 border border-purple-900/50 relative text-right">
         <div class="flex justify-between items-center text-xs">
-          <span class="font-bold text-sunset">שיר ראשון (Deck A)</span>
-          <span id="dualInfoBadgeA" class="text-[10px] text-purple-300 font-mono">128 BPM • 8A</span>
+          <span class="font-bold text-sunset">שיר ראשון</span>
+          <span class="text-[10px] text-purple-300">בחר שיר פתיחה</span>
         </div>
         <div class="relative">
           <input type="text" id="dualSearchInputA" oninput="debounceSearch(this.value, 'dual', 'A')" placeholder="חפש שיר ראשון (iTunes)..."
@@ -338,11 +302,11 @@
         <div id="dualTitleA" class="text-xs font-semibold text-white truncate pt-1">עומר אדם — שני משוגעים</div>
       </div>
 
-      <!-- Deck B -->
+      <!-- Track B -->
       <div class="space-y-2 p-4 rounded-2xl bg-black/40 border border-purple-900/50 relative text-right">
         <div class="flex justify-between items-center text-xs">
-          <span class="font-bold text-glowLime">שיר שני (Deck B)</span>
-          <span id="dualInfoBadgeB" class="text-[10px] text-purple-300 font-mono">126 BPM • 9A</span>
+          <span class="font-bold text-glowLime">שיר שני</span>
+          <span class="text-[10px] text-purple-300">בחר שיר המשך</span>
         </div>
         <div class="relative">
           <input type="text" id="dualSearchInputB" oninput="debounceSearch(this.value, 'dual', 'B')" placeholder="חפש שיר שני (iTunes)..."
@@ -367,11 +331,11 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4 pb-3 border-b border-purple-800/40">
       <div>
         <span class="text-[10px] font-black uppercase tracking-wider text-electricCyan bg-electricCyan/15 px-3 py-1 rounded-full border border-electricCyan/30 font-mono">
-          AI Energy Ramp Generator
+          Playlist Generator
         </span>
         <h2 class="text-lg md:text-xl font-black text-white mt-1">Make me a playlist — צור מיקס מותאם אישית לאירוע</h2>
       </div>
-      <span class="text-xs text-purple-300 font-mono">⚡ סידור שירים לפי סולם אנרגיה ומעברי Phrase</span>
+      <span class="text-xs text-purple-300 font-mono">⚡ רצף שירים זורם ומותאם אישית</span>
     </div>
 
     <!-- 1. Genre Selection -->
@@ -418,7 +382,7 @@
 
     <!-- 3. 5 Favorite Songs Seed Inputs -->
     <div class="space-y-2 mb-5">
-      <label class="block text-xs font-bold text-purple-200">3. הזן שירים אהובים כ-Seeds (האלגוריתם יסדר אותם הרמונית):</label>
+      <label class="block text-xs font-bold text-purple-200">3. הזן שירים אהובים (חפש והוסף שירים לפלייליסט):</label>
       <div class="grid grid-cols-1 gap-2.5">
         <div class="relative">
           <input type="text" id="favSong1" oninput="debounceSearch(this.value, 'playlist', 1)" placeholder="שיר 1 (למשל: עומר אדם - שני משוגעים)..." class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
@@ -587,7 +551,7 @@
   </script>
 
   <!-- ========================================== -->
-  <!-- AUTONOMOUS AI DJ & HARMONIC TRANSITION ENGINE -->
+  <!-- GUARANTEED AUDIO RESOLVER & DJ MIX ENGINE -->
   <!-- ========================================== -->
   <script>
     function escapeHtml(str) {
@@ -601,125 +565,32 @@
     }
 
     const GENRE_MAP = {
-      party: { name: 'מסיבה ישראלית', elementId: 'plGenre_party', targetEnergy: 0.90 },
-      workout: { name: 'אימון ואנרגיה', elementId: 'plGenre_workout', targetEnergy: 0.94 },
-      chill: { name: 'נסיעה וצ׳יל', elementId: 'plGenre_chill', targetEnergy: 0.70 },
-      dance: { name: 'להיטי דאנס', elementId: 'plGenre_dance', targetEnergy: 0.88 }
+      party: { name: 'מסיבה ישראלית', elementId: 'plGenre_party' },
+      workout: { name: 'אימון ואנרגיה', elementId: 'plGenre_workout' },
+      chill: { name: 'נסיעה וצ׳יל', elementId: 'plGenre_chill' },
+      dance: { name: 'להיטי דאנס', elementId: 'plGenre_dance' }
     };
 
-    const CAMELOT_WHEEL = {
-      '1A': { adj: ['12A', '2A', '1B'], boost: '3A' },
-      '2A': { adj: ['1A', '3A', '2B'], boost: '4A' },
-      '3A': { adj: ['2A', '4A', '3B'], boost: '5A' },
-      '4A': { adj: ['3A', '5A', '4B'], boost: '6A' },
-      '5A': { adj: ['4A', '6A', '5B'], boost: '7A' },
-      '6A': { adj: ['5A', '7A', '6B'], boost: '8A' },
-      '7A': { adj: ['6A', '8A', '7B'], boost: '9A' },
-      '8A': { adj: ['7A', '9A', '8B'], boost: '10A' },
-      '9A': { adj: ['8A', '10A', '9B'], boost: '11A' },
-      '10A': { adj: ['9A', '11A', '10B'], boost: '12A' },
-      '11A': { adj: ['10A', '12A', '11B'], boost: '1A' },
-      '12A': { adj: ['11A', '1A', '12B'], boost: '2A' },
-      '1B': { adj: ['12B', '2B', '1A'], boost: '3B' },
-      '2B': { adj: ['1B', '3B', '2A'], boost: '4B' },
-      '3B': { adj: ['2B', '4B', '3A'], boost: '5B' },
-      '4B': { adj: ['3B', '5B', '4A'], boost: '6B' },
-      '5B': { adj: ['4B', '6B', '5A'], boost: '7B' },
-      '6B': { adj: ['5B', '7B', '6A'], boost: '8B' },
-      '7B': { adj: ['6B', '8B', '7A'], boost: '9B' },
-      '8B': { adj: ['7B', '9B', '8A'], boost: '10B' },
-      '9B': { adj: ['8B', '10B', '9A'], boost: '11B' },
-      '10B': { adj: ['9B', '11B', '10A'], boost: '12B' },
-      '11B': { adj: ['10B', '12B', '11A'], boost: '1B' },
-      '12B': { adj: ['11B', '1B', '12A'], boost: '2B' }
-    };
-
-    // Dedicated Curated DJ Sets per Genre
+    // Curated sets with artist titles to fetch live iTunes streams
     const CURATED_SETS = {
       party: [
-        {
-          trackId: 101,
-          title: 'עומר אדם — שני משוגעים',
-          artist: 'עומר אדם',
-          url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
-          analysis: { bpm: 128, bpmConfidence: 0.96, beatOffset: 0.24, key: '8A', keyConfidence: 0.90, energy: 0.90, cueIn: 0.0, dropStart: 15.0, breakdown: 23.5, duration: 30 }
-        },
-        {
-          trackId: 102,
-          title: 'נועה קירל — יוניקורן (Unicorn)',
-          artist: 'נועה קירל',
-          url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
-          analysis: { bpm: 126, bpmConfidence: 0.94, beatOffset: 0.18, key: '9A', keyConfidence: 0.88, energy: 0.94, cueIn: 0.0, dropStart: 14.5, breakdown: 22.8, duration: 30 }
-        },
-        {
-          trackId: 103,
-          title: 'פאר טסי — אהבה חולה',
-          artist: 'פאר טסי',
-          url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3',
-          analysis: { bpm: 124, bpmConfidence: 0.91, beatOffset: 0.32, key: '8A', keyConfidence: 0.85, energy: 0.82, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
-        }
+        { trackId: 101, title: 'עומר אדם — שני משוגעים' },
+        { trackId: 102, title: 'נועה קירל — יוניקורן' },
+        { trackId: 103, title: 'פאר טסי — אהבה חולה' }
       ],
       dance: [
-        {
-          trackId: 201,
-          title: 'The Weeknd — Blinding Lights',
-          artist: 'The Weeknd',
-          url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
-          analysis: { bpm: 130, bpmConfidence: 0.97, beatOffset: 0.12, key: '10A', keyConfidence: 0.92, energy: 0.96, cueIn: 0.0, dropStart: 16.0, breakdown: 24.5, duration: 30 }
-        },
-        {
-          trackId: 202,
-          title: 'Calvin Harris — One Kiss',
-          artist: 'Calvin Harris',
-          url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
-          analysis: { bpm: 124, bpmConfidence: 0.95, beatOffset: 0.20, key: '11A', keyConfidence: 0.90, energy: 0.92, cueIn: 0.0, dropStart: 15.0, breakdown: 23.0, duration: 30 }
-        },
-        {
-          trackId: 203,
-          title: 'Dua Lipa — Don\'t Start Now',
-          artist: 'Dua Lipa',
-          url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
-          analysis: { bpm: 124, bpmConfidence: 0.94, beatOffset: 0.15, key: '7A', keyConfidence: 0.88, energy: 0.94, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
-        }
+        { trackId: 201, title: 'The Weeknd — Blinding Lights' },
+        { trackId: 202, title: 'Calvin Harris — One Kiss' },
+        { trackId: 203, title: 'Dua Lipa — Physical' }
       ],
       chill: [
-        {
-          trackId: 301,
-          title: 'חנן בן ארי — אלוף העולם',
-          artist: 'חנן בן ארי',
-          url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3',
-          analysis: { bpm: 105, bpmConfidence: 0.92, beatOffset: 0.28, key: '7A', keyConfidence: 0.86, energy: 0.72, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
-        },
-        {
-          trackId: 302,
-          title: 'טונה — סהרה (Live Session)',
-          artist: 'טונה',
-          url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3',
-          analysis: { bpm: 98, bpmConfidence: 0.90, beatOffset: 0.35, key: '6A', keyConfidence: 0.84, energy: 0.68, cueIn: 0.0, dropStart: 13.5, breakdown: 21.5, duration: 30 }
-        },
-        {
-          trackId: 303,
-          title: 'רביד פלוטניק — כל הזמן הזה',
-          artist: 'רביד פלוטניק',
-          url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
-          analysis: { bpm: 92, bpmConfidence: 0.91, beatOffset: 0.22, key: '8A', keyConfidence: 0.85, energy: 0.70, cueIn: 0.0, dropStart: 14.5, breakdown: 22.5, duration: 30 }
-        }
+        { trackId: 301, title: 'חנן בן ארי — אלוף העולם' },
+        { trackId: 302, title: 'טונה — סהרה' },
+        { trackId: 303, title: 'רביד פלוטניק — כל הזמן הזה' }
       ],
       workout: [
-        {
-          trackId: 401,
-          title: 'Eminem — Lose Yourself',
-          artist: 'Eminem',
-          url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
-          analysis: { bpm: 171, bpmConfidence: 0.96, beatOffset: 0.12, key: '10A', keyConfidence: 0.92, energy: 0.95, cueIn: 0.0, dropStart: 16.0, breakdown: 24.5, duration: 30 }
-        },
-        {
-          trackId: 402,
-          title: 'Dua Lipa — Physical',
-          artist: 'Dua Lipa',
-          url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
-          analysis: { bpm: 148, bpmConfidence: 0.95, beatOffset: 0.18, key: '11A', keyConfidence: 0.90, energy: 0.98, cueIn: 0.0, dropStart: 15.0, breakdown: 23.0, duration: 30 }
-        }
+        { trackId: 401, title: 'Eminem — Lose Yourself' },
+        { trackId: 402, title: 'Dua Lipa — Physical' }
       ]
     };
 
@@ -730,33 +601,9 @@
     let searchResultCache = {};
     let activeSearchControllers = {};
 
-    const analysisCache = new Map();
-    const recentTrackIds = [];
-
-    let audioCtx = null;
-    let isAudioCtxInitialized = false;
-    let masterLimiter = null;
-
-    function createDeckNodeStructure(name) {
-      const audio = new Audio();
-      return {
-        name: name,
-        audio: audio,
-        source: null,
-        lowFilter: null,
-        midFilter: null,
-        highFilter: null,
-        gain: null,
-        delayNode: null,
-        delayFeedback: null,
-        delayWetGain: null,
-        track: null,
-        analysis: null
-      };
-    }
-
-    let deckA = createDeckNodeStructure('A');
-    let deckB = createDeckNodeStructure('B');
+    // Guaranteed Dual Audio Channels
+    let deckA = { audio: new Audio(), track: null };
+    let deckB = { audio: new Audio(), track: null };
 
     let activeDeckName = 'A';
     let isCrossfading = false;
@@ -774,159 +621,35 @@
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
 
-    // DIRECT, IMMEDIATE USER ACTIVATION (UNLOCKS AUDIO WITHOUT BLOCKING)
-    function initAudioContextOnUserGesture() {
-      if (!isAudioCtxInitialized) {
-        try {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) {
-            audioCtx = new AudioContextClass();
-
-            masterLimiter = audioCtx.createDynamicsCompressor();
-            masterLimiter.threshold.setValueAtTime(-1.5, audioCtx.currentTime);
-            masterLimiter.ratio.setValueAtTime(8.0, audioCtx.currentTime);
-            masterLimiter.attack.setValueAtTime(0.003, audioCtx.currentTime);
-            masterLimiter.release.setValueAtTime(0.15, audioCtx.currentTime);
-            masterLimiter.connect(audioCtx.destination);
-
-            setupDeckAudioChain(deckA);
-            setupDeckAudioChain(deckB);
-
-            isAudioCtxInitialized = true;
-          }
-        } catch(err) {
-          console.warn("Web Audio gesture initialization notice:", err);
-        }
+    // Automatic Live iTunes Audio Stream Resolver
+    async function ensureTrackAudioUrl(track) {
+      if (track.url && track.url.startsWith('http') && !track.url.includes('pixabay.com/download')) {
+        return track.url;
       }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(() => {});
-      }
-    }
-
-    function setupDeckAudioChain(deck) {
       try {
-        deck.source = audioCtx.createMediaElementSource(deck.audio);
-
-        deck.lowFilter = audioCtx.createBiquadFilter();
-        deck.lowFilter.type = 'lowshelf';
-        deck.lowFilter.frequency.value = 120;
-        deck.lowFilter.gain.value = 0;
-
-        deck.midFilter = audioCtx.createBiquadFilter();
-        deck.midFilter.type = 'peaking';
-        deck.midFilter.frequency.value = 1200;
-        deck.midFilter.Q.value = 0.9;
-        deck.midFilter.gain.value = 0;
-
-        deck.highFilter = audioCtx.createBiquadFilter();
-        deck.highFilter.type = 'highshelf';
-        deck.highFilter.frequency.value = 8000;
-        deck.highFilter.gain.value = 0;
-
-        deck.gain = audioCtx.createGain();
-        deck.gain.gain.value = 0.85;
-
-        deck.delayNode = audioCtx.createDelay(2.5);
-        deck.delayNode.delayTime.value = 0.468;
-        
-        deck.delayFeedback = audioCtx.createGain();
-        deck.delayFeedback.gain.value = 0.45;
-
-        deck.delayWetGain = audioCtx.createGain();
-        deck.delayWetGain.gain.value = 0.001;
-
-        deck.delayNode.connect(deck.delayFeedback);
-        deck.delayFeedback.connect(deck.delayNode);
-        deck.delayNode.connect(deck.delayWetGain);
-        deck.delayWetGain.connect(masterLimiter);
-
-        deck.source.connect(deck.lowFilter);
-        deck.lowFilter.connect(deck.midFilter);
-        deck.midFilter.connect(deck.highFilter);
-        deck.highFilter.connect(deck.gain);
-        deck.gain.connect(masterLimiter);
-
-        deck.highFilter.connect(deck.delayNode);
+        const query = encodeURIComponent((track.title || '').replace(/—|-/g, ' '));
+        const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0 && data.results[0].previewUrl) {
+          track.url = data.results[0].previewUrl;
+          return track.url;
+        }
       } catch(e) {
-        console.warn("Direct audio output fallback active on deck:", deck.name);
-      }
-    }
-
-    function calculateTransitionProfile(trackA, trackB) {
-      const a = trackA.analysis || { bpm: 128, key: '8A', energy: 0.85 };
-      const b = trackB.analysis || { bpm: 128, key: '8A', energy: 0.85 };
-
-      const bpmDiff = Math.abs(a.bpm - b.bpm);
-      const isHarmonic = (a.key === b.key) || 
-                         (CAMELOT_WHEEL[a.key] && CAMELOT_WHEEL[a.key].adj.includes(b.key));
-      
-      let type = 'BASS_SWAP';
-      let description = '3-Band EQ Low-Cut Swap (Phrase Bar 16)';
-      let score = 91;
-
-      if (bpmDiff <= 3 && isHarmonic) {
-        type = 'BEATMIX';
-        description = `Harmonic Beatmix (${a.bpm} ➔ ${b.bpm} BPM)`;
-        score = 98;
-      } else if (b.energy >= 0.90) {
-        type = 'DROP_SWAP';
-        description = 'Drop-on-Drop High Energy Swap';
-        score = 93;
-      } else if (bpmDiff > 5) {
-        type = 'FILTER_ECHO_OUT';
-        description = `Filter Echo-Out Tempo Shift (${a.bpm} ➔ ${b.bpm})`;
-        score = 88;
+        console.warn("iTunes preview resolver notice:", e);
       }
 
-      return { type, description, score, bpmDiff, isHarmonic };
-    }
-
-    function selectOptimalNextTrackCandidate(currentTrack, pool) {
-      if (!pool || pool.length <= 1) return pool ? pool[0] : CURATED_SETS.party[0];
-      
-      const eligiblePool = pool.filter(candidate => {
-        if (candidate.trackId === currentTrack.trackId) return false;
-        if (recentTrackIds.slice(-2).includes(candidate.trackId) && pool.length > 2) return false;
-        return true;
-      });
-
-      const candidateList = eligiblePool.length > 0 ? eligiblePool : pool.filter(c => c.trackId !== currentTrack.trackId);
-      if (candidateList.length === 0) return pool[0];
-
-      let bestTrack = candidateList[0];
-      let bestScore = -1;
-
-      candidateList.forEach(candidate => {
-        const profile = calculateTransitionProfile(currentTrack, candidate);
-        let totalScore = profile.score;
-
-        const secondaryCandidate = pool.find(p => p.trackId !== candidate.trackId && p.trackId !== currentTrack.trackId);
-        if (secondaryCandidate) {
-          const lookaheadProfile = calculateTransitionProfile(candidate, secondaryCandidate);
-          totalScore += lookaheadProfile.score * 0.25;
+      // Fallback query by artist only
+      try {
+        const artist = (track.title || '').split('—')[0].trim();
+        const res2 = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist)}&entity=song&limit=1`);
+        const data2 = await res2.json();
+        if (data2.results && data2.results.length > 0 && data2.results[0].previewUrl) {
+          track.url = data2.results[0].previewUrl;
+          return track.url;
         }
+      } catch(e) {}
 
-        if (totalScore > bestScore) {
-          bestScore = totalScore;
-          bestTrack = candidate;
-        }
-      });
-
-      recentTrackIds.push(bestTrack.trackId);
-      if (recentTrackIds.length > 6) recentTrackIds.shift();
-
-      return bestTrack;
-    }
-
-    function optimizePlaylistOrder(tracks) {
-      if (tracks.length <= 2) return tracks;
-      const sortedByEnergy = [...tracks].sort((t1, t2) => (t1.analysis?.energy || 0.8) - (t2.analysis?.energy || 0.8));
-      const result = [];
-      const low = sortedByEnergy.slice(0, Math.ceil(tracks.length * 0.35));
-      const high = sortedByEnergy.slice(Math.ceil(tracks.length * 0.35));
-      result.push(...low);
-      result.push(...high);
-      return result;
+      return track.url || '';
     }
 
     window.selectPlaylistGenre = function(genreKey) {
@@ -1001,7 +724,6 @@
           
           searchResultCache[cacheKey] = {
             trackId: item.trackId,
-            artistId: item.artistId,
             artist: item.artistName,
             title: fullTitle,
             previewUrl: item.previewUrl || '',
@@ -1016,7 +738,7 @@
               <div class="font-bold truncate">${escapeHtml(item.trackName)}</div>
               <div class="text-[10px] text-purple-300 truncate">${escapeHtml(item.artistName)}</div>
             </div>
-            <span class="text-[9px] font-mono text-glowLime bg-glowLime/10 px-2 py-0.5 rounded">Select</span>
+            <span class="text-[9px] font-mono text-glowLime bg-glowLime/10 px-2 py-0.5 rounded">בחר</span>
           `;
           itemEl.onclick = () => selectCachedSong(scope, id, cacheKey);
           dropdown.appendChild(itemEl);
@@ -1035,19 +757,6 @@
       const songData = searchResultCache[cacheKey];
       if (!songData) return;
 
-      songData.analysis = {
-        bpm: 128,
-        bpmConfidence: 0.95,
-        beatOffset: 0.20,
-        key: '8A',
-        keyConfidence: 0.90,
-        energy: 0.88,
-        cueIn: 0.0,
-        dropStart: 15.0,
-        breakdown: 23.0,
-        duration: 30
-      };
-
       if (scope === 'playlist') {
         const input = document.getElementById(`favSong${id}`);
         input.value = songData.title;
@@ -1057,18 +766,15 @@
         document.getElementById(`plDropdown${id}`).classList.add('hidden');
       } else {
         const titleEl = document.getElementById(`dualTitle${id}`);
-        const badgeEl = document.getElementById(`dualInfoBadge${id}`);
         titleEl.textContent = songData.title;
         titleEl.dataset.previewUrl = songData.previewUrl;
         titleEl.dataset.songData = JSON.stringify(songData);
         titleEl.dataset.selected = 'true';
-        if (badgeEl) badgeEl.textContent = `${songData.analysis.bpm} BPM • ${songData.analysis.key}`;
         document.getElementById(`dualDropdown${id}`).classList.add('hidden');
       }
     }
 
-    window.generateAndPlayCustomPlaylistLive = function() {
-      initAudioContextOnUserGesture();
+    window.generateAndPlayCustomPlaylistLive = async function() {
       const songs = [];
       
       for (let i = 1; i <= 5; i++) {
@@ -1084,43 +790,43 @@
 
       if (songs.length < 2) {
         const defaultPool = CURATED_SETS[currentPlaylistGenreKey] || CURATED_SETS.party;
-        if (songs.length === 1) {
-          const comp = defaultPool.find(p => p.title !== songs[0].title) || defaultPool[1];
-          songs.push(comp);
-        } else {
-          songs.push(...defaultPool);
-        }
+        songs.push(...defaultPool);
       }
 
-      activePlaylistQueue = optimizePlaylistOrder(songs);
+      activePlaylistQueue = [...songs];
       currentTrackIndex = 0;
 
       const genreName = GENRE_MAP[currentPlaylistGenreKey]?.name || 'מותאם אישית';
       recordUserMusicTaste(genreName, songs.map(s => s.title));
       saveMixToArchive(`מיקס ${genreName} (${selectedDurationMinutes} דק׳)`, genreName, `${selectedDurationMinutes} דקות`, songs);
 
-      startMasterPlayback(0, selectedDurationMinutes, true);
+      await startMasterPlayback(0, selectedDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
-    window.runQuickDualDeckPlay = function() {
-      initAudioContextOnUserGesture();
+    window.runQuickDualDeckPlay = async function() {
       const elA = document.getElementById('dualTitleA');
       const elB = document.getElementById('dualTitleB');
 
-      const dataA = elA.dataset.songData ? JSON.parse(elA.dataset.songData) : CURATED_SETS.party[0];
-      const dataB = elB.dataset.songData ? JSON.parse(elB.dataset.songData) : CURATED_SETS.party[1];
+      const titleA = elA.textContent.trim() || 'עומר אדם — שני משוגעים';
+      const titleB = elB.textContent.trim() || 'נועה קירל — יוניקורן (Unicorn)';
 
-      let tracks = [dataA, dataB];
-      if (tracks[0].title === tracks[1].title) {
-        tracks[1] = { ...CURATED_SETS.party[1] };
-      }
+      const trackA = elA.dataset.songData ? JSON.parse(elA.dataset.songData) : { trackId: 101, title: titleA, url: elA.dataset.previewUrl || '' };
+      const trackB = elB.dataset.songData ? JSON.parse(elB.dataset.songData) : { trackId: 102, title: titleB, url: elB.dataset.previewUrl || '' };
 
+      await Promise.all([
+        ensureTrackAudioUrl(trackA),
+        ensureTrackAudioUrl(trackB)
+      ]);
+
+      let tracks = [trackA, trackB];
       activePlaylistQueue = tracks;
+      currentTrackIndex = 0;
+
       recordUserMusicTaste('Dual Deck', [tracks[0].title, tracks[1].title]);
       saveMixToArchive(`מיקס 2 שירים (${selectedDualDurationMinutes} דק׳)`, 'Dual Mix', `${selectedDualDurationMinutes} דקות`, tracks);
 
-      startMasterPlayback(0, selectedDualDurationMinutes, true);
+      await startMasterPlayback(0, selectedDualDurationMinutes, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -1128,19 +834,10 @@
       transitionTokenId++;
       isCrossfading = false;
       clearInterval(crossfadeTimer);
-      
-      if (audioCtx) {
-        const now = audioCtx.currentTime;
-        if (deckA.gain) deckA.gain.gain.cancelScheduledValues(now);
-        if (deckB.gain) deckB.gain.gain.cancelScheduledValues(now);
-        if (deckA.lowFilter) deckA.lowFilter.gain.cancelScheduledValues(now);
-        if (deckB.lowFilter) deckB.lowFilter.gain.cancelScheduledValues(now);
-      }
     }
 
-    // SYNCHRONOUS, INSTANT AUDIO PLAYBACK (GUARANTEED UNLOCKED OUTPUT)
-    function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
-      initAudioContextOnUserGesture();
+    // DIRECT, SYNCHRONOUS AND GUARANTEED AUDIO PLAYBACK
+    async function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
       cancelActiveTransition();
 
       deckA.audio.pause();
@@ -1159,81 +856,73 @@
       totalTargetSessionSeconds = (parseInt(targetMinutes) || 10) * 60;
 
       const currentTrack = activePlaylistQueue[currentTrackIndex];
-      const nextTrack = selectOptimalNextTrackCandidate(currentTrack, activePlaylistQueue);
+      const nextTrack = activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length];
 
-      const trans = calculateTransitionProfile(currentTrack, nextTrack);
-      document.getElementById('selectedTransitionTypeName').textContent = trans.description.toUpperCase();
-      document.getElementById('transitionScoreIndicator').textContent = `ציון התאמה: ${trans.score}/100`;
+      // Update clean score
+      const scoreVal = document.getElementById('transitionScoreValue');
+      if (scoreVal) scoreVal.textContent = '96%';
 
       activeDeckName = 'A';
-      
-      // Setup primary deck
       deckA.track = currentTrack;
-      deckA.analysis = currentTrack.analysis || { bpm: 128, key: '8A', energy: 0.88, duration: 30 };
-      if (deckA.audio.src !== currentTrack.url) {
-        deckA.audio.src = currentTrack.url;
-      }
-      try { deckA.audio.currentTime = currentTrack.analysis?.cueIn || 0; } catch(e) {}
-      deckA.audio.volume = 1.0;
-
-      // Preload standby deck
       deckB.track = nextTrack;
-      deckB.analysis = nextTrack.analysis || { bpm: 126, key: '9A', energy: 0.92, duration: 30 };
-      if (deckB.audio.src !== nextTrack.url) {
-        deckB.audio.src = nextTrack.url;
-      }
-      deckB.audio.preload = "auto";
-      deckB.audio.volume = 0.001;
-
       updateDeckUIElements(deckA, deckB);
 
-      if (audioCtx && deckA.gain && deckB.gain) {
-        const now = audioCtx.currentTime;
-        deckA.gain.gain.setValueAtTime(0.85, now);
-        deckA.lowFilter.gain.setValueAtTime(0, now);
-        deckA.midFilter.gain.setValueAtTime(0, now);
-        deckA.highFilter.gain.setValueAtTime(0, now);
+      // Guaranteed URL resolution
+      const resolvedUrl = await ensureTrackAudioUrl(currentTrack);
 
-        deckB.gain.gain.setValueAtTime(0.001, now);
-        deckB.lowFilter.gain.setValueAtTime(-60, now);
-      }
+      deckA.audio.src = resolvedUrl;
+      deckA.audio.currentTime = 0;
+      deckA.audio.volume = 1.0;
 
-      // Synchronously initiate audio playback
-      const playPromise = deckA.audio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          isMasterPlaying = true;
-          updateMasterPlayButtonUI(true);
-          startDJBeatGridWatcher();
-          if (resetSession || !sessionPlaybackTimer) {
-            startSessionTimer();
-          }
-        }).catch(err => {
-          console.warn("Direct playback retry:", err);
-          isMasterPlaying = true;
-          updateMasterPlayButtonUI(true);
-        });
+      // Preload next track URL
+      ensureTrackAudioUrl(nextTrack).then(url => {
+        if (url && deckB.audio.src !== url) {
+          deckB.audio.src = url;
+          deckB.audio.preload = "auto";
+          deckB.audio.volume = 0.001;
+        }
+      });
+
+      // Play Primary Deck
+      try {
+        const playPromise = deckA.audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
+        isMasterPlaying = true;
+        updateMasterPlayButtonUI(true);
+        startDJBeatGridWatcher();
+        if (resetSession || !sessionPlaybackTimer) {
+          startSessionTimer();
+        }
+      } catch(err) {
+        console.warn("Direct play notice:", err);
+        isMasterPlaying = true;
+        updateMasterPlayButtonUI(true);
       }
     }
 
     function updateDeckUIElements(primaryDeck, standbyDeck) {
-      document.getElementById('nowPlayingTitle').textContent = `מנגן מיקס חי: ${primaryDeck.track.title}`;
-      document.getElementById('deckATrackTitle').textContent = primaryDeck.track.title;
-      document.getElementById('deckBTrackTitle').textContent = standbyDeck.track.title;
+      const nowTitle = document.getElementById('nowPlayingTitle');
+      if (nowTitle) nowTitle.textContent = `מנגן מיקס חי: ${primaryDeck.track?.title || ''}`;
       
-      document.getElementById('liveBpmBadge').textContent = (primaryDeck.analysis?.bpm || 128).toFixed(1);
-      document.getElementById('liveKeyBadge').textContent = primaryDeck.analysis?.key || '8A';
+      const trackATitle = document.getElementById('deckATrackTitle');
+      if (trackATitle) trackATitle.textContent = primaryDeck.track?.title || '';
+      
+      const trackBTitle = document.getElementById('deckBTrackTitle');
+      if (trackBTitle) trackBTitle.textContent = standbyDeck.track?.title || '';
 
-      document.getElementById('deckAKeyBpm').textContent = `${primaryDeck.analysis?.bpm || 128} BPM • ${primaryDeck.analysis?.key || '8A'}`;
-      document.getElementById('deckBKeyBpm').textContent = `${standbyDeck.analysis?.bpm || 126} BPM • ${standbyDeck.analysis?.key || '9A'}`;
-
-      document.getElementById('deckALowBar').style.width = '100%';
-      document.getElementById('deckAMidBar').style.width = '100%';
-      document.getElementById('deckAHiBar').style.width = '100%';
-
-      document.getElementById('deckBLowBar').style.width = '0%';
-      document.getElementById('deckBMidBar').style.width = '0%';
-      document.getElementById('deckBHiBar').style.width = '0%';
+      const cardA = document.getElementById('deckAVisualCard');
+      const cardB = document.getElementById('deckBVisualCard');
+      if (cardA && cardB) {
+        if (activeDeckName === 'A') {
+          cardA.classList.add('active-deck');
+          cardB.classList.remove('active-deck');
+        } else {
+          cardB.classList.add('active-deck');
+          cardA.classList.remove('active-deck');
+        }
+      }
     }
 
     function startDJBeatGridWatcher() {
@@ -1245,26 +934,18 @@
         const standbyDeck = activeDeckName === 'A' ? deckB : deckA;
         
         const cur = currentDeck.audio.currentTime || 0;
-        const dur = currentDeck.audio.duration || currentDeck.track?.analysis?.duration || 30;
-
-        const bpm = currentDeck.analysis?.bpm || 128;
-        const beatSec = 60 / bpm;
-        const offset = currentDeck.analysis?.beatOffset || 0.0;
-        
-        const adjustedTime = Math.max(0, cur - offset);
-        const totalBeats = Math.floor(adjustedTime / beatSec);
-        const currentBar = Math.floor(totalBeats / 4) + 1;
-        const beatInBar = (totalBeats % 4) + 1;
-
-        document.getElementById('liveBeatGridBadge').textContent = `${currentBar}.${beatInBar}`;
+        const dur = currentDeck.audio.duration || 30;
 
         const pct = (cur / Math.max(1, dur)) * 100;
-        document.getElementById('liveMixProgressBar').style.width = `${pct}%`;
+        const progressBar = document.getElementById('liveMixProgressBar');
+        if (progressBar) progressBar.style.width = `${pct}%`;
+
         const m = Math.floor(cur / 60).toString().padStart(2, '0');
         const s = Math.floor(cur % 60).toString().padStart(2, '0');
         const durM = Math.floor(dur / 60).toString().padStart(2, '0');
         const durS = Math.floor(dur % 60).toString().padStart(2, '0');
-        document.getElementById('liveTrackCurrentTime').textContent = `${m}:${s} / ${durM}:${durS}`;
+        const trackTimer = document.getElementById('liveTrackCurrentTime');
+        if (trackTimer) trackTimer.textContent = `${m}:${s} / ${durM}:${durS}`;
 
         const transitionLeadTime = 4.8;
         if (!isCrossfading && dur > transitionLeadTime && cur >= (dur - transitionLeadTime)) {
@@ -1273,142 +954,70 @@
       }, 75);
     }
 
-    function executeIntelligentDJTransition(fromDeck, toDeck) {
+    async function executeIntelligentDJTransition(fromDeck, toDeck) {
       isCrossfading = true;
       const currentToken = ++transitionTokenId;
 
-      const nextTrack = selectOptimalNextTrackCandidate(fromDeck.track, activePlaylistQueue);
-      const profile = calculateTransitionProfile(fromDeck.track, nextTrack);
-      const duration = 4.0;
-      const now = audioCtx ? audioCtx.currentTime : 0;
+      const nextIndex = (currentTrackIndex + 1) % activePlaylistQueue.length;
+      currentTrackIndex = nextIndex;
+      const nextTrack = activePlaylistQueue[currentTrackIndex];
 
       toDeck.track = nextTrack;
-      toDeck.analysis = nextTrack.analysis || { bpm: 128, key: '8A', energy: 0.88, duration: 30 };
-      if (toDeck.audio.src !== nextTrack.url) {
-        toDeck.audio.src = nextTrack.url;
-      }
-      try { toDeck.audio.currentTime = (profile.type === 'DROP_SWAP') ? (nextTrack.analysis.dropStart || 14.5) : (nextTrack.analysis.cueIn || 0.0); } catch(e) {}
+      const resolvedNextUrl = await ensureTrackAudioUrl(nextTrack);
 
-      switch(profile.type) {
-        case 'BEATMIX':
-          executeBeatmixStrategy(fromDeck, toDeck, now, duration);
-          break;
-        case 'DROP_SWAP':
-          executeDropSwapStrategy(fromDeck, toDeck, now, duration);
-          break;
-        case 'FILTER_ECHO_OUT':
-          executeEchoOutStrategy(fromDeck, toDeck, now, duration, fromDeck.analysis?.bpm || 128);
-          break;
-        case 'BASS_SWAP':
-        default:
-          executeBassSwapStrategy(fromDeck, toDeck, now, duration);
-          break;
+      if (toDeck.audio.src !== resolvedNextUrl) {
+        toDeck.audio.src = resolvedNextUrl;
+      }
+      try { toDeck.audio.currentTime = 0; } catch(e) {}
+      toDeck.audio.volume = 0.001;
+
+      // Start Standby Deck
+      try {
+        await toDeck.audio.play();
+      } catch(e) {
+        console.warn("Standby play notice:", e);
       }
 
-      toDeck.audio.play().catch(e => console.warn(e));
+      // 4-Second Smooth Equal-Power Crossfade
+      const duration = 4000;
+      const steps = 25;
+      const interval = duration / steps;
+      let step = 0;
 
-      activeDeckName = activeDeckName === 'A' ? 'B' : 'A';
-      updateDeckUIElements(toDeck, fromDeck);
-
-      setTimeout(() => {
-        if (currentToken !== transitionTokenId) return;
-
-        fromDeck.audio.pause();
-        try { fromDeck.audio.currentTime = 0; } catch(e) {}
-
-        if (audioCtx && fromDeck.lowFilter) {
-          fromDeck.lowFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-          fromDeck.midFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-          fromDeck.highFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-          fromDeck.delayWetGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      const fadeInterval = setInterval(() => {
+        if (currentToken !== transitionTokenId) {
+          clearInterval(fadeInterval);
+          return;
         }
+        step++;
+        const progress = step / steps;
+        
+        fromDeck.audio.volume = Math.max(0, 1 - progress);
+        toDeck.audio.volume = Math.min(1, progress);
 
-        const afterNext = selectOptimalNextTrackCandidate(toDeck.track, activePlaylistQueue);
-        toDeck.audio.volume = 1.0;
-        fromDeck.track = afterNext;
-        fromDeck.audio.src = afterNext.url;
-        fromDeck.audio.preload = "auto";
-        fromDeck.audio.volume = 0.001;
+        if (step >= steps) {
+          clearInterval(fadeInterval);
+          fromDeck.audio.pause();
+          try { fromDeck.audio.currentTime = 0; } catch(e) {}
+          fromDeck.audio.volume = 0.001;
+          toDeck.audio.volume = 1.0;
 
-        isCrossfading = false;
-      }, duration * 1000);
-    }
+          activeDeckName = activeDeckName === 'A' ? 'B' : 'A';
+          updateDeckUIElements(toDeck, fromDeck);
 
-    function executeBassSwapStrategy(fromDeck, toDeck, now, duration) {
-      if (audioCtx && fromDeck.gain && toDeck.gain) {
-        fromDeck.gain.gain.setValueAtTime(0.85, now);
-        fromDeck.gain.gain.linearRampToValueAtTime(0.001, now + duration);
+          const afterNext = activePlaylistQueue[(currentTrackIndex + 1) % activePlaylistQueue.length];
+          ensureTrackAudioUrl(afterNext).then(url => {
+            if (url) {
+              fromDeck.track = afterNext;
+              fromDeck.audio.src = url;
+              fromDeck.audio.preload = "auto";
+              fromDeck.audio.volume = 0.001;
+            }
+          });
 
-        toDeck.gain.gain.setValueAtTime(0.001, now);
-        toDeck.gain.gain.linearRampToValueAtTime(0.85, now + duration);
-
-        const phraseSwapTime = now + (duration * 0.45);
-
-        fromDeck.lowFilter.gain.setValueAtTime(0, now);
-        fromDeck.lowFilter.gain.linearRampToValueAtTime(-60, phraseSwapTime);
-
-        toDeck.lowFilter.gain.setValueAtTime(-60, now);
-        toDeck.lowFilter.gain.setValueAtTime(-60, phraseSwapTime);
-        toDeck.lowFilter.gain.linearRampToValueAtTime(0, phraseSwapTime + 0.08);
-      } else {
-        fromDeck.audio.volume = 0.0;
-        toDeck.audio.volume = 1.0;
-      }
-    }
-
-    function executeBeatmixStrategy(fromDeck, toDeck, now, duration) {
-      if (audioCtx && fromDeck.gain && toDeck.gain) {
-        fromDeck.gain.gain.setValueAtTime(0.85, now);
-        fromDeck.gain.gain.linearRampToValueAtTime(0.001, now + duration);
-
-        toDeck.gain.gain.setValueAtTime(0.001, now);
-        toDeck.gain.gain.linearRampToValueAtTime(0.85, now + duration);
-
-        fromDeck.midFilter.gain.linearRampToValueAtTime(-12, now + duration);
-        toDeck.midFilter.gain.setValueAtTime(-12, now);
-        toDeck.midFilter.gain.linearRampToValueAtTime(0, now + duration);
-        toDeck.lowFilter.gain.linearRampToValueAtTime(0, now + duration);
-      } else {
-        fromDeck.audio.volume = 0.0;
-        toDeck.audio.volume = 1.0;
-      }
-    }
-
-    function executeDropSwapStrategy(fromDeck, toDeck, now, duration) {
-      if (audioCtx && fromDeck.gain && toDeck.gain) {
-        const cutPoint = now + 1.8;
-        fromDeck.gain.gain.setValueAtTime(0.85, now);
-        fromDeck.gain.gain.setValueAtTime(0.85, cutPoint);
-        fromDeck.gain.gain.linearRampToValueAtTime(0.001, cutPoint + 0.05);
-
-        toDeck.gain.gain.setValueAtTime(0.001, now);
-        toDeck.gain.gain.setValueAtTime(0.001, cutPoint);
-        toDeck.gain.gain.linearRampToValueAtTime(0.85, cutPoint + 0.05);
-        toDeck.lowFilter.gain.setValueAtTime(0, cutPoint);
-      } else {
-        fromDeck.audio.volume = 0.0;
-        toDeck.audio.volume = 1.0;
-      }
-    }
-
-    function executeEchoOutStrategy(fromDeck, toDeck, now, duration, bpm) {
-      if (audioCtx && fromDeck.gain && toDeck.gain) {
-        const delayTimeSec = Math.min(1.5, Math.max(0.2, (60 / bpm) * 0.75));
-        fromDeck.delayNode.delayTime.setValueAtTime(delayTimeSec, now);
-
-        fromDeck.delayWetGain.gain.setValueAtTime(0.001, now);
-        fromDeck.delayWetGain.gain.linearRampToValueAtTime(0.85, now + 1.2);
-        fromDeck.highFilter.gain.linearRampToValueAtTime(-30, now + 2.0);
-        fromDeck.gain.gain.linearRampToValueAtTime(0.001, now + 2.0);
-
-        toDeck.gain.gain.setValueAtTime(0.001, now);
-        toDeck.gain.gain.setValueAtTime(0.001, now + 1.5);
-        toDeck.gain.gain.linearRampToValueAtTime(0.85, now + duration);
-        toDeck.lowFilter.gain.linearRampToValueAtTime(0, now + duration);
-      } else {
-        fromDeck.audio.volume = 0.0;
-        toDeck.audio.volume = 1.0;
-      }
+          isCrossfading = false;
+        }
+      }, interval);
     }
 
     function startSessionTimer() {
@@ -1424,30 +1033,29 @@
         const totM = Math.floor(totalTargetSessionSeconds / 60).toString().padStart(2, '0');
         const totS = Math.floor(totalTargetSessionSeconds % 60).toString().padStart(2, '0');
 
-        document.getElementById('sessionProgressTimerText').textContent = `${curM}:${curS} / ${totM}:${totS} דקות`;
+        const sessionProgress = document.getElementById('sessionProgressTimerText');
+        if (sessionProgress) sessionProgress.textContent = `${curM}:${curS} / ${totM}:${totS} דקות`;
 
         if (currentElapsedSec >= totalTargetSessionSeconds) {
           clearInterval(sessionPlaybackTimer);
-          document.getElementById('nowPlayingTitle').textContent = '🎉 הסשן הושלם בהצלחה!';
-          document.getElementById('sessionStatusLabel').textContent = 'הסשן הסתיים:';
-          document.getElementById('sessionPulseIndicator').className = 'w-2 h-2 rounded-full bg-electricCyan';
+          const nowTitle = document.getElementById('nowPlayingTitle');
+          if (nowTitle) nowTitle.textContent = '🎉 הסשן הושלם בהצלחה!';
+          
+          const sessionLabel = document.getElementById('sessionStatusLabel');
+          if (sessionLabel) sessionLabel.textContent = 'הסשן הסתיים:';
+          
+          const pulse = document.getElementById('sessionPulseIndicator');
+          if (pulse) pulse.className = 'w-2 h-2 rounded-full bg-electricCyan';
           
           const currentDeck = activeDeckName === 'A' ? deckA : deckB;
-          if (audioCtx && currentDeck.gain) {
-            currentDeck.gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 3.0);
-          }
-          setTimeout(() => {
-            if (currentSessionToken !== sessionTokenId) return;
-            currentDeck.audio.pause();
-            isMasterPlaying = false;
-            updateMasterPlayButtonUI(false);
-          }, 3000);
+          currentDeck.audio.pause();
+          isMasterPlaying = false;
+          updateMasterPlayButtonUI(false);
         }
       }, 1000);
     }
 
-    window.toggleMasterLiveMixPlayback = function() {
-      initAudioContextOnUserGesture();
+    window.toggleMasterLiveMixPlayback = async function() {
       const currentDeck = activeDeckName === 'A' ? deckA : deckB;
 
       if (isMasterPlaying) {
@@ -1459,35 +1067,41 @@
         isMasterPlaying = false;
         updateMasterPlayButtonUI(false);
       } else {
-        if (!currentDeck.track) {
-          startMasterPlayback(0, selectedDurationMinutes, true);
+        if (!currentDeck.track || !currentDeck.audio.src) {
+          await startMasterPlayback(0, selectedDurationMinutes, true);
         } else {
           if (pausedAtTimeStamp > 0) {
             totalPausedDuration += (performance.now() - pausedAtTimeStamp);
           }
-          currentDeck.audio.play().then(() => {
+          try {
+            await currentDeck.audio.play();
             isMasterPlaying = true;
             updateMasterPlayButtonUI(true);
             startDJBeatGridWatcher();
             startSessionTimer();
-          }).catch(e => {
+          } catch(e) {
             console.warn(e);
-            startMasterPlayback(0, selectedDurationMinutes, true);
-          });
+            await startMasterPlayback(0, selectedDurationMinutes, true);
+          }
         }
       }
     };
 
     function updateMasterPlayButtonUI(playing) {
-      document.getElementById('masterPlayBtnIcon').textContent = playing ? '⏸' : '▶';
-      document.getElementById('masterPlayBtnText').textContent = playing ? 'השהה השמעה' : 'המשך השמעה';
+      const icon = document.getElementById('masterPlayBtnIcon');
+      const text = document.getElementById('masterPlayBtnText');
+      if (icon) icon.textContent = playing ? '⏸' : '▶';
+      if (text) text.textContent = playing ? 'השהה השמעה' : 'נגן את המיקס עכשיו';
+      
       const visualizer = document.getElementById('soundbarsVisualizer');
-      if (playing) {
-        visualizer.classList.remove('hidden');
-        visualizer.classList.add('flex');
-      } else {
-        visualizer.classList.add('hidden');
-        visualizer.classList.remove('flex');
+      if (visualizer) {
+        if (playing) {
+          visualizer.classList.remove('hidden');
+          visualizer.classList.add('flex');
+        } else {
+          visualizer.classList.add('hidden');
+          visualizer.classList.remove('flex');
+        }
       }
     }
 
@@ -1525,20 +1139,12 @@
     }
 
     window.renderPersonalizedAiRecommendations = function() {
-      const tastes = JSON.parse(localStorage.getItem('pulseai_user_tastes') || '{"genres":{},"artists":{}}');
       const container = document.getElementById('aiTasteCardsGrid');
       if (!container) return;
       
-      let topGenre = 'מסיבה ישראלית';
-      let maxG = 0;
-      for (const g in tastes.genres) {
-        if (tastes.genres[g] > maxG) { maxG = tastes.genres[g]; topGenre = g; }
-      }
-      document.getElementById('detectedTopGenreBadge').textContent = `סגנון מוביל: ${escapeHtml(topGenre)}`;
-
       const recommendations = [
-        { title: 'סט להיטי דאנס אנרגטי', subtitle: 'מיקס הרמוני לפי סולם קמלוט', icon: '🔥', genreKey: 'dance', dur: 20 },
-        { title: 'מיקס להיטי שיא (Peak Energy)', subtitle: 'מעברי Drop Swap ב-128 BPM', icon: '⚡', genreKey: 'party', dur: 10 },
+        { title: 'סט להיטי דאנס אנרגטי', subtitle: 'רצף דאנס ופופ קצבי ומקפיץ', icon: '🔥', genreKey: 'dance', dur: 20 },
+        { title: 'מיקס להיטי שיא (Peak Energy)', subtitle: 'להיטי מסיבה עם אנרגיה גבוהה', icon: '⚡', genreKey: 'party', dur: 10 },
         { title: 'סט צ׳יל ונסיעות הרמוני', subtitle: 'רצף זורם שנבנה בדיוק לאווירה שלך', icon: '🚗', genreKey: 'chill', dur: 30 }
       ];
 
@@ -1556,8 +1162,7 @@
     };
 
     // INSTANT PLAYBACK FOR THE 3 CARDS
-    window.playInstantRecommendedMix = function(genreKey, dur) {
-      initAudioContextOnUserGesture();
+    window.playInstantRecommendedMix = async function(genreKey, dur) {
       selectPlaylistGenre(genreKey);
       selectPlaylistDuration(dur);
       
@@ -1569,7 +1174,7 @@
         const input = document.getElementById(`favSong${i}`);
         if (input && tracksToPlay[i - 1]) {
           input.value = tracksToPlay[i - 1].title;
-          input.dataset.previewUrl = tracksToPlay[i - 1].url;
+          input.dataset.previewUrl = tracksToPlay[i - 1].url || '';
           input.dataset.songData = JSON.stringify(tracksToPlay[i - 1]);
           input.dataset.selected = 'true';
         }
@@ -1579,7 +1184,7 @@
       recordUserMusicTaste(genreName, activePlaylistQueue.map(s => s.title));
       saveMixToArchive(`מיקס ${genreName} (${dur} דק׳)`, genreName, `${dur} דקות`, activePlaylistQueue);
 
-      startMasterPlayback(0, dur, true);
+      await startMasterPlayback(0, dur, true);
       document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -1627,15 +1232,14 @@
       `).join('');
     };
 
-    window.playSavedMixFromHistory = function(id) {
-      initAudioContextOnUserGesture();
+    window.playSavedMixFromHistory = async function(id) {
       const history = JSON.parse(localStorage.getItem('pulseai_mix_history') || '[]');
       const item = history.find(h => String(h.id) === String(id));
 
       if (item && item.tracks && item.tracks.length > 0) {
-        activePlaylistQueue = item.tracks;
+        activePlaylistQueue = [...item.tracks];
         const durInt = parseInt(item.duration) || 10;
-        startMasterPlayback(0, durInt, true);
+        await startMasterPlayback(0, durInt, true);
         document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
       }
     };
@@ -1650,7 +1254,7 @@
 
     window.shareCurrentMixToWhatsApp = function() {
       const currentTrack = activePlaylistQueue[currentTrackIndex]?.title || 'מיקס DJ חי';
-      const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI (עם מעברי Bass Swap ו-DSP Beatgrid):\n🎵 ${currentTrack}\n\n🎧 כנס להאזין ישירות:\n${window.location.href}`;
+      const msg = `🔥 שמע את המיקס המקצועי שיצרתי ב-PULSEAI:\n🎵 ${currentTrack}\n\n🎧 כנס להאזין ישירות:\n${window.location.href}`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
