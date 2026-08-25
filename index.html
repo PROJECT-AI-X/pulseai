@@ -93,7 +93,7 @@
   </style>
 </head>
 
-<body class="p-3 md:p-8 flex flex-col items-center" onclick="initAudioContextOnUserGesture()">
+<body class="p-3 md:p-8 flex flex-col items-center">
 
   <!-- ========================================== -->
   <!-- HEADER & USER PROFILE -->
@@ -107,7 +107,7 @@
         <h1 class="text-xl md:text-2xl font-black bg-gradient-to-r from-sunset via-pink-400 to-electricCyan bg-clip-text text-transparent">
           PULSEAI
         </h1>
-        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • DSP Autocorrelation • 24 Camelot Keys • Phrase Sync</p>
+        <p class="text-[11px] text-purple-300 font-mono">Autonomous AI DJ • DSP Beatgrid • 24 Camelot Keys • Phrase Sync</p>
       </div>
     </div>
 
@@ -119,10 +119,10 @@
           <div id="userNameDisplay" class="text-xs font-bold text-white truncate max-w-[120px]">משתמש מחובר</div>
           <div class="text-[9px] text-glowLime font-mono">מסונכרן בענן ⚡</div>
         </div>
-        <button onclick="handleUserLogout()" class="text-sunset hover:text-sunsetHover text-xs font-bold mr-2">התנתק</button>
+        <button onclick="handleUserLogout()" class="text-sunset hover:text-sunsetHover text-xs font-bold mr-2 cursor-pointer">התנתק</button>
       </div>
 
-      <button id="googleLoginBtn" onclick="handleGoogleSignIn()" class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white hover:bg-gray-100 text-night text-xs font-black shadow-lg transition-all">
+      <button id="googleLoginBtn" onclick="handleGoogleSignIn()" class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white hover:bg-gray-100 text-night text-xs font-black shadow-lg transition-all cursor-pointer">
         <svg class="w-4 h-4" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -143,10 +143,10 @@
         <span class="text-xl">🧠</span>
         <div>
           <h2 class="text-sm font-black text-white">המלצות AI מותאמות אישית לפי הטעם שלך</h2>
-          <p class="text-[11px] text-purple-300">האלגוריתם לומד את ה-BPM, המפתחות והאנרגיה המועדפים עליך:</p>
+          <p class="text-[11px] text-purple-300">לחץ על כרטיס להשמעה מיידית של סט מלא ומסונכרן:</p>
         </div>
       </div>
-      <span id="detectedTopGenreBadge" class="text-[10px] text-sunset font-mono bg-sunset/15 px-2.5 py-1 rounded-full border border-sunset/30">מזהה סגנון מוביל...</span>
+      <span id="detectedTopGenreBadge" class="text-[10px] text-sunset font-mono bg-sunset/15 px-2.5 py-1 rounded-full border border-sunset/30">סטים חכמים מוכנים</span>
     </div>
 
     <div id="aiTasteCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
@@ -201,7 +201,7 @@
         
         <!-- Deck A 3-Band Pro EQ Meters -->
         <div class="flex items-center gap-2 text-[10px] font-mono">
-          <span class="text-purple-400">LOW (120Hz)</span>
+          <span class="text-purple-400">LOW</span>
           <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
             <div id="deckALowBar" class="bg-glowLime h-full transition-all duration-75" style="width: 100%;"></div>
           </div>
@@ -226,7 +226,7 @@
         
         <!-- Deck B 3-Band Pro EQ Meters -->
         <div class="flex items-center gap-2 text-[10px] font-mono">
-          <span class="text-purple-400">LOW (120Hz)</span>
+          <span class="text-purple-400">LOW</span>
           <div class="flex-1 bg-purple-950 h-1.5 rounded-full overflow-hidden">
             <div id="deckBLowBar" class="bg-glowLime h-full transition-all duration-75" style="width: 0%;"></div>
           </div>
@@ -328,7 +328,7 @@
       <div class="space-y-2 p-4 rounded-2xl bg-black/40 border border-purple-900/50 relative text-right">
         <div class="flex justify-between items-center text-xs">
           <span class="font-bold text-sunset">שיר ראשון (Deck A)</span>
-          <span id="dualInfoBadgeA" class="text-[10px] text-purple-300 font-mono">DSP Analyzer מוכן</span>
+          <span id="dualInfoBadgeA" class="text-[10px] text-purple-300 font-mono">128 BPM • 8A</span>
         </div>
         <div class="relative">
           <input type="text" id="dualSearchInputA" oninput="debounceSearch(this.value, 'dual', 'A')" placeholder="חפש שיר ראשון (iTunes)..."
@@ -342,7 +342,7 @@
       <div class="space-y-2 p-4 rounded-2xl bg-black/40 border border-purple-900/50 relative text-right">
         <div class="flex justify-between items-center text-xs">
           <span class="font-bold text-glowLime">שיר שני (Deck B)</span>
-          <span id="dualInfoBadgeB" class="text-[10px] text-purple-300 font-mono">DSP Analyzer מוכן</span>
+          <span id="dualInfoBadgeB" class="text-[10px] text-purple-300 font-mono">126 BPM • 9A</span>
         </div>
         <div class="relative">
           <input type="text" id="dualSearchInputB" oninput="debounceSearch(this.value, 'dual', 'B')" placeholder="חפש שיר שני (iTunes)..."
@@ -634,6 +634,95 @@
       '12B': { adj: ['11B', '1B', '12A'], boost: '2B' }
     };
 
+    // Dedicated Curated DJ Sets per Genre
+    const CURATED_SETS = {
+      party: [
+        {
+          trackId: 101,
+          title: 'עומר אדם — שני משוגעים',
+          artist: 'עומר אדם',
+          url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
+          analysis: { bpm: 128, bpmConfidence: 0.96, beatOffset: 0.24, key: '8A', keyConfidence: 0.90, energy: 0.90, cueIn: 0.0, dropStart: 15.0, breakdown: 23.5, duration: 30 }
+        },
+        {
+          trackId: 102,
+          title: 'נועה קירל — יוניקורן (Unicorn)',
+          artist: 'נועה קירל',
+          url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
+          analysis: { bpm: 126, bpmConfidence: 0.94, beatOffset: 0.18, key: '9A', keyConfidence: 0.88, energy: 0.94, cueIn: 0.0, dropStart: 14.5, breakdown: 22.8, duration: 30 }
+        },
+        {
+          trackId: 103,
+          title: 'פאר טסי — אהבה חולה',
+          artist: 'פאר טסי',
+          url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3',
+          analysis: { bpm: 124, bpmConfidence: 0.91, beatOffset: 0.32, key: '8A', keyConfidence: 0.85, energy: 0.82, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
+        }
+      ],
+      dance: [
+        {
+          trackId: 201,
+          title: 'The Weeknd — Blinding Lights',
+          artist: 'The Weeknd',
+          url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
+          analysis: { bpm: 130, bpmConfidence: 0.97, beatOffset: 0.12, key: '10A', keyConfidence: 0.92, energy: 0.96, cueIn: 0.0, dropStart: 16.0, breakdown: 24.5, duration: 30 }
+        },
+        {
+          trackId: 202,
+          title: 'Calvin Harris — One Kiss',
+          artist: 'Calvin Harris',
+          url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
+          analysis: { bpm: 124, bpmConfidence: 0.95, beatOffset: 0.20, key: '11A', keyConfidence: 0.90, energy: 0.92, cueIn: 0.0, dropStart: 15.0, breakdown: 23.0, duration: 30 }
+        },
+        {
+          trackId: 203,
+          title: 'Dua Lipa — Don\'t Start Now',
+          artist: 'Dua Lipa',
+          url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
+          analysis: { bpm: 124, bpmConfidence: 0.94, beatOffset: 0.15, key: '7A', keyConfidence: 0.88, energy: 0.94, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
+        }
+      ],
+      chill: [
+        {
+          trackId: 301,
+          title: 'חנן בן ארי — אלוף העולם',
+          artist: 'חנן בן ארי',
+          url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chill-abstract-intention-12099.mp3',
+          analysis: { bpm: 105, bpmConfidence: 0.92, beatOffset: 0.28, key: '7A', keyConfidence: 0.86, energy: 0.72, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
+        },
+        {
+          trackId: 302,
+          title: 'טונה — סהרה (Live Session)',
+          artist: 'טונה',
+          url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3',
+          analysis: { bpm: 98, bpmConfidence: 0.90, beatOffset: 0.35, key: '6A', keyConfidence: 0.84, energy: 0.68, cueIn: 0.0, dropStart: 13.5, breakdown: 21.5, duration: 30 }
+        },
+        {
+          trackId: 303,
+          title: 'רביד פלוטניק — כל הזמן הזה',
+          artist: 'רביד פלוטניק',
+          url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
+          analysis: { bpm: 92, bpmConfidence: 0.91, beatOffset: 0.22, key: '8A', keyConfidence: 0.85, energy: 0.70, cueIn: 0.0, dropStart: 14.5, breakdown: 22.5, duration: 30 }
+        }
+      ],
+      workout: [
+        {
+          trackId: 401,
+          title: 'Eminem — Lose Yourself',
+          artist: 'Eminem',
+          url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
+          analysis: { bpm: 171, bpmConfidence: 0.96, beatOffset: 0.12, key: '10A', keyConfidence: 0.92, energy: 0.95, cueIn: 0.0, dropStart: 16.0, breakdown: 24.5, duration: 30 }
+        },
+        {
+          trackId: 402,
+          title: 'Dua Lipa — Physical',
+          artist: 'Dua Lipa',
+          url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
+          analysis: { bpm: 148, bpmConfidence: 0.95, beatOffset: 0.18, key: '11A', keyConfidence: 0.90, energy: 0.98, cueIn: 0.0, dropStart: 15.0, breakdown: 23.0, duration: 30 }
+        }
+      ]
+    };
+
     let currentPlaylistGenreKey = 'party';
     let selectedDurationMinutes = 10;
     let selectedDualDurationMinutes = 10;
@@ -681,42 +770,11 @@
     let sessionPlaybackTimer = null;
     let totalTargetSessionSeconds = 600;
 
-    const DEFAULT_TRACK_POOL = [
-      {
-        trackId: 101,
-        title: 'עומר אדם — שני משוגעים',
-        artist: 'עומר אדם',
-        url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=uplifting-electronic-dance-112799.mp3',
-        analysis: { bpm: 128, bpmConfidence: 0.96, beatOffset: 0.24, key: '8A', keyConfidence: 0.90, energy: 0.88, cueIn: 0.0, dropStart: 15.0, breakdown: 23.5, duration: 30 }
-      },
-      {
-        trackId: 102,
-        title: 'נועה קירל — יוניקורן (Unicorn)',
-        artist: 'נועה קירל',
-        url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=future-bass-hot-action-123490.mp3',
-        analysis: { bpm: 126, bpmConfidence: 0.94, beatOffset: 0.18, key: '9A', keyConfidence: 0.88, energy: 0.92, cueIn: 0.0, dropStart: 14.5, breakdown: 22.8, duration: 30 }
-      },
-      {
-        trackId: 103,
-        title: 'פאר טסי — אהבה חולה',
-        artist: 'פאר טסי',
-        url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=electronic-future-beats-117997.mp3',
-        analysis: { bpm: 124, bpmConfidence: 0.91, beatOffset: 0.32, key: '8A', keyConfidence: 0.85, energy: 0.76, cueIn: 0.0, dropStart: 14.0, breakdown: 22.0, duration: 30 }
-      },
-      {
-        trackId: 104,
-        title: 'The Weeknd — Blinding Lights',
-        artist: 'The Weeknd',
-        url: 'https://cdn.pixabay.com/download/audio/2021/08/08/audio_884fe92c21.mp3?filename=synthwave-80s-110045.mp3',
-        analysis: { bpm: 130, bpmConfidence: 0.97, beatOffset: 0.12, key: '10A', keyConfidence: 0.92, energy: 0.95, cueIn: 0.0, dropStart: 16.0, breakdown: 24.5, duration: 30 }
-      }
-    ];
-
-    let activePlaylistQueue = [...DEFAULT_TRACK_POOL];
+    let activePlaylistQueue = [...CURATED_SETS.party];
     let currentTrackIndex = 0;
     let isMasterPlaying = false;
 
-    // Direct synchronous audio unlocker
+    // DIRECT, IMMEDIATE USER ACTIVATION (UNLOCKS AUDIO WITHOUT BLOCKING)
     function initAudioContextOnUserGesture() {
       if (!isAudioCtxInitialized) {
         try {
@@ -790,7 +848,7 @@
 
         deck.highFilter.connect(deck.delayNode);
       } catch(e) {
-        console.warn("Direct element playback fallback for deck:", deck.name);
+        console.warn("Direct audio output fallback active on deck:", deck.name);
       }
     }
 
@@ -824,7 +882,7 @@
     }
 
     function selectOptimalNextTrackCandidate(currentTrack, pool) {
-      if (!pool || pool.length <= 1) return pool ? pool[0] : DEFAULT_TRACK_POOL[0];
+      if (!pool || pool.length <= 1) return pool ? pool[0] : CURATED_SETS.party[0];
       
       const eligiblePool = pool.filter(candidate => {
         if (candidate.trackId === currentTrack.trackId) return false;
@@ -1025,12 +1083,12 @@
       }
 
       if (songs.length < 2) {
-        const defaultPool = [...DEFAULT_TRACK_POOL];
+        const defaultPool = CURATED_SETS[currentPlaylistGenreKey] || CURATED_SETS.party;
         if (songs.length === 1) {
           const comp = defaultPool.find(p => p.title !== songs[0].title) || defaultPool[1];
           songs.push(comp);
         } else {
-          songs.push(...defaultPool.slice(0, 3));
+          songs.push(...defaultPool);
         }
       }
 
@@ -1050,12 +1108,12 @@
       const elA = document.getElementById('dualTitleA');
       const elB = document.getElementById('dualTitleB');
 
-      const dataA = elA.dataset.songData ? JSON.parse(elA.dataset.songData) : DEFAULT_TRACK_POOL[0];
-      const dataB = elB.dataset.songData ? JSON.parse(elB.dataset.songData) : DEFAULT_TRACK_POOL[1];
+      const dataA = elA.dataset.songData ? JSON.parse(elA.dataset.songData) : CURATED_SETS.party[0];
+      const dataB = elB.dataset.songData ? JSON.parse(elB.dataset.songData) : CURATED_SETS.party[1];
 
       let tracks = [dataA, dataB];
       if (tracks[0].title === tracks[1].title) {
-        tracks[1] = { ...DEFAULT_TRACK_POOL[1] };
+        tracks[1] = { ...CURATED_SETS.party[1] };
       }
 
       activePlaylistQueue = tracks;
@@ -1080,7 +1138,7 @@
       }
     }
 
-    // SYNCHRONOUS, INSTANT AUDIO PLAYBACK (ZERO AUTOPLAY BLOCKAGE)
+    // SYNCHRONOUS, INSTANT AUDIO PLAYBACK (GUARANTEED UNLOCKED OUTPUT)
     function startMasterPlayback(trackIndex, targetMinutes, resetSession = true) {
       initAudioContextOnUserGesture();
       cancelActiveTransition();
@@ -1479,8 +1537,8 @@
       document.getElementById('detectedTopGenreBadge').textContent = `סגנון מוביל: ${escapeHtml(topGenre)}`;
 
       const recommendations = [
-        { title: `סט ${topGenre} אנרגטי`, subtitle: 'מיקס הרמוני לפי סולם קמלוט', icon: '🔥', genreKey: 'party', dur: 20 },
-        { title: 'מיקס להיטי שיא (Peak Energy)', subtitle: 'מעברי Drop Swap ב-128 BPM', icon: '⚡', genreKey: 'dance', dur: 10 },
+        { title: 'סט להיטי דאנס אנרגטי', subtitle: 'מיקס הרמוני לפי סולם קמלוט', icon: '🔥', genreKey: 'dance', dur: 20 },
+        { title: 'מיקס להיטי שיא (Peak Energy)', subtitle: 'מעברי Drop Swap ב-128 BPM', icon: '⚡', genreKey: 'party', dur: 10 },
         { title: 'סט צ׳יל ונסיעות הרמוני', subtitle: 'רצף זורם שנבנה בדיוק לאווירה שלך', icon: '🚗', genreKey: 'chill', dur: 30 }
       ];
 
@@ -1497,11 +1555,32 @@
       `).join('');
     };
 
+    // INSTANT PLAYBACK FOR THE 3 CARDS
     window.playInstantRecommendedMix = function(genreKey, dur) {
       initAudioContextOnUserGesture();
       selectPlaylistGenre(genreKey);
       selectPlaylistDuration(dur);
-      generateAndPlayCustomPlaylistLive();
+      
+      const tracksToPlay = CURATED_SETS[genreKey] || CURATED_SETS.party;
+      activePlaylistQueue = [...tracksToPlay];
+      currentTrackIndex = 0;
+
+      for (let i = 1; i <= 5; i++) {
+        const input = document.getElementById(`favSong${i}`);
+        if (input && tracksToPlay[i - 1]) {
+          input.value = tracksToPlay[i - 1].title;
+          input.dataset.previewUrl = tracksToPlay[i - 1].url;
+          input.dataset.songData = JSON.stringify(tracksToPlay[i - 1]);
+          input.dataset.selected = 'true';
+        }
+      }
+
+      const genreName = GENRE_MAP[genreKey]?.name || 'מותאם אישית';
+      recordUserMusicTaste(genreName, activePlaylistQueue.map(s => s.title));
+      saveMixToArchive(`מיקס ${genreName} (${dur} דק׳)`, genreName, `${dur} דקות`, activePlaylistQueue);
+
+      startMasterPlayback(0, dur, true);
+      document.getElementById('liveWebMixPlayerSection').scrollIntoView({ behavior: 'smooth' });
     };
 
     function saveMixToArchive(title, genre, duration, tracks) {
@@ -1575,7 +1654,17 @@
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
+    // Full Keyboard Accessibility & Initial Render
     window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[role="button"][tabindex]').forEach(el => {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            el.click();
+          }
+        });
+      });
+
       renderPersonalizedAiRecommendations();
       renderMixHistoryList();
     });
