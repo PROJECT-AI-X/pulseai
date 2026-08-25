@@ -332,7 +332,8 @@
         <div class="relative">
           <input type="text" id="dualSearchInputA" oninput="debounceSearch(this.value, 'dual', 'A')" placeholder="חפש שיר ראשון (iTunes)..."
                  class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-sunset">
-          <div id="dualDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl text-right"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="dualDropdownA" class="absolute top-full left-0 right-0 mt-1 bg-black border border-purple-800 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl text-right"></div>
         </div>
         <div id="dualTitleA" class="text-xs font-semibold text-white truncate pt-1">עומר אדם — שני משוגעים</div>
       </div>
@@ -345,7 +346,8 @@
         <div class="relative">
           <input type="text" id="dualSearchInputB" oninput="debounceSearch(this.value, 'dual', 'B')" placeholder="חפש שיר שני (iTunes)..."
                  class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-purple-950/40 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-glowLime">
-          <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-night/95 border border-purple-800 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl text-right"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="dualDropdownB" class="absolute top-full left-0 right-0 mt-1 bg-black border border-purple-800 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-xl text-right"></div>
         </div>
         <div id="dualTitleB" class="text-xs font-semibold text-white truncate pt-1">נועה קירל — יוניקורן (Unicorn)</div>
       </div>
@@ -418,23 +420,28 @@
       <div class="grid grid-cols-1 gap-2.5">
         <div class="relative">
           <input type="text" id="favSong1" oninput="debounceSearch(this.value, 'playlist', 1)" placeholder="שיר 1 (למשל: עומר אדם - שני משוגעים)..." class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown1" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="plDropdown1" class="absolute top-full left-0 right-0 mt-1 bg-black border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
         <div class="relative">
           <input type="text" id="favSong2" oninput="debounceSearch(this.value, 'playlist', 2)" placeholder="שיר 2 (למשל: נועה קירל - יוניקורן)..." class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown2" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="plDropdown2" class="absolute top-full left-0 right-0 mt-1 bg-black border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
         <div class="relative">
           <input type="text" id="favSong3" oninput="debounceSearch(this.value, 'playlist', 3)" placeholder="שיר 3 (למשל: פאר טסי - אהבה חולה)..." class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown3" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="plDropdown3" class="absolute top-full left-0 right-0 mt-1 bg-black border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
         <div class="relative">
           <input type="text" id="favSong4" oninput="debounceSearch(this.value, 'playlist', 4)" placeholder="שיר 4 (למשל: The Weeknd - Blinding Lights)..." class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown4" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="plDropdown4" class="absolute top-full left-0 right-0 mt-1 bg-black border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
         <div class="relative">
           <input type="text" id="favSong5" oninput="debounceSearch(this.value, 'playlist', 5)" placeholder="שיר 5 (למשל: Dua Lipa - Physical)..." class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-black/60 border border-purple-800/60 text-white placeholder-purple-400/50 focus:outline-none focus:border-electricCyan">
-          <div id="plDropdown5" class="absolute top-full left-0 right-0 mt-1 bg-night border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
+          <!-- שונה ל-bg-black כדי שלא יהיה שקוף -->
+          <div id="plDropdown5" class="absolute top-full left-0 right-0 mt-1 bg-black border border-electricCyan/50 rounded-xl p-1.5 z-50 hidden max-h-48 overflow-y-auto shadow-2xl"></div>
         </div>
       </div>
     </div>
