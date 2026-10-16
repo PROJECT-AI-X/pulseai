@@ -115,6 +115,506 @@
       -webkit-appearance: none;
       box-shadow: 0 0 8px var(--color-accent, #10E773);
     }
+
+    body:not(.theme-sunset):not(.theme-minimal) {
+      --color-primary: #0070d5;
+      --color-primary-hover: #0060ef;
+      --color-secondary: #0070d5;
+      --color-accent: #0070d5;
+      --color-cyan: #0070d5;
+      --shadow-primary: rgba(0, 112, 213, 0.16);
+      --shadow-accent: rgba(0, 112, 213, 0.16);
+      background: #ffffff;
+      color: #262626;
+      font-family: "Open Sans", "Heebo", sans-serif;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header {
+      border-color: #f0f0f0;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header > div:first-child > div:first-child {
+      background: #0070d5;
+      background-image: none;
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header h1 {
+      background: none;
+      color: #262626;
+      -webkit-text-fill-color: currentColor;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge {
+      background: #f7f9fa;
+      border-color: #e8e8e8;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge #userNameDisplay {
+      color: #262626;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge img {
+      border-color: #d9d9d9;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge [class*="text-glowLime"] {
+      color: #595959;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge button {
+      color: #0070d5;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #themeSelector {
+      background: #f7f9fa;
+      border-color: #d9d9d9;
+      border-radius: 9999px;
+      color: #262626;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header p,
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-purple-300,
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-purple-400,
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-purple-200,
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-[10px]"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-[11px]"] {
+      color: #595959;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section {
+      background-color: #ffffff;
+      border-color: #e8e8e8;
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) .glass-panel {
+      background: #ffffff;
+      border-color: #e8e8e8;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-black/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-purple-950/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-purple-900/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section .bg-black {
+      background-color: #f7f9fa;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-purple-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-electricCyan/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-glowLime/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-sunset/"] {
+      border-color: #e8e8e8;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner .text-white {
+      color: #262626;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-electricCyan"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-sunset"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-pink-"] {
+      color: #0070d5;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="rounded-3xl"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="rounded-2xl"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="rounded-xl"] {
+      border-radius: 8px;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner button {
+      border-radius: 9999px !important;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #googleLoginBtn {
+      border-radius: 9999px;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-gradient-to-r"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-emerald-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-purple-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-sunset"],
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner #pwaInstallActionBtn {
+      background-color: #0070d5;
+      background-image: none;
+      border-color: #0070d5;
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #googleLoginBtn {
+      background: #f7f9fa;
+      border: 1px solid #d9d9d9;
+      color: #262626;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #deckAVisualCard.active-deck {
+      border: 2px solid #0070d5 !important;
+      box-shadow: none !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) .playlist-tab.active-genre,
+    body:not(.theme-sunset):not(.theme-minimal) .duration-tab.active-duration,
+    body:not(.theme-sunset):not(.theme-minimal) .dual-duration-tab.active-dual-duration {
+      background: #deeafd !important;
+      border-color: #0070d5 !important;
+      box-shadow: none !important;
+      color: #262626 !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) .duration-tab.active-duration .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) .dual-duration-tab.active-dual-duration .text-white {
+      color: #262626;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="text"],
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="search"] {
+      background: #ffffff;
+      border-color: #d9d9d9;
+      color: #262626;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section input::placeholder {
+      color: #8c8c8c;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveMixProgressBar {
+      background: #0070d5;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal {
+      background-color: rgba(0, 0, 0, 0.55);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner {
+      background: #ffffff;
+      border-color: #e8e8e8;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div [class*="bg-black/"],
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div [class*="bg-purple-"] {
+      background-color: #f7f9fa;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section.glass-panel {
+      background: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .glass-panel {
+      background: #f7f9fa;
+      border-color: #e8e8e8;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section h2,
+    body:not(.theme-sunset):not(.theme-minimal) > section h3 {
+      color: #262626;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section label {
+      color: #3b3e40;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="font-black"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="font-extrabold"] {
+      font-weight: 600;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-[10px]"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-[11px]"] {
+      color: #6c7073;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-electricCyan"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-sunset"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-emerald-"] {
+      background-color: #0070d5;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .bg-gradient-to-r,
+    body:not(.theme-sunset):not(.theme-minimal) > section .bg-gradient-to-tr {
+      background-color: #0070d5;
+      background-image: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-gradient-to-r"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-emerald-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-purple-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-sunset"],
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner #pwaInstallActionBtn {
+      background-color: #0070d5 !important;
+      background-image: none !important;
+      border-color: #0070d5 !important;
+      color: #ffffff !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-gradient-to-r"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-emerald-"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-purple-"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-glowLime"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-sunset"]:hover {
+      background-color: #0060ef !important;
+      border-color: #0060ef !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="text"]:focus,
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="search"]:focus {
+      border-color: #0070d5;
+      box-shadow: 0 0 0 2px rgba(0, 112, 213, 0.12);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-b"] {
+      border-color: #e8e8e8;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div .glass-panel {
+      background: #f7f9fa;
+    }
+
+    body:not(.theme-sunset):not(.theme-minimal) {
+      --color-primary: #0066cc;
+      --color-primary-hover: #0071e3;
+      --color-secondary: #0066cc;
+      --color-accent: #0066cc;
+      --color-cyan: #0066cc;
+      --shadow-primary: rgba(0, 102, 204, 0.16);
+      --shadow-accent: rgba(0, 102, 204, 0.16);
+      padding: 0 0 6rem;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -0.01em;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header {
+      align-self: stretch;
+      width: auto;
+      max-width: none;
+      min-height: 44px;
+      margin: 0 0 24px;
+      padding: 8px max(20px, calc((100vw - 980px) / 2));
+      background: #000000;
+      border: 0;
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header > div:first-child > div:first-child {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #0066cc;
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header h1 {
+      color: #ffffff;
+      -webkit-text-fill-color: #ffffff;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > header p {
+      color: #cccccc;
+      font-family: inherit;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #themeSelector {
+      background: #1d1d1f;
+      border-color: #333333;
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge {
+      background: #1d1d1f;
+      border-color: #333333;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge #userNameDisplay {
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge [class*="text-glowLime"] {
+      color: #cccccc;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #userProfileBadge button {
+      color: #2997ff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #googleLoginBtn {
+      background: #1d1d1f;
+      border-color: #333333;
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section {
+      width: calc(100% - 40px);
+      max-width: 980px;
+      border: 0;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: none;
+      color: #1d1d1f;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section.glass-panel {
+      background: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section:first-of-type,
+    body:not(.theme-sunset):not(.theme-minimal) #playlistStudioSection {
+      background: #f5f5f7;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) .glass-panel {
+      border-color: rgba(0, 0, 0, 0.08);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .glass-panel {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-black/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-purple-950/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="bg-purple-900/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section .bg-black {
+      background-color: #f5f5f7;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-purple-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-electricCyan/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-glowLime/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-sunset/"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="border-b"] {
+      border-color: #e0e0e0;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section h2,
+    body:not(.theme-sunset):not(.theme-minimal) > section h3 {
+      color: #1d1d1f;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner .text-white {
+      color: #1d1d1f;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-purple-300,
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-purple-400,
+    body:not(.theme-sunset):not(.theme-minimal) > section .text-purple-200,
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-[10px]"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-[11px]"] {
+      color: #7a7a7a;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-electricCyan"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-sunset"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="text-pink-"] {
+      color: #0066cc;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="font-black"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="font-extrabold"] {
+      font-weight: 600;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="rounded-3xl"],
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="rounded-2xl"] {
+      border-radius: 18px;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section [class*="rounded-xl"] {
+      border-radius: 11px;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button,
+    body:not(.theme-sunset):not(.theme-minimal) #googleLoginBtn,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner button {
+      border-radius: 9999px !important;
+      box-shadow: none;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-gradient-to-r"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-emerald-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-purple-"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-sunset"],
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner #pwaInstallActionBtn {
+      background-color: #0066cc !important;
+      background-image: none !important;
+      border-color: #0066cc !important;
+      color: #ffffff !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-gradient-to-r"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-emerald-"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-purple-"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-glowLime"]:hover,
+    body:not(.theme-sunset):not(.theme-minimal) > section button[class*="bg-sunset"]:hover {
+      background-color: #0071e3 !important;
+      border-color: #0071e3 !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section button:active,
+    body:not(.theme-sunset):not(.theme-minimal) #googleLoginBtn:active {
+      transform: scale(0.95);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) .playlist-tab,
+    body:not(.theme-sunset):not(.theme-minimal) .duration-tab,
+    body:not(.theme-sunset):not(.theme-minimal) .dual-duration-tab {
+      background: #ffffff;
+      border-color: #e0e0e0;
+      border-radius: 9999px;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section .playlist-tab.active-genre,
+    body:not(.theme-sunset):not(.theme-minimal) > section .duration-tab.active-duration,
+    body:not(.theme-sunset):not(.theme-minimal) > section .dual-duration-tab.active-dual-duration {
+      background: #ffffff !important;
+      border-color: #0066cc !important;
+      box-shadow: inset 0 0 0 1px #0066cc !important;
+      color: #1d1d1f !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) .duration-tab.active-duration .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) .dual-duration-tab.active-dual-duration .text-white {
+      color: #1d1d1f;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #deckAVisualCard.active-deck {
+      border: 1px solid #0066cc !important;
+      box-shadow: none !important;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="text"],
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="search"] {
+      min-height: 44px;
+      border: 1px solid #e0e0e0;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #1d1d1f;
+      padding-right: 20px;
+      padding-left: 20px;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section input::placeholder {
+      color: #7a7a7a;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="text"]:focus,
+    body:not(.theme-sunset):not(.theme-minimal) > section input[type="search"]:focus {
+      border-color: #0071e3;
+      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.16);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection {
+      background: #272729;
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection h2,
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection .text-white {
+      color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection .text-purple-300,
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection [class*="text-[10px]"],
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection [class*="text-[11px]"] {
+      color: #cccccc;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection [class*="text-electricCyan"],
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection [class*="text-glowLime"],
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection [class*="text-sunset"] {
+      color: #2997ff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection .glass-panel,
+    body:not(.theme-sunset):not(.theme-minimal) #liveWebMixPlayerSection [class*="bg-black/"] {
+      background-color: #2a2a2c;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #liveMixProgressBar {
+      background: #0066cc;
+      background-image: none;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal {
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner {
+      background: #f5f5f7;
+      border-color: #e0e0e0;
+      box-shadow: none;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div .glass-panel,
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div [class*="bg-black/"],
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div [class*="bg-purple-"] {
+      background-color: #ffffff;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div .text-white,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner .text-white {
+      color: #1d1d1f;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #tracklistModal > div .text-purple-300,
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner [class*="text-purple-"] {
+      color: #7a7a7a;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) #pwaInstallBanner [class*="bg-gradient-to-tr"] {
+      background: #0066cc;
+    }
+    body:not(.theme-sunset):not(.theme-minimal) input[type=range]::-webkit-slider-thumb {
+      background: #0066cc;
+      box-shadow: none;
+    }
   </style>
 </head>
 
